@@ -1,0 +1,49 @@
+version: "3"
+networks:
+  default:
+    driver: bridge
+services:
+  #---------------------------------------------------------#
+  # CONTAINER: Production
+  #---------------------------------------------------------#
+  prod:
+    image: $DOCKER_IMAGE:prod # tag must coincide with service name!
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # MOUNTS_VOLUME: 0
+        WD: $WORK_DIR
+    ## only mount read-only files:
+    volumes:
+      - ./config.yml:$WORK_DIR/config.yml:ro
+      # - ./logs:$WORK_DIR/logs:rw   ## <- (r/)w for logging between all docker levels.
+      # - ./src:$WORK_DIR/src:rw     ## <- r/w   allows for live developing
+      # - ./test:$WORK_DIR/test:rw   ##          ""
+      # - ./data:$WORK_DIR/data:rw   ## <- r/w   data folder, images will be stored here.
+      # - ./dist:$WORK_DIR/dist:rw   ## <- r/w   distribution folder, VERSION + Programm artefact.
+      # - ./build:$WORK_DIR/build:rw ## <- (r/)w build folder -> artefact of Pyinstaller.
+    command:
+      ["bash", "-c", "echo 'Whales:basic docker container ready'"]
+  #---------------------------------------------------------#
+  # CONTAINER: Test
+  #---------------------------------------------------------#
+  test:
+    image: $DOCKER_IMAGE:test # tag must coincide with service name!
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # MOUNTS_VOLUME: 0
+        WD: $WORK_DIR
+    ## only mount read-only files:
+    volumes:
+      - ./config-test.yml:$WORK_DIR/config.yml:ro
+      # - ./logs:$WORK_DIR/logs:rw   ## <- (r/)w for logging between all docker levels.
+      # - ./src:$WORK_DIR/src:rw     ## <- r/w   allows for live developing
+      # - ./test:$WORK_DIR/test:rw   ##          ""
+      # - ./data:$WORK_DIR/data:rw   ## <- r/w   data folder, images will be stored here.
+      # - ./dist:$WORK_DIR/dist:rw   ## <- r/w   distribution folder, VERSION + Programm artefact.
+      # - ./build:$WORK_DIR/build:rw ## <- (r/)w build folder -> artefact of Pyinstaller.
+    command:
+      ["bash", "-c", "echo 'Whales:test docker container ready'"]
