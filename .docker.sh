@@ -80,9 +80,9 @@ elif ( has_arg "$SCRIPTARGS" "-+(status|state)" ); then
     docker images -a --format 'table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}';
 elif ( has_arg "$SCRIPTARGS" "-+(enter|explore)" ); then
     _log_info "ENTER DOCKER ENVIRONMENT.";
-    ## Check if base image is present (contains mounted volume):
-    image_base="$( docker_get_image_id_base )";
-    if [ "$image_base" == "" ]; then exit 1; fi
+    ## Get base container (for mounted volumes):
+    container_base="$( docker_get_container_id_base )";
+    if [ "$container_base" == "" ]; then exit 1; fi
 
     entry="$( get_one_kwarg_space "$SCRIPTARGS" "-+enter" )";
     entry_orig="$entry";
@@ -113,10 +113,12 @@ elif ( has_arg "$SCRIPTARGS" "-+(enter|explore)" ); then
     _log_info "START TEMPORARY CONTAINER \033[92;1m$container_tmp\033[0m.";
     if [ "$it" == "true" ]; then
         _log_info "EXECUTE COMMAND <\033[93;1m$command\033[0m> INTERACTIVELY.";
-        docker run --name=$container_tmp $ports_option -it $id bash -c "$command";
+        # docker run --name=$container_tmp $ports_option -it $id bash -c "$command";
+        docker run --name=$container_tmp $ports_option --volumes-from=$container_base:rw -it $id bash -c "$command";
     else
         _log_info "EXECUTE COMMAND <\033[93;1m$command\033[0m> NON-INTERACTIVELY.";
-        docker run --name=$container_tmp $ports_option -d $id bash -c "$command";
+        # docker run --name=$container_tmp $ports_option -d $id bash -c "$command";
+        docker run --name=$container_tmp $ports_option --volumes-from=$container_base:rw -d $id bash -c "$command";
         docker logs --follow $container_tmp;
     fi
 
