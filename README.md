@@ -32,26 +32,23 @@ Docker presents itself as a universal, easily accessible solution, with a minima
 
     ```bash
     chmod +x *.sh; # grant execution rights to the shell scripts
-    ./build.sh --mode setup;
-    # wait for this to complete
-    ./hello.sh --base prod "Hello world\!" # Do not write "!"
-    ./hello.sh --base prod "I am a whale"
+    ./hello.sh "Hello world\!" # Do not write "!"
+    ./hello.sh "I am a whale"
     ```
 
     If performed correctly, first the docker image will be created.
-    Then upon the first "hello" script execution, the docker image will be started in a container,
+    Then the docker image will be started in a container,
     and you will see two whales with messages `(blank)` and `Hello world!`.
     Then upon the second "hello" script execution, the docker image will be started in a container,
     and you will see two whales with messages `Hello world!` and `I am a whale`.
+    One should also see a file `HELLO_WORLD` in the root of the project,
+    which will be modified as one calls the above commands.
+    If one modifies this file, then calls the script, the modifications
+    should display.
 5. If this works as described, then this means the scripts function correctly:
     Project users are able to start images with ease, execute methods within them
     (_e.g._ compilation of a code, execution of an algorithm, _etc._)
     and the results can be saved (optionally) for the next execution.
-
-In the above example, `--base prod` was used as an argument because we started the service `prod`,
-(which has image:tag=`whales:prod`).
-Cf. `docker-compose.yml`.
-If the services are renamed, then the argument has to be appropriately renamed.
 
 ## Status and cleaning ##
 
@@ -60,13 +57,14 @@ For example after the above hello-world example, the status looks like this:
 
 ```
 [INFO] Container states:
-CONTAINER ID   NAMES           IMAGE          SIZE                 STATUS
-6bxxxxxxxxx4   whales_prod_1   edxxxxxxxxx3   0B (virtual 101MB)   Exited (0) 2 minutes ago
+CONTAINER ID   NAMES            IMAGE          SIZE                 STATUS
+3exxxxxxxxx2   whales_hello_1   whales:hello   0B (virtual 101MB)   Exited (0) 50 seconds ago
+
 [INFO] Images:
 IMAGE ID       REPOSITORY   TAG       SIZE      CREATED AT
-45xxxxxxxxx9   whales       prod      101MB     ...
-71xxxxxxxxx3   <none>       <none>    101MB     ...
-edxxxxxxxxx3   <none>       <none>    101MB     ...
+efxxxxxxxxx2   whales       explore   101MB     2021-xxxxx:15:19
+53xxxxxxxxx8   <none>       <none>    101MB     2021-xxxxx:15:02
+d6xxxxxxxxx2   whales       hello     101MB     2021-xxxxx:14:57
 ```
 
 Call `. .docker.sh --clean` to clean all whale-containers and whale-images.

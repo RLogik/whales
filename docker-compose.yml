@@ -4,6 +4,22 @@ networks:
     driver: bridge
 services:
   #---------------------------------------------------------#
+  # CONTAINER: Hello World
+  #---------------------------------------------------------#
+  hello:
+    image: $DOCKER_IMAGE:hello # tag must coincide with service name!
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # MOUNTS_VOLUME: 0
+        WD: $WORK_DIR
+    ## only mount read-only files:
+    volumes:
+      - ./HELLO_WORLD:$WORK_DIR/HELLO_WORLD:rw  ## <- r/w   allows for live developing
+    command:
+      ["bash", "-c", "echo 'Whales:basic docker container ready'"]
+  #---------------------------------------------------------#
   # CONTAINER: Production
   #---------------------------------------------------------#
   prod:
