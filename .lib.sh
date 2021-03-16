@@ -6,23 +6,18 @@
 
 . .logging.sh;
 
-####
 # NOTE: must coincide with contents of .env + docker-compose.yml:
 export DOCKER_IP="127.0.0.1";
 export DOCKER_HOST_PORT="9000";
 export DOCKER_CONTAINER_PORT="9000";
 export DOCKER_SERVICE_MAIN="whales";
-####
 export FILE_DOCKER_DEPTH="DOCKER_DEPTH";
 export DOCKER_IMAGE="whales";
 export DOCKER_TAG_BASE="base";
 export DOCKER_TAG_EXPLORE="explore";
 export DOCKER_CONTAINER_TEMP="whales_temp";
-####
-# NOTE: do not use /bin/bash. Results in error under Windows.
-# Use \/bin\/bash, bash, sh -c bash, or sh.
+# NOTE: do not use /bin/bash. Results in error under Windows.  Use \/bin\/bash, bash, sh -c bash, or sh.
 export DOCKER_CMD_EXPLORE="bash";
-####
 export DOCKER_PORTS="$DOCKER_IP:$DOCKER_HOST_PORT:$DOCKER_CONTAINER_PORT";
 
 # periodic waiting time to check a process;
@@ -42,14 +37,17 @@ function is_linux() {
 ##############################################################################
 
 function get_docker_depth() {
-    depth=1;
-    if [ -f "$FILE_DOCKER_DEPTH" ]; then depth="$(head -n 1 $FILE_DOCKER_DEPTH)"; fi
-    if ! ( echo "$depth" | grep -E -q "^(0|[1-9][0-9]*|-[1-9][0-9]*)$" ); then depth=1; fi
+    if [ -f "$FILE_DOCKER_DEPTH" ]; then
+        depth="$( head -n 1 $FILE_DOCKER_DEPTH )";
+        if ! ( echo "$depth" | grep -E -q "^(0|[1-9][0-9]*|-[1-9][0-9]*)$" ); then depth=1; fi
+    else
+        depth=0;
+    fi
     echo $depth;
 }
 
 function is_docker() {
-    depth=$(get_docker_depth);
+    depth=$( get_docker_depth );
     [ $depth -gt 0 ] && return 0 || return 1;
 }
 
@@ -77,15 +75,15 @@ function call_within_docker() {
         _log_info "YOU ARE OUTSIDE THE DOCKER ENVIRONMENT.";
         # Force start docker servic, if not already up:
         set_base_tag "$base_tag"; ## <-- set base tag
-        container_base="$(docker_get_container_id_base 2> $VERBOSE)";
-        if [ "$container_base" == "" ]; then
+        image_base="$( docker_get_image_id_base 2> $VERBOSE )";
+        if [ "$image_base" == "" ]; then
             _log_info "FORCE-BUILD DOCKER SERVICE.";
             . .docker.sh --base "$base_tag" --up --mount;
         fi
 
         ## SET ENTRY POINT:
         [ "$save" == "true" ] && save_arg="--save $DOCKER_IMAGE:$tag" || save_arg="";
-        entry="$(docker_get_image_name_latest_stage "$tag")";
+        entry="$( docker_get_image_name_latest_stage "$tag" )";
 
         ## RUN SCRIPT COMMAND WITHIN DOCKER:
         command=". $script $params"; # alternative: "cat $script | dos2unix | bash -s -- $params";
@@ -439,9 +437,7 @@ function docker_get_ids() {
         columns=( $line );
         id="${columns[0]}";
         value="${columns[1]}";
-        if ( echo "$value" | grep -E -q "$pattern" ); then
-            echo $id;
-        fi
+        if ( echo "$value" | grep -E -q "$pattern" ); then echo $id; fi
     done <<< "$lines";
 }
 
@@ -462,6 +458,10 @@ function docker_get_id() {
 
 function docker_get_container_id_base() {
     docker_get_id part=container key="{{.Image}}" pattern="^$DOCKER_IMAGE:$DOCKER_TAG_BASE$" || echo "";
+}
+
+function docker_get_image_id_base() {
+    docker_get_id_from_image_tag "$DOCKER_IMAGE:$DOCKER_TAG_BASE";
 }
 
 function docker_get_id_from_image_tag() {
@@ -569,7 +569,7 @@ function docker_remove_all_images() {
 ##############################################################################
 
 function run_setup() {
-    _log_warn "Setup process not yet implemented!";
+    _log_info "Setup process complete!";
     # < your code here > #
 }
 

@@ -21,7 +21,7 @@ mode="$( get_one_kwarg_space "$SCRIPTARGS" "-+mode" "")";
 
 if [ "$mode" == "setup" ]; then
     # call_within_docker <base_tag> <tag>     <save> <it>  <expose_ports> <script>  <params>
-    call_within_docker   "test"     "setup"   false  true  true           "test.sh" $SCRIPTARGS;
+    call_within_docker   "test"     "setup"   true   true  true           "test.sh" $SCRIPTARGS;
     run_setup;
 elif [ "$mode" == "unit" ]; then
     # call_within_docker <base_tag> <tag>     <save> <it>  <expose_ports> <script>  <params>

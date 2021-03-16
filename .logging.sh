@@ -10,3 +10,4 @@ export VERBOSE="/dev/null";
 
 ## local logging in subfolder ./logs:
 export DEBUG="debug.log";
+export PATH_LOGS="logs";

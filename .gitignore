@@ -22,7 +22,6 @@
 !/.dockerignore
 !/.docker.sh
 !/.docker-entry.sh
-!/DOCKER_DEPTH
 !/Dockerfile
 !/docker-compose.yml
 

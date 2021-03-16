@@ -9,7 +9,7 @@
 ##############################################################################
 
 SCRIPTARGS="$@";
-splitargs=( $@ );
+splitargs=( "$@" );
 
 . .lib.sh;
 
@@ -31,7 +31,7 @@ function print_message() {
     echo -e "" >> $OUT;
     echo -e "                                       " >> $OUT;
     echo -e " /¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\       v ˇ        " >> $OUT;
-    echo -e " | \033[2;3m$1\033[0m                 " >> $OUT;
+    echo -e " | \033[2;3m$1\033[0m                 "  >> $OUT;
     echo -e " | \033[96m$msg\033[0m                 " >> $OUT;
     echo -e " \______  __________/                  " >> $OUT;
     echo -e "        \ |                      .     " >> $OUT;
