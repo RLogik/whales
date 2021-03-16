@@ -6,16 +6,35 @@
 
 . .logging.sh;
 
+##############################################################################
+# .ENV EXTRACTION
+##############################################################################
+
+function env_var() {
+    key="$1";
+    pattern="^$key=(.*)$";
+    while read line; do
+        if ! ( echo "$line" | grep -E -q "$pattern" ); then continue; fi
+        echo "$( echo "$line" | sed -E "s/^$1=(.*)$/\1/g" )";
+        return;
+    done <<< "$( cat .env )";
+    _log_fail "Argument \033[93;1m$key\033[0m not found in \033[1m.env\033[0m!";
+}
+
+##############################################################################
+# GLOBAL VARIABLES
+##############################################################################
+
 # NOTE: must coincide with contents of .env + docker-compose.yml:
-export DOCKER_IP="127.0.0.1";
-export DOCKER_HOST_PORT="9000";
-export DOCKER_CONTAINER_PORT="9000";
-export DOCKER_SERVICE_MAIN="whales";
+export DOCKER_IP="$( env_var DOCKER_IP )";
+export DOCKER_HOST_PORT="$( env_var HOST_PORT )";
+export DOCKER_CONTAINER_PORT="$( env_var CONTAINER_PORT )";
+export DOCKER_SERVICE_MAIN="$( env_var DOCKER_IMAGE )";
+export DOCKER_IMAGE="$( env_var DOCKER_IMAGE )";
+export DOCKER_CONTAINER_TEMP="$( env_var DOCKER_IMAGE )_temp";
 export FILE_DOCKER_DEPTH="DOCKER_DEPTH";
-export DOCKER_IMAGE="whales";
 export DOCKER_TAG_BASE="base";
 export DOCKER_TAG_EXPLORE="explore";
-export DOCKER_CONTAINER_TEMP="whales_temp";
 # NOTE: do not use /bin/bash. Results in error under Windows.  Use \/bin\/bash, bash, sh -c bash, or sh.
 export DOCKER_CMD_EXPLORE="bash";
 export DOCKER_PORTS="$DOCKER_IP:$DOCKER_HOST_PORT:$DOCKER_CONTAINER_PORT";
