@@ -10,7 +10,6 @@ echo "ENTRY SCRIPT STARTED.";
 echo "1" >| whales_setup/DOCKER_DEPTH;
 
 ## add prefix to logging levels:
-echo "export LOGGINGPREFIX=\">\";" >> .logging.sh;
 echo "export LOGGINGPREFIX=\">\";" >> whales_setup/.logging.sh;
 
 ## make all bash files in project root readable in unix and grant them execution permissions:

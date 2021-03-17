@@ -34,7 +34,7 @@ export DOCKER_CONTAINER_PORT="$( env_var CONTAINER_PORT )";
 export DOCKER_SERVICE_MAIN="$( env_var DOCKER_IMAGE )";
 export DOCKER_IMAGE="$( env_var DOCKER_IMAGE )";
 export DOCKER_CONTAINER_TEMP="$( env_var DOCKER_IMAGE )_temp";
-export FILE_DOCKER_DEPTH="DOCKER_DEPTH";
+export FILE_DOCKER_DEPTH="whales_setup/DOCKER_DEPTH";
 export DOCKER_TAG_BASE="base";
 export DOCKER_TAG_EXPLORE="explore";
 # NOTE: do not use /bin/bash. Results in error under Windows.  Use \/bin\/bash, bash, sh -c bash, or sh.
