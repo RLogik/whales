@@ -1,14 +1,17 @@
 *
 !/.gitignore
+!/.dockerignore
+
+## WHALES SETUP (Docker)
+!/whales_setup
 
 ################################################################################################################################
 # MAIN FOLDER
 ################################################################################################################################
 !/README.md
 !/ISSUES.md
+!/LICENSE
 
-!/.logging.sh
-!/.lib.sh
 !/build.sh
 !/clean.sh
 !/hello.sh
@@ -16,14 +19,6 @@
 
 !/config.yml
 !/config-test.yml
-
-## DOCKER
-!/.env
-!/.dockerignore
-!/.docker.sh
-!/.docker-entry.sh
-!/Dockerfile
-!/docker-compose.yml
 
 ################################################################################################################################
 # PROJECT FILES

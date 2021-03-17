@@ -10,7 +10,7 @@ services:
     image: $DOCKER_IMAGE:hello # tag must coincide with service name!
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: whales_setup/Dockerfile
       args:
         # MOUNTS_VOLUME: 0
         WD: $WORK_DIR
@@ -26,7 +26,7 @@ services:
     image: $DOCKER_IMAGE:prod # tag must coincide with service name!
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: whales_setup/Dockerfile
       args:
         # MOUNTS_VOLUME: 0
         WD: $WORK_DIR
@@ -48,7 +48,7 @@ services:
     image: $DOCKER_IMAGE:test # tag must coincide with service name!
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: whales_setup/Dockerfile
       args:
         # MOUNTS_VOLUME: 0
         WD: $WORK_DIR

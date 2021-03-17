@@ -8,23 +8,25 @@
 #    ./hello.sh [--base <tag>] "...message to be printed..."
 ##############################################################################
 
-SCRIPTARGS="$@";
-splitargs=( "$@" );
+local SCRIPTARGS="$@";
+local splitargs=( "$@" );
 
-. .lib.sh;
+source whales_setup/.lib.whales.sh;
+source whales_setup/.lib.sh;
 
-base_tag="$( get_one_kwarg_space "$SCRIPTARGS" "-+base" "hello" )";
+local base_tag="$( get_one_kwarg_space "$SCRIPTARGS" "-+base" "hello" )";
+local FILE_MESSAGE="HELLO_WORLD";
+
 if ( has_arg "$SCRIPTARGS" "-+base" ); then SCRIPTARGS="${splitargs[@]:2}"; fi
-if [ "$base_tag" == "hello" ] && ! [ -f "HELLO_WORLD" ]; then touch HELLO_WORLD; fi
+if [ "$base_tag" == "hello" ] && ! [ -f "$FILE_MESSAGE" ]; then echo "(empty)" >| $FILE_MESSAGE; fi
 
 ## check if inside docker, if not then call script within docker:
 # call_within_docker <base_tag> <tag>                 <save> <it>  <expose_ports> <script>   <params>
 call_within_docker  "$base_tag" "$DOCKER_TAG_EXPLORE" true   false false          "hello.sh" "$SCRIPTARGS";
 
-FILE_MESSAGE="HELLO_WORLD";
 if ! [ -f "$FILE_MESSAGE" ]; then echo "(empty)" >| $FILE_MESSAGE; fi
-old_message="$(cat $FILE_MESSAGE)";
-new_message="$SCRIPTARGS";
+local old_message="$(cat $FILE_MESSAGE)";
+local new_message="$SCRIPTARGS";
 echo "$new_message" >| $FILE_MESSAGE;
 
 function print_message() {

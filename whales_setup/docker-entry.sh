@@ -7,10 +7,11 @@
 echo "ENTRY SCRIPT STARTED.";
 
 ## now in docker, so set depth:
-echo "1" >| DOCKER_DEPTH;
+echo "1" >| whales_setup/DOCKER_DEPTH;
 
 ## add prefix to logging levels:
 echo "export LOGGINGPREFIX=\">\";" >> .logging.sh;
+echo "export LOGGINGPREFIX=\">\";" >> whales_setup/.logging.sh;
 
 ## make all bash files in project root readable in unix and grant them execution permissions:
 ls .*.sh *.sh | xargs -i bash -c "dos2unix {}";

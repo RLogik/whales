@@ -4,41 +4,14 @@
 #    DESCRIPTION: file for auxiliary functions for the main scripts.
 ##############################################################################
 
-. .logging.sh;
-
-##############################################################################
-# .ENV EXTRACTION
-##############################################################################
-
-function env_var() {
-    local file=".env";
-    local key="$1";
-    local pattern="^$key=(.*)$";
-    while read line; do
-        if ! ( echo "$line" | grep -E -q "$pattern" ); then continue; fi
-        echo "$( echo "$line" | sed -E "s/^$1=(.*)$/\1/g" )";
-        return;
-    done <<< "$( cat $file )";
-    _log_fail "Argument \033[93;1m$key\033[0m not found in \033[1m$file\033[0m!";
-}
+source whales_setup/.logging.sh;
 
 ##############################################################################
 # GLOBAL VARIABLES
 ##############################################################################
 
-# NOTE: must coincide with contents of .env + docker-compose.yml:
-export DOCKER_IP="$( env_var DOCKER_IP )";
-export DOCKER_HOST_PORT="$( env_var HOST_PORT )";
-export DOCKER_CONTAINER_PORT="$( env_var CONTAINER_PORT )";
-export DOCKER_SERVICE_MAIN="$( env_var DOCKER_IMAGE )";
-export DOCKER_IMAGE="$( env_var DOCKER_IMAGE )";
-export DOCKER_CONTAINER_TEMP="$( env_var DOCKER_IMAGE )_temp";
-export FILE_DOCKER_DEPTH="DOCKER_DEPTH";
-export DOCKER_TAG_BASE="base";
-export DOCKER_TAG_EXPLORE="explore";
 # NOTE: do not use /bin/bash. Results in error under Windows.  Use \/bin\/bash, bash, sh -c bash, or sh.
-export DOCKER_CMD_EXPLORE="bash";
-export DOCKER_PORTS="$DOCKER_IP:$DOCKER_HOST_PORT:$DOCKER_CONTAINER_PORT";
+export CMD_EXPLORE="bash";
 
 # periodic waiting time to check a process;
 export WAIT_PERIOD_IN_SECONDS=1;
@@ -50,68 +23,6 @@ export PENDING_SYMBOL="#";
 
 function is_linux() {
     [ "$OSTYPE" == "msys" ] && return 1 || return 0;
-}
-
-##############################################################################
-# DOCKER
-##############################################################################
-
-function get_docker_depth() {
-    local depth=0;
-    if [ -f "$FILE_DOCKER_DEPTH" ]; then
-        depth="$( head -n 1 $FILE_DOCKER_DEPTH )";
-        if ! ( echo "$depth" | grep -E -q "^(0|[1-9][0-9]*|-[1-9][0-9]*)$" ); then depth=1; fi
-    fi
-    echo $depth;
-}
-
-function is_docker() {
-    local depth=$( get_docker_depth );
-    [ $depth -gt 0 ] && return 0 || return 1;
-}
-
-########################################
-# Checks if in docker, and either
-# returns to script, or starts docker and calls script within docker.
-# Usage:
-#     call_within_docker <base_tag> <tag> <save> <it> <expose_ports> <script> <params>
-function call_within_docker() {
-    local metaargs=( "$@" );
-
-    ## RETURN TO SCRIPT --- if already inside docker:
-    if ( is_docker ); then
-        return 0;
-    else
-        local base_tag="${metaargs[0]}";
-        local tag="${metaargs[1]}";
-        local save="${metaargs[2]}";
-        local it="${metaargs[3]}";
-        local expose_ports="${metaargs[4]}";
-        local script="${metaargs[5]}";
-        local params="${metaargs[@]:6}";
-
-        ## START/ENTER DOCKER:
-        _log_info "YOU ARE OUTSIDE THE DOCKER ENVIRONMENT.";
-        # Force start docker servic, if not already up:
-        set_base_tag "$base_tag"; ## <-- set base tag
-        container_base="$( docker_get_container_id_base 2> $VERBOSE )";
-        if [ "$container_base" == "" ]; then
-            _log_info "FORCE-BUILD DOCKER SERVICE.";
-            . .docker.sh --base "$base_tag" --up --mount;
-        fi
-
-        ## SET ENTRY POINT:
-        local save_arg="";
-        [ "$save" == "true" ] && save_arg="--save $DOCKER_IMAGE:$tag";
-        local entry="$( docker_get_image_name_latest_stage "$tag" )";
-
-        ## RUN SCRIPT COMMAND WITHIN DOCKER:
-        local command=". $script $params"; # alternative: "cat $script | dos2unix | bash -s -- $params";
-        . .docker.sh --base "$base_tag" --command=\"$command\" --enter "$entry" --it="$it" --expose="$expose_ports" $save_arg;
-
-        ## EXIT: do not return to script
-        exit 0;
-    fi
 }
 
 ##############################################################################
@@ -427,164 +338,6 @@ function remove_file() {
 }
 
 ##############################################################################
-# AUXILIARY METHODS: DOCKER
-##############################################################################
-
-function set_base_tag() {
-    local tag="$1";
-    export DOCKER_TAG_BASE="$tag";
-}
-
-function docker_get_ids() {
-    local args="$@";
-    local part="$(get_kwarg "$args" "part" "")";
-    local key="$(get_kwarg "$args" "key" "")";
-    local pattern="$(get_kwarg "$args" "pattern" "")";
-
-    if [ "$part" == "container" ]; then
-        if [ "$key" == "" ]; then key="{{.Image}}"; fi
-        local format="{{.ID}}\t$key";
-        local lines="$(docker ps -a --format "$format")";
-    elif [ "$part" == "image" ]; then
-        if [ "$key" == "" ]; then key="{{.Repository}}"; fi
-        local format="{{.ID}}\t$key";
-        local lines="$(docker images -a --format "$format")";
-    else
-        _log_fail "Argument must be \033[93;1mcontainer\033[0m or \033[93;1mimage\033[0m!";
-    fi
-
-    while read -r line; do
-        local columns=( $line );
-        local id="${columns[0]}";
-        local value="${columns[1]}";
-        if ( echo "$value" | grep -E -q "$pattern" ); then echo $id; fi
-    done <<< "$lines";
-}
-
-function docker_get_id() {
-    local args="$@";
-    local part="$(get_kwarg "$args" "part" "")";
-    local key="$(get_kwarg "$args" "key" "")";
-    local pattern="$(get_kwarg "$args" "pattern" "")";
-
-    local ids=( $(docker_get_ids part="$part" key="$key" pattern="$pattern") );
-    if [ ${#ids[@]} -gt 0 ]; then
-        echo "${ids[0]}";
-    else
-        _log_error "Could not find $part with $([ "$key" == "" ] && echo "image name" || echo "$key") matching \033[93;1m$pattern\033[0m.";
-        return 1;
-    fi
-}
-
-function docker_get_container_id_base() {
-    docker_get_id part=container key="{{.Image}}" pattern="^$DOCKER_IMAGE:$DOCKER_TAG_BASE$" || echo "";
-}
-
-function docker_get_image_id_base() {
-    docker_get_id_from_image_tag "$DOCKER_IMAGE:$DOCKER_TAG_BASE";
-}
-
-function docker_get_id_from_image_tag() {
-    docker_get_id part=image key="{{.Repository}}:{{.Tag}}" pattern="^$1$" || echo "";
-}
-
-function docker_exists_image_tag() {
-    docker_get_id part=image key="{{.Repository}}:{{.Tag}}" pattern="^$1$" 2> $VERBOSE >> $VERBOSE && return 0 || return 1;
-}
-
-function docker_get_image_name_latest_stage() {
-    local tag="$1";
-    if [ "$tag" == "explore" ] && ! ( docker_exists_image_tag "$DOCKER_IMAGE:$tag" ); then tag="pipe"; fi
-    if [ "$tag" == "pipe" ] && ! ( docker_exists_image_tag "$DOCKER_IMAGE:$tag" ); then tag="$DOCKER_TAG_BASE"; fi
-    echo "$DOCKER_IMAGE:$tag";
-}
-
-function docker_is_container_stopped() {
-    local id="$1";
-    container_is_running="$(docker container inspect -f '{{.State.Running}}' $id 2> $VERBOSE || echo "")";
-    container_state="$(docker container inspect -f '{{.State.Status}}' $id 2> $VERBOSE || echo "")";
-    ## if empty status, then container does not exist --> "stopped":
-    if [ "$container_is_running" == "" ] && [ "$container_state" == "" ]; then return 0; fi
-    ## else check values:
-    [ "$container_is_running" == "false" ] && [ "$container_state" == "exited" ] && return 0 || return 1;
-}
-
-function wait_for_container_to_stop() {
-    local name="$1";
-    local displayed=false;
-    # tput civis; # cursor invisible
-    while ! ( docker_is_container_stopped "$name" ); do
-        if [ "$displayed" == "false" ]; then
-            _log_info "pending... $PENDING_SYMBOL" "true";
-            displayed=true;
-        else
-            _cli_trailing_message "$PENDING_SYMBOL";
-        fi
-        sleep $WAIT_PERIOD_IN_SECONDS;
-    done
-    # tput cnorm; # cursor visible
-    [ "$displayed" == "true" ] && _cli_trailing_message "\n";
-}
-
-function docker_create_unused_container_name() {
-    local name="$DOCKER_CONTAINER_TEMP";
-    k=0;
-    while ( docker ps -a --format '{{.Names}}' | grep -E -q "^${name}_${k}$" ); do k=$(( $k + 1 )); done;
-    echo "${name}_${k}";
-}
-
-function docker_remove_ids() {
-    local args="$@";
-    local part="$(get_kwarg "$args" "part" "")";
-    local key="$(get_kwarg "$args" "key" "")";
-    local pattern="$(get_kwarg "$args" "pattern" "")";
-
-    local ids="$(docker_get_ids part="$part" key="$key" pattern="$pattern")";
-    for id in ${ids[@]}; do
-        if [ "$part" == "container" ]; then
-            docker_remove_container "$id" && _log_info "Removed $part with id \033[93;1m$id\033[0m." || _log_error "Could not remove $part with id \033[93;1m$id\033[0m.";
-        elif [ "$part" == "image" ]; then
-            docker_remove_image "$id" && _log_info "Removed $part with id \033[93;1m$id\033[0m." || _log_error "Could not remove $part with id \033[93;1m$id\033[0m.";
-        fi
-    done
-    if [ ${#ids[@]} -eq 0 ]; then _log_info "No containers were found."; fi
-}
-
-function docker_remove_container() {
-    local container="$1";
-    docker stop $container && docker rm "$container" 2> $VERBOSE >> $VERBOSE;
-}
-
-function docker_remove_image() {
-    local image="$1";
-    docker rmi -f "$image" >> $VERBOSE 2> $VERBOSE >> $VERBOSE;
-}
-
-function docker_remove_all_containers() {
-    while read line; do
-        if [ "$line" == "" ]; then continue; fi
-        local columns=( $line );
-        local id="${columns[0]}";
-        local names="${columns[1]}";
-        local image="${columns[2]}";
-        _log_info "- \033[91mremove\033[0m container $names ($id) ---> has image $image";
-        docker stop $id && docker rm $id 2> $VERBOSE;
-    done <<< "$( docker ps -a --format '{{.ID}}\t{{.Names}}\t{{.Image}}' )";
-}
-
-function docker_remove_all_images() {
-    while read line; do
-        if [ "$line" == "" ]; then continue; fi
-        local columns=( $line );
-        local id="${columns[0]}";
-        local image="${columns[1]}";
-        local tag="${columns[2]}";
-        _log_info "- \033[91mremove\033[0m image $image:$tag ($id)";
-        docker rmi -f $id 2> $VERBOSE;
-    done <<< "$( docker images -a --format '{{.ID}}\t{{.Repository}}\t{{.Tag}}' )";
-}
-
-##############################################################################
 # MAIN METHODS: PROCESSES
 ##############################################################################
 
@@ -606,7 +359,7 @@ function run_main() {
 function run_explore_console() {
     ## start interaction:
     _log_info "READY TO EXPLORE.";
-    $DOCKER_CMD_EXPLORE;
+    $CMD_EXPLORE;
 }
 
 function run_clean_docker() {

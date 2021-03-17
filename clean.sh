@@ -12,12 +12,13 @@
 #    ...
 ##############################################################################
 
-SCRIPTARGS="$@";
-FLAGS=( $@ );
+local SCRIPTARGS="$@";
+local FLAGS=( $@ );
 
-. .lib.sh;
+source whales_setup/.lib.whales.sh;
+source whales_setup/.lib.sh;
 
-mode="$( get_one_kwarg_space "$SCRIPTARGS" "-+mode" "")";
+local mode="$( get_one_kwarg_space "$SCRIPTARGS" "-+mode" "")";
 
 if [ "$mode" == "docker" ]; then
     run_clean_docker;
