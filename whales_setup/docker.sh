@@ -25,7 +25,7 @@
 
 SCRIPTARGS="$@";
 
-source whales_setup/.lib.sh;
+source whales_setup/.lib.whales.sh;
 
 set_base_tag "$( get_one_kwarg_space "$SCRIPTARGS" "-+base" )";
 

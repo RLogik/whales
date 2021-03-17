@@ -12,13 +12,13 @@
 #    ...
 ##############################################################################
 
-local SCRIPTARGS="$@";
-local FLAGS=( $@ );
+SCRIPTARGS="$@";
+FLAGS=( $@ );
 
 source whales_setup/.lib.whales.sh;
 source whales_setup/.lib.sh;
 
-local mode="$( get_one_kwarg_space "$SCRIPTARGS" "-+mode" "")";
+mode="$( get_one_kwarg_space "$SCRIPTARGS" "-+mode" "")";
 
 if [ "$mode" == "setup" ]; then
     # call_within_docker <base_tag> <tag>     <save> <it>  <expose_ports> <script>  <params>

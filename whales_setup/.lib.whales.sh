@@ -475,7 +475,11 @@ function run_docker_start() {
         service="$DOCKER_TAG_BASE"; ## <-- tag_name coincides with container name in docker-compose.
     fi
     _log_info "START DOCKER SERVICE \033[92;1m$service\033[0m.";
-    docker_compose up --build $service;
+    local success=false;
+    docker_compose up --build $service && success=true;
+    if ! ( $success ); then
+        _log_fail "Usage of docker-compose resulted in failure.";
+    fi
 }
 
 function run_docker_stop_down() {

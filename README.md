@@ -11,8 +11,7 @@ Docker presents itself as a universal, easily accessible solution, with a minima
 
 ```
  /¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\       v ˇ
- | New message:
- | Hello world!
+ | There be whales!
  \______  __________/
         \ |                      .
          \|                    ==
@@ -32,8 +31,8 @@ Docker presents itself as a universal, easily accessible solution, with a minima
 
     ```bash
     chmod +x *.sh; # grant execution rights to the shell scripts
-    ./hello.sh "Hello world\!" # Do not write "!"
-    ./hello.sh "I am a whale"
+    ./hello.sh "Captain..."
+    ./hello.sh "There be whales\!" # NOTE: Do not write "!"
     ```
 
     If performed correctly, first the docker image will be created.
@@ -52,7 +51,7 @@ Docker presents itself as a universal, easily accessible solution, with a minima
 
 ## Status and cleaning ##
 
-Call `. .docker.sh --status` to view the status of the containers and images.
+Call `. whales_setup/docker.sh --status` to view the status of the containers and images.
 For example after the above hello-world example, the status looks like this:
 
 ```
@@ -67,6 +66,6 @@ efxxxxxxxxx2   whales       explore   101MB     2021-xxxxx:15:19
 d6xxxxxxxxx2   whales       hello     101MB     2021-xxxxx:14:57
 ```
 
-Call `. .docker.sh --clean` to clean all whale-containers and whale-images.
+Call `. whales_setup/docker.sh --clean` to clean all whale-containers and whale-images.
 
-Call `. .docker.sh --clean-all` to clean all containers and images.
+Call `. whales_setup/docker.sh --clean-all` to clean all containers and images.

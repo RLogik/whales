@@ -12,4 +12,4 @@ COPY . $WD
 WORKDIR $WD
 ## NOTE: To avoid writing lots of awkward commands here, one can pack themm in a bash script
 ## and (depending on the docker image) run the bash script within the container.
-RUN cat .docker-entry.sh | dos2unix | bash
+RUN cat whales_setup/docker-entry.sh | dos2unix | bash
