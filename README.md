@@ -79,19 +79,7 @@ Call `. whales_setup/docker.sh --clean-all` to clean all containers and images.
     and
     [whales_setup/Dockerfile](whales_setup/Dockerfile)
     to suit the needs of your application.
-3. Within scripts for processes you intend to start in a docker service, add
-
-    ```bash
-    source whales_setup/.lib.whales.sh;
-    source whales_setup/.lib.sh;
-    ```
-
-    to the start of your script.
-    Prepend commands to be called within docker services with the `call_within_docker` command.
-    See the existing scripts in this repository (`build.sh`, `test.sh`) for examples.
-    Refer also to the section
-        [_How to modify bash scripts_](#how-to-modify-bash-scripts-to-work-with-whales)
-    below.
+3. Modify process scripts (see section [_How to modify bash scripts_](#how-to-modify-bash-scripts-to-work-with-whales)).
 
 See also the subfolders in [/examples](examples) for further implementation examples of projects with Whales.
 
@@ -146,8 +134,8 @@ SCRIPTARGS="$@";
 source whales_setup/.lib.whales.sh;
 source whales_setup/.lib.sh;
 
-# call_within_docker <base_tag> <tag>     <save> <it>  <expose_ports> <script>  <params>
-call_within_docker   "prod"     "setup"   false  false true           "build.sh" $SCRIPTARGS;
+# call_within_docker <base_tag> <tag>   <save> <it>  <expose_ports> <script>   <params>
+call_within_docker   "prod"     "setup" false  false true           "build.sh" $SCRIPTARGS;
 
 python3 -m pip install tensorflow;
 python3 src/main.py
