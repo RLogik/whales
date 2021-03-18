@@ -35,7 +35,7 @@ export DOCKER_SERVICE_MAIN="$( env_var DOCKER_IMAGE )";
 export DOCKER_IMAGE="$( env_var DOCKER_IMAGE )";
 export DOCKER_CONTAINER_TEMP="$( env_var DOCKER_IMAGE )_temp";
 export FILE_DOCKER_DEPTH="whales_setup/DOCKER_DEPTH";
-export DOCKER_TAG_BASE="base";
+export DOCKER_TAG_BASE="base"; # <-- NOTE: this gets changed dynamically.
 export DOCKER_TAG_EXPLORE="explore";
 # NOTE: do not use /bin/bash. Results in error under Windows.  Use \/bin\/bash, bash, sh -c bash, or sh.
 export DOCKER_CMD_EXPLORE="bash";
@@ -312,8 +312,7 @@ function docker_exists_image_tag() {
 
 function docker_get_image_name_latest_stage() {
     local tag="$1";
-    if [ "$tag" == "explore" ] && ! ( docker_exists_image_tag "$DOCKER_IMAGE:$tag" ); then tag="pipe"; fi
-    if [ "$tag" == "pipe" ] && ! ( docker_exists_image_tag "$DOCKER_IMAGE:$tag" ); then tag="$DOCKER_TAG_BASE"; fi
+    if ! ( docker_exists_image_tag "$DOCKER_IMAGE:$tag" ); then tag="$DOCKER_TAG_BASE"; fi
     echo "$DOCKER_IMAGE:$tag";
 }
 
@@ -469,11 +468,7 @@ function call_within_docker() {
 ##############################################################################
 
 function run_docker_start() {
-    local service="$DOCKER_SERVICE_MAIN";
-    if ! [ "$DOCKER_TAG_BASE" == "" ]; then
-        # service="$service:$DOCKER_TAG_BASE";
-        service="$DOCKER_TAG_BASE"; ## <-- tag_name coincides with container name in docker-compose.
-    fi
+    local service="$DOCKER_TAG_BASE"; ## <-- tag_name coincides with container name in docker-compose.
     _log_info "START DOCKER SERVICE \033[92;1m$service\033[0m.";
     local success=false;
     docker_compose up --build $service && success=true;
@@ -489,7 +484,7 @@ function run_docker_stop_down() {
 
 function run_docker_clean() {
     docker_remove_ids part=container key="{{.Names}}"               pattern="^${DOCKER_CONTAINER_TEMP}($|_[0-9]+$)";
-    docker_remove_ids part=image     key="{{.Repository}}:{{.Tag}}" pattern="^$DOCKER_IMAGE:$DOCKER_TAG_EXPLORE$";
+    docker_remove_ids part=image     key="{{.Repository}}:{{.Tag}}" pattern="^$DOCKER_IMAGE:.+$";
     docker image prune -a --force; ## prunes any image non used by a container and any dangling images.
 }
 
