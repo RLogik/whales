@@ -97,8 +97,6 @@ See also the subfolders in [/examples](examples) for further implementation exam
 
 ## How to add Whales to existing projects ##
 
-### Modification to project structure ###
-
 1. Add the folder [/whales_setup](whales_setup) and a `.dockerignore` file (if one does not exist) to the root folder of your project.
     In `./.dockerignore` append the line
 
