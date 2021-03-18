@@ -9,7 +9,7 @@
 ##############################################################################
 
 SCRIPTARGS="$@";
-splitargs=( "$@" );
+FLAGS=( "$@" );
 
 source whales_setup/.lib.whales.sh;
 source whales_setup/.lib.sh;
@@ -17,7 +17,7 @@ source whales_setup/.lib.sh;
 base_tag="$( get_one_kwarg_space "$SCRIPTARGS" "-+base" "hello" )";
 FILE_MESSAGE="HELLO_WORLD";
 
-if ( has_arg "$SCRIPTARGS" "-+base" ); then SCRIPTARGS="${splitargs[@]:2}"; fi
+if ( has_arg "$SCRIPTARGS" "-+base" ); then SCRIPTARGS="${FLAGS[@]:2}"; fi
 if [ "$base_tag" == "hello" ] && ! [ -f "$FILE_MESSAGE" ]; then
     echo "cwd1 = $PWD";
     echo "(empty)" >| $FILE_MESSAGE;
