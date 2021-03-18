@@ -70,11 +70,33 @@ Call `. whales_setup/docker.sh --clean` to clean all whale-containers and whale-
 
 Call `. whales_setup/docker.sh --clean-all` to clean all containers and images.
 
-## Adding Whales to existing projects ##
+## How to start a project with Whales ##
+
+1. Clone this repository (and delete unnecessary subfolders like [/examples](examples)).
+2. Modify
+    [whales_setup/.env](whales_setup/.env),
+    [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml),
+    and
+    [whales_setup/Dockerfile](whales_setup/Dockerfile)
+    to suit the needs of your application.
+3. Within scripts for processes you intend to start in a docker service, add
+
+    ```bash
+    source whales_setup/.lib.whales.sh;
+    source whales_setup/.lib.sh;
+    ```
+
+    to the start of your script.
+    Prepend commands to be called within docker services with the `call_within_docker` command.
+    See the below examples and the existing scripts in this repository (`build.sh`, `test.sh`) for examples.
+
+See also the subfolders in [/examples](examples) for further implementation examples of projects with Whales.
+
+## How to add Whales to existing projects ##
 
 ### Modification to project structure ###
 
-Add the folder `/whales_setup` and add a `.dockerignore` file (if it does not exist) to the root folder of your project.
+Add the folder [/whales_setup](whales_setup) and add a `.dockerignore` file (if it does not exist) to the root folder of your project.
 In `./.dockerignore` append the line
 
 ```.dockerignore
@@ -171,20 +193,3 @@ fi
 
 **NOTE 2:** Set the `<save>` to true/false, depending upon whether you want to overwrite the state
 of the image after carrying out the commands/interactions in the docker container.
-
-## Starting a project with Whales ##
-
-1. Clone this repository.
-2. Modify `whales_setup/.env`, `whales_setup/docker-compose.yml`, and `whales_setup/Dockerfile` to suit your purposes.
-3. Within scripts for processes you intend to start in a docker service, add
-
-    ```bash
-    source whales_setup/.lib.whales.sh;
-    source whales_setup/.lib.sh;
-    ```
-
-    to the start of your script.
-    Prepend commands to be called within docker services with the `call_within_docker` command.
-    See the above examples and the existing scripts in this respository (`build.sh`, `test.sh`) for examples.
-
-The subfolders in `/examples` provide examples of implementations of Whales.
