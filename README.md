@@ -88,7 +88,10 @@ Call `. whales_setup/docker.sh --clean-all` to clean all containers and images.
 
     to the start of your script.
     Prepend commands to be called within docker services with the `call_within_docker` command.
-    See the below examples and the existing scripts in this repository (`build.sh`, `test.sh`) for examples.
+    See the existing scripts in this repository (`build.sh`, `test.sh`) for examples.
+    Refer also to the section
+        [_How to modify bash scripts_](#how-to-modify-bash-scripts-to-work-with-whales)
+    below.
 
 See also the subfolders in [/examples](examples) for further implementation examples of projects with Whales.
 
@@ -96,31 +99,34 @@ See also the subfolders in [/examples](examples) for further implementation exam
 
 ### Modification to project structure ###
 
-Add the folder [/whales_setup](whales_setup) and add a `.dockerignore` file (if it does not exist) to the root folder of your project.
-In `./.dockerignore` append the line
+1. Add the folder [/whales_setup](whales_setup) and a `.dockerignore` file (if one does not exist) to the root folder of your project.
+    In `./.dockerignore` append the line
 
-```.dockerignore
-!/whales_setup
-```
+    ```.dockerignore
+    !/whales_setup
+    ```
+2. Add services to [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml).
+    Take care to use the build context `..` (or `../path/to/subfolder`) instead of `.` (or `path/to/subfolder`).
+    For mounted volumes, again take care to relativise to the `whales_setup` subfolder
+    (_e.g._ `-./../src:$WD/src` and not `-src:$WD/src`).
+3. In [whales_setup/Dockerfile](whales_setup/Dockerfile),
+    provided the context in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml) has been set appropriately,
+    there should be no need to worry about relativising paths.
+4. Modify process scripts (see section [_How to modify bash scripts_](#how-to-modify-bash-scripts-to-work-with-whales)).
 
-### docker-copmpose.yml ###
+## How to modify bash scripts to work with Whales ##
 
-Add services to [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml).
-Take care to use the build context `..` (or `../path/to/subfolder`) instead of `.` (or `path/to/subfolder`).
-For mounted volumes, again take care to relativise to the `whales_setup` subfolder
-(_e.g._ `-./../src:$WD/src` and not `-src:$WD/src`).
+The `call_within_docker` command in [whales_setup/.lib.whales.sh](whales_setup/.lib.whales.sh) acts as a quasi decorator.
+When used, it
 
-### Dockerfile ###
+- interrupts a running script
+- checks whether currently inside the docker environment (by consulting a file `whales_setup/DOCKER_DEPTH`),
+- if already inside docker, it will return to the original script,
+- otherwise it will launch the appropriate docker container (with an image:tag name assigned to it) in the appropriate mode,
+and then call the original script within the container.
 
-In [whales_setup/Dockerfile](whales_setup/Dockerfile),
-provided the context in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml) has been set appropriately,
-there should be no need to worry about relativising paths.
-
-### Process scripts ###
-
-If you have existing bash scripts, _e.g._ `build.sh`, `test.sh`, _etc._
-in the root folder of your project,
-modify the file as follows:
+Modification of existing bash scripts, _e.g._ `build.sh`, `test.sh`, _etc._ in the root folder of your project
+are can be modified quite simply as the following example demonstrate.
 
 #### Example 1 ####
 
