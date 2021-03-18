@@ -105,15 +105,15 @@ In `./.dockerignore` append the line
 
 ### docker-copmpose.yml ###
 
-Add services to `whales_setup/docker-compose.yml`.
+Add services to [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml).
 Take care to use the build context `..` (or `../path/to/subfolder`) instead of `.` (or `path/to/subfolder`).
 For mounted volumes, again take care to relativise to the `whales_setup` subfolder
 (_e.g._ `-./../src:$WD/src` and not `-src:$WD/src`).
 
 ### Dockerfile ###
 
-In `whales_setup/Dockerfile`,
-provided the context in `whales_setup/docker-compose.yml` has been set appropriately,
+In [whales_setup/Dockerfile](whales_setup/Dockerfile),
+provided the context in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml) has been set appropriately,
 there should be no need to worry about relativising paths.
 
 ### Process scripts ###
