@@ -69,3 +69,122 @@ d6xxxxxxxxx2   whales       hello     101MB     2021-xxxxx:14:57
 Call `. whales_setup/docker.sh --clean` to clean all whale-containers and whale-images.
 
 Call `. whales_setup/docker.sh --clean-all` to clean all containers and images.
+
+## Adding Whales to existing projects ##
+
+### Modification to project structure ###
+
+Add the folder `/whales_setup` and add a `.dockerignore` file (if it does not exist) to the root folder of your project.
+In `./.dockerignore` append the line
+
+```.dockerignore
+!/whales_setup
+```
+
+### docker-copmpose.yml ###
+
+Add services to `whales_setup/docker-compose.yml`.
+Take care to use the build context `..` (or `../path/to/subfolder`) instead of `.` (or `path/to/subfolder`).
+For mounted volumes, again take care to relativise to the `whales_setup` subfolder
+(_e.g._ `-./../src:$WD/src` and not `-src:$WD/src`).
+
+### Dockerfile ###
+
+In `whales_setup/Dockerfile`,
+provided the context in `whales_setup/docker-compose.yml` has been set appropriately,
+there should be no need to worry about relativising paths.
+
+### Process scripts ###
+
+If you have existing bash scripts, _e.g._ `build.sh`, `test.sh`, _etc._
+in the root folder of your project,
+modify the file as follows:
+
+#### Example 1 ####
+
+Original bash file, `build.sh`:
+
+```bash
+#/bin/bash
+
+python3 -m pip install tensorflow;
+python3 src/main.py
+```
+
+This becomes:
+
+```bash
+#/bin/bash
+
+SCRIPTARGS="$@";
+source whales_setup/.lib.whales.sh;
+source whales_setup/.lib.sh;
+
+# call_within_docker <base_tag> <tag>     <save> <it>  <expose_ports> <script>  <params>
+call_within_docker   "prod"     "setup"   false  false true           "build.sh" $SCRIPTARGS;
+
+python3 -m pip install tensorflow;
+python3 src/main.py
+```
+
+**NOTE:** Replace `"prod"` by the appropriate service name in `whales_setup/docker-compose.yml`.
+
+#### Example 2 ####
+
+Original bash file, `test.sh`:
+
+```bash
+#/bin/bash
+
+mode="$1";
+if [ "$mode" == "interactive" ]; then
+    swipl -lq src/main.pl;
+else
+    swipl -fq src/main.pl -t halt;
+fi
+```
+
+This becomes:
+
+```bash
+#/bin/bash
+
+SCRIPTARGS="$@";
+FLAGS=( "$@" );
+
+source whales_setup/.lib.whales.sh;
+source whales_setup/.lib.sh;
+
+mode="${FLAGS[0]}";
+if [ "$mode" == "interactive" ]; then
+    # call_within_docker <base_tag> <tag>     <save> <it>  <expose_ports> <script>  <params>
+    call_within_docker   "test"     "explore" true   true  true           "test.sh" $SCRIPTARGS;
+    swipl -lq src/main.pl;
+else
+    # call_within_docker <base_tag> <tag>     <save> <it>  <expose_ports> <script>  <params>
+    call_within_docker   "test"     "explore" false  false true           "test.sh" $SCRIPTARGS;
+    swipl -fq src/main.pl -t halt;
+fi
+```
+
+**NOTE 1:** Replace `"test"` by the appropriate service name in `whales_setup/docker-compose.yml`.
+
+**NOTE 2:** Set the `<save>` to true/false, depending upon whether you want to overwrite the state
+of the image after carrying out the commands/interactions in the docker container.
+
+## Starting a project with Whales ##
+
+1. Clone this repository.
+2. Modify `whales_setup/.env`, `whales_setup/docker-compose.yml`, and `whales_setup/Dockerfile` to suit your purposes.
+3. Within scripts for processes you intend to start in a docker service, add
+
+    ```bash
+    source whales_setup/.lib.whales.sh;
+    source whales_setup/.lib.sh;
+    ```
+
+    to the start of your script.
+    Prepend commands to be called within docker services with the `call_within_docker` command.
+    See the above examples and the existing scripts in this respository (`build.sh`, `test.sh`) for examples.
+
+The subfolders in `/examples` provide examples of implementations of Whales.
