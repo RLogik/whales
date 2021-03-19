@@ -199,9 +199,10 @@ function _help_cli_key_description() {
 }
 
 function _help_cli_values() {
+    arguments=( "$@" );
     cmd="";
-    for arg in "$@"; do
-        if ! [ "$cmd" == "" ]; then cmd="$cmd|"; fi
+    for arg in "${arguments[@]}"; do
+        ! [ "$cmd" == "" ] && cmd="$cmd|";
         cmd="$cmd\033[92;1m$arg\033[0m";
     done
     echo "$cmd";
@@ -305,6 +306,21 @@ function docker_get_image_name_from_service() {
     done <<< "$( run_docker_compose images )";
 }
 
+function docker_get_image_name_of_service() {
+    local image_service="$( docker_get_image_name_from_service "$DOCKER_SERVICE" )";
+    [ "$image_service" == "" ] && _log_fail "Could not find service \033[1m$DOCKER_SERVICE\033[0m!";
+    echo "$image_service";
+}
+
+function get_container_patterns() {
+    local pattern="$DOCKER_CONTAINER_TEMP";
+    while read service; do
+        [ "$service" == "" ] && continue;
+        pattern="${pattern}|${WHALES_PATH}_${service}";
+    done <<< "$( docker_get_potential_services )";
+    echo "^($pattern)($|_[[:digit:]]+$)";
+}
+
 ##############################################################################
 # AUXILIARY METHODS: DOCKER, CONTAINERS & IMAGES
 ##############################################################################
@@ -314,24 +330,24 @@ function docker_get_ids() {
     local part="$(    get_kwarg "$args" "part"    "" )";
     local key="$(     get_kwarg "$args" "key"     "" )";
     local pattern="$( get_kwarg "$args" "pattern" "" )";
+    local lines="";
 
     if [   "$part" == "container" ]; then
         if [ "$key" == "" ]; then key="{{.Image}}"; fi
         local format="{{.ID}}\t$key";
-        local lines="$( docker ps -a --format "$format" )";
+        lines="$( docker ps -a --format "$format" )";
     elif [ "$part" == "image"     ]; then
         if [ "$key" == "" ]; then key="{{.Repository}}"; fi
         local format="{{.ID}}\t$key";
-        local lines="$( docker images -a --format "$format" )";
-    else
-        _log_fail "Argument must be \033[93;1mcontainer\033[0m or \033[93;1mimage\033[0m!";
+        lines="$( docker images -a --format "$format" )";
     fi
 
     while read -r line; do
+        [ "$line" == "" ] && continue;
         local columns=( $line );
         local id="${columns[0]}";
         local value="${columns[1]}";
-        if ( echo "$value" | grep -E -q "$pattern" ); then echo $id; fi
+        ( echo "$value" | grep -E -q "$pattern" ) && echo "$id";
     done <<< "$lines";
 }
 
@@ -341,37 +357,45 @@ function docker_get_id() {
     local key="$(     get_kwarg "$args" "key"     "" )";
     local pattern="$( get_kwarg "$args" "pattern" "" )";
 
-    local ids=( $( docker_get_ids part="$part" key="$key" pattern="$pattern" ) );
-    if [ ${#ids[@]} -gt 0 ]; then
-        echo "${ids[0]}";
-    else
-        _log_error "Could not find $part with $( [ "$key" == "" ] && echo "image name" || echo "$key" ) matching \033[93;1m$pattern\033[0m.";
-        return 1;
-    fi
+    while read id; do
+        [ "$id" == "" ] && continue;
+        echo "$id" && return;
+    done <<< "$( docker_get_ids part="$part" key="$key" pattern="$pattern" )";
+
+    local field="$( [ "$key" == "" ] && echo "image name" || echo "$key" )";
+    _log_fail "Could not find \033[1m$part\033[0m with \033[1m$field\033[0m matching /\033[93;1m$pattern\033[0m/.";
+}
+
+function docker_get_container_id_from_image_tag() {
+    docker_get_id part=container key="{{.Image}}" pattern="^$1$";
+}
+
+function docker_get_image_id_from_image_tag() {
+    docker_get_id part=image key="{{.Repository}}:{{.Tag}}" pattern="^$1$";
 }
 
 function docker_get_container_id_service() {
-    local name="$( docker_get_image_name_from_service "$DOCKER_SERVICE" )";
-    docker_get_id part=container key="{{.Image}}" pattern="^$name$" || echo "";
+    local image_service="$( docker_get_image_name_of_service 2> $VERBOSE )";
+    [ "$image_service" == "" ] && _log_fail "Could not find container associated to service!";
+    docker_get_container_id_from_image_tag "$image_service";
 }
 
 function docker_get_image_id_service() {
-    local name="$( docker_get_image_name_from_service "$DOCKER_SERVICE" )";
-    docker_get_id_from_image_tag "$name";
-}
-
-function docker_get_id_from_image_tag() {
-    docker_get_id part=image key="{{.Repository}}:{{.Tag}}" pattern="^$1$" || echo "";
+    local image_service="$( docker_get_image_name_of_service 2> $VERBOSE )";
+    [ "$image_service" == "" ] && _log_fail "Could not find image associated to service!";
+    docker_get_image_id_from_image_tag "$image_service";
 }
 
 function docker_exists_image_tag() {
-    docker_get_id part=image key="{{.Repository}}:{{.Tag}}" pattern="^$1$" 2> $VERBOSE >> $VERBOSE && return 0 || return 1;
+    [ "$1" == "" ] && return 1;
+    id="$( docker_get_image_id_from_image_tag "$1" 2> $VERBOSE )";
+    [ "$id" == "" ] && return 1 || return 0;
 }
 
 function docker_get_image_name_latest_stage() {
     local image="$1";
     if ! ( docker_exists_image_tag "$image" ); then
-        local image_service="$( docker_get_image_name_from_service "$DOCKER_SERVICE" )";
+        local image_service="$( docker_get_image_name_from_service "$DOCKER_SERVICE" 2> $VERBOSE )";
         [ "$image_service" == "" ] && _log_fail "Could not find docker image \033[1m$image\033[0m or base image \033[1m$image_service\033[0m!";
         image="$image_service";
     fi
@@ -416,35 +440,44 @@ function wait_for_container_to_stop() {
 
 function docker_remove_container() {
     local container="$1";
-    docker stop "$container" && docker rm "$container" 2> $VERBOSE >> $VERBOSE;
+    docker stop "$container" && docker rm "$container";
 }
 
 function docker_remove_image() {
     local image="$1";
-    docker rmi -f "$image" 2> $VERBOSE >> $VERBOSE;
+    docker rmi -f "$image";
 }
 
-function docker_remove_ids() {
+function docker_remove_some_containers() {
     local args="$@";
-    local part="$(    get_kwarg "$args" "part"    "" )";
     local key="$(     get_kwarg "$args" "key"     "" )";
     local pattern="$( get_kwarg "$args" "pattern" "" )";
 
-    local ids="$( docker_get_ids part="$part" key="$key" pattern="$pattern" )";
-    [ ${#ids[@]} -eq 0 ] && _log_info "No containers were found." && return;
-    if [   "$part" == "container" ]; then
-        for id in "${ids[@]}"; do
-            docker_remove_container "$id" \
-            && _log_info "Removed $part with id \033[93;1m$id\033[0m." \
-            || _log_error "Could not remove $part with id \033[93;1m$id\033[0m.";
-        done
-    elif [ "$part" == "image"     ]; then
-        for id in "${ids[@]}"; do
-            docker_remove_image     "$id" \
-            && _log_info "Removed $part with id \033[93;1m$id\033[0m." \
-            || _log_error "Could not remove $part with id \033[93;1m$id\033[0m.";
-        done
-    fi
+    local found=false;
+    while read id; do
+        [ "$id" == "" ] && continue;
+        found=true;
+        docker_remove_container "$id" 2> $VERBOSE >> $VERBOSE                      \
+            && _log_info  "Removed \033[1mcontainer\033[0m with id \033[1m$id\033[0m." \
+            || _log_error "Could not remove \033[1mcontainer\033[0m with id \033[1m$id\033[0m.";
+    done <<< "$( docker_get_ids part=container key="$key" pattern="$pattern" )";
+    ! ( $found ) && _log_info "No containers were found.";
+}
+
+function docker_remove_some_images() {
+    local args="$@";
+    local key="$(     get_kwarg "$args" "key"     "" )";
+    local pattern="$( get_kwarg "$args" "pattern" "" )";
+
+    local found=false;
+    while read id; do
+        [ "$id" == "" ] && continue;
+        found=true;
+        docker_remove_image "$id" 2> $VERBOSE >> $VERBOSE                          \
+            &&  _log_info "Removed \033[1mimage\033[0m with id \033[1m$id\033[0m." \
+            || _log_error "Could not remove \033[1mimage\033[0m with id \033[1m$id\033[0m.";
+    done <<< "$( docker_get_ids part=image key="$key" pattern="$pattern" )";
+    ! ( $found ) && _log_info "No images were found.";
 }
 
 function docker_remove_all_containers() {
@@ -504,17 +537,23 @@ function select_service() {
 # returns to script, or starts docker and calls script within docker.
 #
 # Usage:
-#    call_within_docker <service> <tag> <save> <it> <expose_ports> <script> <params>
+#    call_within_docker <service> <tag-sequence> <save> <it> <expose> <script> <params>
 #
 # Arguments:
-#        service <string>     The name of the service in whales_setup/docker-compose.yml.
-#        tag <string>         The name of the tag to be assigned to the image created.
-#        save <bool>          Whether the created image is to be saved after creation
-#                               / after interactive container containing image is exitted.
-#        it <bool>            Whether the container is to be run interactive mode.
-#        expose_ports <bool>  Whether ports are to be exposed.
-#        script <string>      Path to script to be carried out in docker container.
-#        params <strings>     CLI params to be passed to script.
+#    service <string>   The name of the service in whales_setup/docker-compose.yml.
+#    tag-seq <string>   Comma separated sequence of tags,
+#                         starting from the image-tag of the service
+#                         potentially going through intermediate stages,
+#                         ending with the desired image-tag to be applied when saving.
+#                       ~> "tagStart" is taken to be the latest possible tag in the list,
+#                          for which an image exists.
+#                       ~> "tagFinal" is taken to be the final tag in the list.
+#    save <bool>        Whether the created image is to be saved after creation
+#                         / after interactive container containing image is exitted.
+#    it <bool>          Whether the container is to be run interactive mode.
+#    expose <bool>      Whether ports are to be exposed.
+#    script <string>    Path to script to be carried out in docker container.
+#    params <strings>   CLI params to be passed to script.
 ####
 function call_within_docker() {
     local metaargs=( "$@" );
@@ -524,18 +563,17 @@ function call_within_docker() {
         return 0;
     else
         local service="${metaargs[0]}";
-        local tag="${metaargs[1]}";
+        local tags="${metaargs[1]}";
         local save=${metaargs[2]};
         local it=${metaargs[3]};
         local expose=${metaargs[4]};
-        local script="${metaargs[5]}";
-        local params="${metaargs[@]:6}";
+        local script="${metaargs[5]}";   # may not be empty.
+        local params="${metaargs[@]:6}"; # may be empty.
 
-        ## Set default values for empty arguments
-        [ "$tag" == "" ] && tag="$DOCKER_TAG_EXPLORE";
-        [ "$save" == "" ] && save=false;
-        [ "$it" == "" ] && it=false;
-        [ "$expose" == "" ] && expose=$it;
+        [ ${#metaargs[@]} -lt 6 ] && _log_fail "In whales decorator \033[1mcall_within_docker\033[0m not enough arguments passed.";
+        local regexTag="[^,]+";
+        ( ( echo "$tags" | grep -E -q "[[:space:]]" ) || ! ( echo "$tags" | grep -E -q "^${regexTag}(,${regexTag})+($|,\(${regexTag}\)$)" ) ) \
+            && _log_fail "In whales decorator \033[1mcall_within_docker\033[0m the \033[93;1m<tag-sequence>\033[0m argument must be a comma separated sequence of tags with no spaces and at least two elements."
 
         ## START/ENTER DOCKER:
         _log_info "YOU ARE OUTSIDE THE DOCKER ENVIRONMENT.";
@@ -544,16 +582,36 @@ function call_within_docker() {
         local container_service="$( docker_get_container_id_service 2> $VERBOSE )";
         [ "$container_service" == "" ] && _log_info "FORCE-BUILD DOCKER SERVICE." && run_docker_start;
 
-        ## SET ENTRY POINT:
-        local entry="$( docker_get_image_name_latest_stage "$DOCKER_IMAGE:$tag" 2> $VERBOSE )";
-        [ "$entry" == "" ] && _log_fail "In whales method \033[1mcall_within_docker\033[0m could not find image with tag \033[1m$tag\033[0m!";
+        ## DETERMINE ENTRY + EXIT IMAGES:
+        local tagParts=( ${tags//","/" "} );
+        local nTags=${#tagParts[@]};
+        local image_exit="";
+        local image_enter="";
+        local found_entry=false;
+        local i=0;
+        for (( i=$nTags-1; i >= 0; i-- )); do
+            local tag="${tagParts[$i]}";
+            if ( $i -eq $nTags - 1 ); then
+                image_exit="$DOCKER_IMAGE:$tag"
+                ## Do not allow final tag to be a start tag, unless it is contained in parantheses:
+                if ! ( echo "$tag" | grep "^\((.*)\)$" ); then continue; fi
+                ## strip parantheses and proceed to test for valid entry point:
+                tag="$( echo "$tag" | sed -E "s/^\((.*)\)$/\1/g" )";
+                image_exit="$DOCKER_IMAGE:$tag"
+            fi
+            image_enter="$DOCKER_IMAGE:$tag";
+            ( docker_exists_image_tag "$image_enter" ) && found_entry=true && break;
+        done
 
-        ## SET SAVE OPTION:
-        local save_arg="$( ( $save ) && echo "--save $DOCKER_IMAGE:$tag" || echo "" )";
+        ! ( $found_entry ) && _log_fail "Could not find an existing image in the list \033[1m$tags\033[0m.";
 
         ## RUN SCRIPT COMMAND WITHIN DOCKER:
         local command=". $script $params"; # alternative: "cat $script | dos2unix | bash -s -- $params";
-        enter_docker --service  "$service" --enter "$entry" --command \"$command\" --it $it --expose $expose $save_arg;
+        if ( $save ); then
+            enter_docker --service "$service" --enter "$image_enter" "$cmd_arg" --command \"$command\" --it $it --expose $expose --save "$image_exit";
+        else
+            enter_docker --service "$service" --enter "$image_enter" "$cmd_arg" --command \"$command\" --it $it --expose $expose;
+        fi
 
         ## EXIT: do not return to script
         exit 0;
@@ -561,27 +619,41 @@ function call_within_docker() {
 }
 
 ####
-# FLAGS
-# --service <string>    The name of the service in whales_setup/docker-compose.yml.
-# --enter <image:tag>   If argument left empty, will overwrite original.
-# [--command <string>]  Use to start container with a command.
-#                       Defaults to "bash", if left empty.
-# [--save]              If used, will save the container to an image upon completion.
-#   <image:tag>           If argument left empty, will overwrite original.
-# --it <bool>           Whether or not to run docker container interactive mode.
-#   false (default)       Docker will run discretely and logs will be followed.
-# --expose <bool>       Whether or not ports are to be exposed (should coincide with --it).
+# This method enters a container started from an image,
+# performs a command, and then saves the resulting image.
+# The following relations hold/are forced between the images:
+#
+#                   service image == entry image ---[ after container finished ]---> save image
+#       service image ---> ...  ---> entry image ---[ after container finished ]---> save image
+#
+# Usage:
+#    enter_docker
+#        --service <name> --enter <image:tag> [--save [<image:tag>]]
+#        --it <bool> --expose <bool>
+#        [--command <string>]
+#
+# Flags:
+#    --service <string>      The name of the service in whales_setup/docker-compose.yml.
+#    --enter <image:tag>     If argument left empty, will overwrite original.
+#    [--save [<image:tag>]]  If used, will save the container to an image upon completion.
+#                              (Default: coincides with --entry)
+#    --it <bool>             Whether or not to run docker container interactive mode.
+#      false (default)         Docker will run discretely and logs will be followed.
+#    --expose <bool>         Whether or not ports are to be exposed.
+#                              (Default: coincides with --it)
+#    [--command <string>]    Use to start container with a command.
+#                              (Default: "bash")
 ####
 function enter_docker() {
     local metaargs="$@";
     local service="$( get_one_kwarg_space "$metaargs" "-+service" ""      )";
     local entry="$(   get_one_kwarg_space "$metaargs" "-+enter"   ""      )";
+    local save_arg=false;
+    ( has_arg "$metaargs" "-+save" ) && save_arg=true;
+    local imageFinal="$(   get_one_kwarg_space "$metaargs" "-+save"    ""      )";
     local it=$(       get_one_kwarg_space "$metaargs" "-+it"      "false" );
     local expose=$(   get_one_kwarg_space "$metaargs" "-+expose"  ""      );
     local command="$( get_one_kwarg_space "$metaargs" "-+command" ""      )";
-    local save_arg=false;
-    if ( has_arg "$metaargs" "-+save" ); then save_arg=true; fi
-    local image="$(   get_one_kwarg_space "$metaargs" "-+save"    ""      )";
 
     _log_info "ENTER DOCKER ENVIRONMENT.";
     ## Get container of service (in order to connect mounted volumes):
@@ -590,12 +662,16 @@ function enter_docker() {
     [ "$container_service" == "" ] && _log_fail "In whales method \033[1menter_docker\033[0m could not find service \033[1m$service\033[0m!";
 
     ## Get image:tag for entry point:
-    [ "$entry" == "" ] && entry="$DOCKER_IMAGE:$DOCKER_TAG_EXPLORE";
     local entry_orig="$entry";
-    entry="$( docker_get_image_name_latest_stage "$entry" 2> $VERBOSE )";
-    [ "$entry" == "" ] && _log_fail "In whales method \033[1menter_docker\033[0m could not find image with tag \033[1m$tag\033[0m!";
+    if [ "$entry" == "" ]; then
+        ## only if "--entry" argument is missing / empty, force the explore tag:
+        entry="$DOCKER_IMAGE:$DOCKER_TAG_EXPLORE";
+        entry_orig="$entry";
+        entry="$( docker_get_image_name_latest_stage "$entry" 2> $VERBOSE )";
+    fi
+    ! ( docker_exists_image_tag "$entry" ) && _log_fail "In whales method \033[1menter_docker\033[0m could not find image with tag \033[1m$tag\033[0m!";
 
-    local id="$( docker_get_id_from_image_tag "$entry" 2> $VERBOSE )";
+    local id="$( docker_get_image_id_from_image_tag "$entry" 2> $VERBOSE )";
     [ "$id" == "" ] && _log_fail "In whales method \033[1menter_docker\033[0m could not find image for entry point, \033[1m$entry\033[0m!";
     _log_info "CONTINUE WITH IMAGE \033[92;1m$entry\033[0m (\033[93;1m$id\033[0m).";
 
@@ -603,6 +679,7 @@ function enter_docker() {
     [ "$save" == "" ] && save=false;
     [ "$command" == "" ] && command="$DOCKER_CMD_EXPLORE" && it=true;
     [ "$expose" == "" ] && expose=$it;
+    [ "$imageFinal" == "" ] && imageFinal="$entry_orig";
 
     ## Set ports command:
     local ports_option="$( ( $expose ) && echo "-p $DOCKER_PORTS" || echo "" )";
@@ -626,13 +703,13 @@ function enter_docker() {
 
     ## Save state upon exit:
     if ( $save_arg ); then
-        if [ "$image" == "" ] || [ "$image" == "$entry_orig" ]; then
-            image="$entry_orig";
-            _log_info "SAVE STATE TO \033[92;1m$image\033[0m (OVERWRITING).";
+        if [ "$imageFinal" == "$entry_orig" ]; then
+            imageFinal="$entry_orig";
+            _log_info "SAVE STATE TO \033[92;1m$imageFinal\033[0m (OVERWRITING).";
         else
-            _log_info "SAVE STATE TO \033[92;1m$image\033[0m.";
+            _log_info "SAVE STATE TO \033[92;1m$imageFinal\033[0m.";
         fi
-        docker commit "$container_tmp" $image >> $VERBOSE;
+        docker commit "$container_tmp" $imageFinal >> $VERBOSE;
     fi
     docker_remove_container "$container_tmp" 2> $VERBOSE >> $VERBOSE;
     _log_info "TEMPORARY CONTAINER \033[92;1m$container_tmp\033[0m TERMINATED.";
@@ -658,8 +735,8 @@ function run_docker_stop_down() {
 }
 
 function run_docker_clean() {
-    docker_remove_ids part=container key="{{.Names}}"               pattern="^${DOCKER_CONTAINER_TEMP}($|_[[:digit:]]+$)";
-    docker_remove_ids part=image     key="{{.Repository}}:{{.Tag}}" pattern="^$DOCKER_IMAGE:.+$";
+    docker_remove_some_containers key="{{.Names}}"               pattern="$( get_container_patterns )";
+    docker_remove_some_images     key="{{.Repository}}:{{.Tag}}" pattern="^$DOCKER_IMAGE:.+$";
     docker image prune -a --force; ## prunes any image non used by a container and any dangling images.
 }
 

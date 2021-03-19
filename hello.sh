@@ -15,14 +15,14 @@ ME="hello.sh";
 source whales_setup/.lib.whales.sh;
 source whales_setup/.lib.sh;
 
-SERVICE="$( get_one_kwarg_space "$SCRIPTARGS" "-+service" "hello" )";
+SERVICE="$( get_one_kwarg_space "$SCRIPTARGS" "-+service" "helloService" )";
 
 FILE_MESSAGE="HELLO_WORLD";
 
 ( has_arg "$SCRIPTARGS" "-+base" ) && SCRIPTARGS="${FLAGS[@]:2}";
 
-# call_within_docker <service> <tag>     <save> <it>  <expose_ports> <script> <params>
-call_within_docker  "$SERVICE" "explore" true   false false          "$ME"    "$SCRIPTARGS";
+# call_within_docker <service> <tag-sequence>  <save> <it>  <expose> <script> <params>
+call_within_docker  "$SERVICE" "hello,explore" true   false false    "$ME"    "$SCRIPTARGS";
 
 ! [ -f "$FILE_MESSAGE" ] && echo "(empty)" >| $FILE_MESSAGE;
 old_message="$(cat $FILE_MESSAGE)";

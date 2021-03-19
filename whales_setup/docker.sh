@@ -26,11 +26,13 @@ SCRIPTARGS="$@";
 
 source whales_setup/.lib.whales.sh;
 
-select_service "$( get_one_kwarg_space "$SCRIPTARGS" "-+service" )";
+local service="$( get_one_kwarg_space "$SCRIPTARGS" "-+service" )";
 
 if ( has_arg "$SCRIPTARGS" "-+(start|up)" ); then
+    select_service "$service";
     run_docker_start "$SCRIPTARGS";
 elif ( has_arg "$SCRIPTARGS" "-+(stop|down)" ); then
+    select_service "$service";
     run_docker_stop_down;
 elif ( has_arg "$SCRIPTARGS" "-+clean-all" ); then
     run_docker_clean_all;

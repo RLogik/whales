@@ -15,7 +15,7 @@
 SCRIPTARGS="$@";
 FLAGS=( $@ );
 ME="test.sh";
-SERVICE="test";
+SERVICE="testService";
 
 source whales_setup/.lib.whales.sh;
 source whales_setup/.lib.sh;
@@ -23,16 +23,16 @@ source whales_setup/.lib.sh;
 mode="$( get_one_kwarg_space "$SCRIPTARGS" "-+mode" "")";
 
 if [ "$mode" == "setup" ]; then
-    # call_within_docker <service>  <tag>     <save> <it>  <expose_ports> <script> <params>
-    call_within_docker   "$SERVICE" "setup"   true   true  true           "$ME"    $SCRIPTARGS;
+    # call_within_docker <service>  <tag-sequence> <save> <it>  <ports> <script> <params>
+    call_within_docker   "$SERVICE" "test,setup"   true   false true    "$ME"    $SCRIPTARGS;
     run_setup;
 elif [ "$mode" == "unit" ]; then
-    # call_within_docker <service>  <tag>     <save> <it>  <expose_ports> <script> <params>
-    call_within_docker   "$SERVICE" "unit"    false  false true           "$ME"    $SCRIPTARGS;
+    # call_within_docker <service>  <tag-sequence> <save> <it>  <ports> <script> <params>
+    call_within_docker   "$SERVICE" "setup,unit"   false  false true    "$ME"    $SCRIPTARGS;
     run_test_unit;
 elif [ "$mode" == "exlore" ]; then
-    # call_within_docker <service>  <tag>     <save> <it>  <expose_ports> <script> <params>
-    call_within_docker   "$SERVICE" "explore" false  true  true           "$ME"    $SCRIPTARGS;
+    # call_within_docker <service>  <tag-sequence>  <save> <it>  <ports> <script> <params>
+    call_within_docker   "$SERVICE" "setup,explore" false  true  true    "$ME"    $SCRIPTARGS;
     run_explore_console;
 else
     _log_error   "Invalid cli argument.";

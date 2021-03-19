@@ -169,9 +169,10 @@ function _help_cli_key_description() {
 }
 
 function _help_cli_values() {
+    arguments=( "$@" );
     cmd="";
-    for arg in "$@"; do
-        if ! [ "$cmd" == "" ]; then cmd="$cmd|"; fi
+    for arg in "${arguments[@]}"; do
+        ! [ "$cmd" == "" ] && cmd="$cmd|";
         cmd="$cmd\033[92;1m$arg\033[0m";
     done
     echo "$cmd";

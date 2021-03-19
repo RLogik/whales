@@ -114,7 +114,7 @@ and then call the original script within the container.
 Modification of existing bash scripts, _e.g._ `build.sh`, `test.sh`, _etc._ in the root folder of your project
 are can be modified quite simply as the following example demonstrate.
 
-#### Example 1 ####
+### Example 1 ###
 
 Original bash file, `build.sh`:
 
@@ -132,21 +132,21 @@ This becomes:
 
 SCRIPTARGS="$@";
 ME="build.sh";
-SERVICE="prod";
+SERVICE="prodService";
 
 source whales_setup/.lib.whales.sh;
 source whales_setup/.lib.sh;
 
-# call_within_docker <service>  <tag>   <save> <it>  <expose_ports> <script> <params>
-call_within_docker   "$SERVICE" "setup" false  false false          "$ME"    $SCRIPTARGS;
+# call_within_docker <service>  <tag-sequence> <save> <it>  <expose> <script> <params>
+call_within_docker   "$SERVICE" "prod,setup"   true   false false    "$ME"    $SCRIPTARGS;
 
 python3 -m pip install tensorflow;
 python3 src/main.py
 ```
 
-**NOTE:** Replace `"prod"` by the appropriate service name in `whales_setup/docker-compose.yml`.
+**NOTE:** Replace `"prodService"` by the appropriate service name in `whales_setup/docker-compose.yml`.
 
-#### Example 2 ####
+### Example 2 ###
 
 Original bash file, `test.sh`:
 
@@ -169,24 +169,83 @@ This becomes:
 SCRIPTARGS="$@";
 FLAGS=( "$@" );
 ME="test.sh";
-SERVICE="test";
+SERVICE="testService";
 
 source whales_setup/.lib.whales.sh;
 source whales_setup/.lib.sh;
 
 mode="${FLAGS[0]}";
 if [ "$mode" == "interactive" ]; then
-    # call_within_docker <service>  <tag>     <save> <it>  <expose_ports> <script> <params>
-    call_within_docker   "$SERVICE" "explore" true   true  true           "$ME"    $SCRIPTARGS;
+    # call_within_docker <service>  <tag-sequence>   <save> <it> <expose> <script> <params>
+    call_within_docker   "$SERVICE" "test,(explore)" true   true true     "$ME"    $SCRIPTARGS;
     swipl -lq src/main.pl;
 else
-    # call_within_docker <service> <tag>     <save> <it>  <expose_ports> <script> <params>
-    call_within_docker   "test"    "explore" false  false false          "$ME"    $SCRIPTARGS;
+    # call_within_docker <service>  <tag-sequence> <save> <it>  <expose> <script> <params>
+    call_within_docker   "$SERVICE" "test,explore" false  false true     "$ME"    $SCRIPTARGS;
     swipl -fq src/main.pl -t halt;
 fi
 ```
 
-**NOTE 1:** Replace `"test"` by the appropriate service name in `whales_setup/docker-compose.yml`.
+**NOTE 1:** Replace `"testService"` by the appropriate service name in `whales_setup/docker-compose.yml`.
 
 **NOTE 2:** Set the `<save>` argument to true/false, depending upon whether you want to save.
 If `save=true`, then when complete, the exited container will be committed to an image named `whales:<tag>`.
+
+### Sequence of images ###
+
+The `<tag-sequence>` argument is a comma separated list of tag-names,
+representing a route from the service image to the desired tag name of the save image (if at all desired).
+For example, suppose we have service called `boatsService` defined in `whales_setup/docker-compose.yml`
+to build an image with the designation `whales:boats`.
+And suppose we have some testing processes,
+
+- pre-compilation
+- compilation
+- unit-testing
+- e2e-testing
+- artefact-creation
+- explorative testing
+
+for which we wish to build images with the following dependencies:
+
+```
+    ( service )
+    whales:boats ____> whales:precompile ____> whales:compile ____> whales:unit ____> whales:e2e ____> whales:zip
+                              \                       \___________> whales:explore
+                               \_________> whales:explore
+```
+
+Then in our scripts the `<tag-sequence>` in the `call_within_docker` would be given as follows:
+
+```
+pre-compilation:     call_within_docker "boatsService" "boats,precompile"             true  false ...
+compilation:         call_within_docker "boatsService" "precompile,compile"           true  false ...
+unit-testing:        call_within_docker "boatsService" "compile,unit"                 true  false ...
+e2e-testing:         call_within_docker "boatsService" "unit,e2e"                     true  false ...
+artefact-creation:   call_within_docker "boatsService" "e2e,zip"                      false false ...
+explorative testing: call_within_docker "boatsService" "precompile,compile,(explore)" true  true ...
+```
+
+#### Syntax ####
+
+The `<tag-sequence>` argument must consist of at least two members, and be a comma-separated list.
+The last entry can be contained in parentheses. So
+
+- `"tag_1,tag_2,...,tag_n"`
+- `"tag_1,tag_2,...,(tag_n)"`
+
+are valid, provided `n`≥2.
+#### Interpretation ####
+
+- If the `<tag-sequence>` argument ist `"tag_1,tag_2,...,tag_n"`,
+    then the entry point will be taken to be the latest tag, `tag_i`, where `i` ∈ {1,2,...,`n`-1},
+    for which an image `<service>:tag_i` exists.
+    And the image name for saving will be `<service>:tag_n`.
+    That is, we allow up to the penultimate element in the list to be used as the starting point.
+- If the `<tag-sequence>` argument ist `"tag_1,tag_2,...,(tag_n)"`,
+    then the entry point will be taken to be the latest tag, `tag_i`, where `i` ∈ {1,2,...,`n`},
+    for which an image `<service>:tag_i` exists.
+    And the image name for saving will be `<service>:tag_n`.
+    That is, we allow up and including the finale element in the list to be used as the starting point.
+    If the starting point and saving point are the same, then saving simply means overwriting the image.
+- If no valid starting point is found, an error is thrown.
