@@ -369,7 +369,7 @@ function docker_exists_image_tag() {
 }
 
 function docker_get_image_name_latest_stage() {
-    local image="$DOCKER_IMAGE:$1";
+    local image="$1";
     if ! ( docker_exists_image_tag "$image" ); then
         local image_service="$( docker_get_image_name_from_service "$DOCKER_SERVICE" )";
         [ "$image_service" == "" ] && _log_fail "Could not find docker image \033[1m$image\033[0m or base image \033[1m$image_service\033[0m!";
@@ -541,13 +541,11 @@ function call_within_docker() {
         _log_info "YOU ARE OUTSIDE THE DOCKER ENVIRONMENT.";
         # Force start docker servic, if not already up:
         select_service "$service";
-        container_service="$( docker_get_container_id_service 2> $VERBOSE )";
+        local container_service="$( docker_get_container_id_service 2> $VERBOSE )";
         [ "$container_service" == "" ] && _log_info "FORCE-BUILD DOCKER SERVICE." && run_docker_start;
-        container_service="$( docker_get_container_id_service 2> $VERBOSE )";
-        [ "$container_service" == "" ] && _log_fail "In whales method \033[1mcall_within_docker\033[0m could not find service \033[1m$service\033[0m!";
 
         ## SET ENTRY POINT:
-        local entry="$( docker_get_image_name_latest_stage "$tag" 2> $VERBOSE )";
+        local entry="$( docker_get_image_name_latest_stage "$DOCKER_IMAGE:$tag" 2> $VERBOSE )";
         [ "$entry" == "" ] && _log_fail "In whales method \033[1mcall_within_docker\033[0m could not find image with tag \033[1m$tag\033[0m!";
 
         ## SET SAVE OPTION:
@@ -592,12 +590,10 @@ function enter_docker() {
     [ "$container_service" == "" ] && _log_fail "In whales method \033[1menter_docker\033[0m could not find service \033[1m$service\033[0m!";
 
     ## Get image:tag for entry point:
+    [ "$entry" == "" ] && entry="$DOCKER_IMAGE:$DOCKER_TAG_EXPLORE";
     local entry_orig="$entry";
-    if [ "$entry" == "" ]; then
-        entry_orig="$DOCKER_IMAGE:$DOCKER_TAG_EXPLORE";
-        entry="$( docker_get_image_name_latest_stage "$DOCKER_TAG_EXPLORE" 2> $VERBOSE )";
-        [ "$entry" == "" ] && _log_fail "In whales method \033[1menter_docker\033[0m could not find image with tag \033[1m$tag\033[0m!";
-    fi
+    entry="$( docker_get_image_name_latest_stage "$entry" 2> $VERBOSE )";
+    [ "$entry" == "" ] && _log_fail "In whales method \033[1menter_docker\033[0m could not find image with tag \033[1m$tag\033[0m!";
 
     local id="$( docker_get_id_from_image_tag "$entry" 2> $VERBOSE )";
     [ "$id" == "" ] && _log_fail "In whales method \033[1menter_docker\033[0m could not find image for entry point, \033[1m$entry\033[0m!";
