@@ -4,7 +4,7 @@
 #    DESCRIPTION: file for auxiliary functions for the main scripts.
 ##############################################################################
 
-source whales_setup/.logging.sh;
+source whales_setup/.lib.utils.sh;
 
 ##############################################################################
 # .ENV EXTRACTION
@@ -60,15 +60,15 @@ function is_linux() {
 ##############################################################################
 
 ## $1 = full argument string, $2 = argument.
-## example:
-## if (has_arg "$@" "help"); then ...
+## EXAMPLE:
+## if ( has_arg "$@" "help" ); then ...
 function has_arg() {
     echo "$1" | grep -E -q "^(.*\s|)$2(\s.*|)$" && return 0 || return 1;
 }
 
 ## $1 = full argument string, $2 = key, $3 = default value.
-## example:
-## value="$(get_kwarg "$@" "name" "N/A")";
+## EXAMPLE:
+## value="$( get_kwarg "$@" "name" "N/A" )";
 function get_kwarg() {
     value="$(echo "$1" | grep -E -q "(^.*\s|^)$2=" && echo "$1" | sed -E "s/(^.*[[:space:]]|^)$2=(\"([^\"]*)\"|\'([^\']*)\'|([^[:space:]]*)).*$/\3\4\5/g" || echo "")";
     echo $value | grep -E -q "[^[:space:]]" && echo "$value" || echo "$3";
@@ -81,7 +81,7 @@ function get_kwarg() {
 ## EXAMPLE:
 ## while read value; do
 ##     # do something with $value
-## done <<< "$(get_all_kwargs "$@" "--data=")";
+## done <<< "$( get_all_kwargs "$@" "--data=" )";
 function get_all_kwargs() {
     arguments="$1";
     key="$2";
