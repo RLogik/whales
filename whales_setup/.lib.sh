@@ -1,7 +1,11 @@
 #!/bin/bash
 
 ##############################################################################
-#    DESCRIPTION: file for auxiliary functions for the main scripts.
+# !!! When creating a Whales project, add to + change methods in this file !!!
+#
+#    DESCRIPTION: Library of methods specifically for the project.
+#    Include using source whales_setup/.lib.sh
+#
 ##############################################################################
 
 source whales_setup/.lib.utils.sh;

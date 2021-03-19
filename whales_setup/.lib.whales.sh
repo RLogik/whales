@@ -1,10 +1,12 @@
 #!/bin/bash
 
 ##############################################################################
-#    DESCRIPTION: file for auxiliary functions for the main scripts.
+#    DESCRIPTION: Library of methods for Whales
+#    Include using source whales_setup/.lib.whales.sh
 ##############################################################################
 
 source whales_setup/.lib.utils.sh;
+export WHALES_PATH="whales_setup";
 
 ##############################################################################
 # .ENV EXTRACTION
@@ -26,8 +28,6 @@ function env_var() {
 # GLOBAL VARIABLES
 ##############################################################################
 
-export WHALES_PATH="whales_setup";
-
 # extract from .env:
 export DOCKER_IP="$( env_var DOCKER_IP )";
 export DOCKER_HOST_PORT="$( env_var HOST_PORT )";
@@ -40,12 +40,9 @@ export DOCKER_PORTS="$DOCKER_IP:$DOCKER_HOST_PORT:$DOCKER_CONTAINER_PORT";
 
 export DOCKER_COMPOSE_YML="$WHALES_PATH/docker-compose.yml";
 export FILE_DOCKER_DEPTH="$WHALES_PATH/DOCKER_DEPTH";
+
 # NOTE: do not use /bin/bash. Results in error under Windows.  Use \/bin\/bash, bash, sh -c bash, or sh.
 export DOCKER_CMD_EXPLORE="bash";
-
-# periodic waiting time to check a process;
-export WAIT_PERIOD_IN_SECONDS=1;
-export PENDING_SYMBOL="#";
 
 ##############################################################################
 # FOR OS SENSITIVE COMMANDS
@@ -206,41 +203,6 @@ function _help_cli_values() {
         cmd="$cmd\033[92;1m$arg\033[0m";
     done
     echo "$cmd";
-}
-
-##############################################################################
-# AUXILIARY METHODS: PROGRESSBAR
-##############################################################################
-
-function show_progressbar() {
-    pid=$1 # Process Id of the previous running command
-
-    function shutdown() {
-        tput cnorm; # reset cursor
-    }
-
-    function cursorBack() {
-        echo -en "\033[$1D";
-    }
-
-    trap shutdown EXIT;
-
-    displayed=false;
-    # tput civis; # cursor invisible
-    while kill -0 $pid 2> $VERBOSE; do
-        if [ "$displayed" == "false" ]; then
-            _log_info "pending... $PENDING_SYMBOL" "true";
-            displayed=true;
-        else
-            _cli_trailing_message "$PENDING_SYMBOL";
-        fi
-        sleep $WAIT_PERIOD_IN_SECONDS;
-    done
-    # tput cnorm; # cursor visible
-    wait $pid;
-    success=$?;
-    [ "$displayed" == "true" ] && _cli_trailing_message "\n";
-    return $success;
 }
 
 ##############################################################################

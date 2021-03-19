@@ -1,7 +1,8 @@
 #!/bin/bash
 
 ##############################################################################
-#    DESCRIPTION: file for auxiliary functions for the main scripts.
+#    DESCRIPTION: Library of common utility functions.
+#    Include using source whales_setup/.lib.utils.sh
 ##############################################################################
 
 source whales_setup/.lib.logging.sh;
