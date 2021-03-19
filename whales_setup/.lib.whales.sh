@@ -591,7 +591,7 @@ function call_within_docker() {
         local i=0;
         for (( i=$nTags-1; i >= 0; i-- )); do
             local tag="${tagParts[$i]}";
-            if ( $i -eq $nTags - 1 ); then
+            if (( $i == $nTags - 1 )); then
                 image_exit="$DOCKER_IMAGE:$tag"
                 ## Do not allow final tag to be a start tag, unless it is contained in parantheses:
                 if ! ( echo "$tag" | grep "^\((.*)\)$" ); then continue; fi

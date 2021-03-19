@@ -21,7 +21,7 @@ source whales_setup/.lib.sh;
 
 mode="$(    get_one_kwarg_space "$SCRIPTARGS" "-+mode"    "" )";
 SERVICE="$( get_one_kwarg_space "$SCRIPTARGS" "-+service" "" )";
-TAG="$(     get_one_kwarg_space "$SCRIPTARGS" "-+tags"     "" )";
+TAGS="$(     get_one_kwarg_space "$SCRIPTARGS" "-+tags"     "" )";
 
 if [ "$mode" == "docker" ]; then
     select_service "$SERVICE";
@@ -31,7 +31,7 @@ elif [ "$mode" == "docker-all" ]; then
 elif [ "$mode" == "artefacts" ]; then
     select_service "$SERVICE";
     # call_within_docker <service> <tag-sequence> <save> <it>  <expose> <script> <params>
-    call_within_docker  "$SERVICE" "$TAG"         true   false false    "$ME"    "$SCRIPTARGS";
+    call_within_docker  "$SERVICE" "$TAGS"        true   false false    "$ME"    "$SCRIPTARGS";
     run_clean_artefacts;
 else
     _log_error   "Invalid cli argument.";

@@ -26,7 +26,7 @@ SCRIPTARGS="$@";
 
 source whales_setup/.lib.whales.sh;
 
-local service="$( get_one_kwarg_space "$SCRIPTARGS" "-+service" )";
+service="$( get_one_kwarg_space "$SCRIPTARGS" "-+service" )";
 
 if ( has_arg "$SCRIPTARGS" "-+(start|up)" ); then
     select_service "$service";
