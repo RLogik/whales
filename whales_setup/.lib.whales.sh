@@ -370,7 +370,7 @@ function docker_exists_image_tag() {
 
 function docker_get_image_name_latest_stage() {
     local image="$DOCKER_IMAGE:$1";
-    if ! ( docker_exists_image_tag "$value" ); then
+    if ! ( docker_exists_image_tag "$image" ); then
         local image_service="$( docker_get_image_name_from_service "$DOCKER_SERVICE" )";
         [ "$image_service" == "" ] && _log_fail "Could not find docker image \033[1m$image\033[0m or base image \033[1m$image_service\033[0m!";
         image="$image_service";
@@ -603,14 +603,10 @@ function enter_docker() {
     [ "$id" == "" ] && _log_fail "In whales method \033[1menter_docker\033[0m could not find image for entry point, \033[1m$entry\033[0m!";
     _log_info "CONTINUE WITH IMAGE \033[92;1m$entry\033[0m (\033[93;1m$id\033[0m).";
 
-    ## Set command, if empty:
-    if [ "$command" == "" ]; then
-        command="$DOCKER_CMD_EXPLORE";
-        it=true;
-    fi
-
-    ## Set expose option, if empty. True/false dep. on --it argument:
-    if ! [ "$expose" == "true" ] && ! [ "$expose" == "false" ]; then expose=$it; fi
+    ## Set arguments, if empty:
+    [ "$save" == "" ] && save=false;
+    [ "$command" == "" ] && command="$DOCKER_CMD_EXPLORE" && it=true;
+    [ "$expose" == "" ] && expose=$it;
 
     ## Set ports command:
     local ports_option="$( ( $expose ) && echo "-p $DOCKER_PORTS" || echo "" )";
@@ -619,12 +615,12 @@ function enter_docker() {
     # ENTER DOCKER: create container and run command
     local container_tmp="$( docker_create_unused_container_name )";
     _log_info "START TEMPORARY CONTAINER \033[92;1m$container_tmp\033[0m.";
-    if [ "$it" == "true" ]; then
+    if ( $it ); then
         _log_info "EXECUTE COMMAND {\033[93;1m$command\033[0m} INTERACTIVELY.";
-        docker run --name=$container_tmp $ports_option --volumes-from=$container_service:rw -it $id bash -c "$command";
+        docker run --name="$container_tmp" $ports_option --volumes-from="$container_service:rw" -it $id bash -c "$command";
     else
         _log_info "EXECUTE COMMAND {\033[93;1m$command\033[0m} NON-INTERACTIVELY.";
-        docker run --name=$container_tmp $ports_option --volumes-from=$container_service:rw -d $id bash -c "$command";
+        docker run --name="$container_tmp" $ports_option --volumes-from="$container_service:rw" -d $id bash -c "$command";
         docker logs --follow $container_tmp;
     fi
     _log_info "WAIT FOR CONTAINER \033[92;1m$container_tmp\033[0m TO STOP.";
@@ -640,9 +636,9 @@ function enter_docker() {
         else
             _log_info "SAVE STATE TO \033[92;1m$image\033[0m.";
         fi
-        docker commit $container_tmp $image >> $VERBOSE;
+        docker commit "$container_tmp" $image >> $VERBOSE;
     fi
-    docker_remove_container $container_tmp 2> $VERBOSE >> $VERBOSE;
+    docker_remove_container "$container_tmp" 2> $VERBOSE >> $VERBOSE;
     _log_info "TEMPORARY CONTAINER \033[92;1m$container_tmp\033[0m TERMINATED.";
 }
 
