@@ -11,7 +11,7 @@ Docker presents itself as a universal, easily accessible solution, with a minima
 
 ```
  /¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\       v ˇ
- | There be whales!
+ | Thar be whales!
  \______  __________/
         \ |                      .
          \|                    ==
@@ -32,7 +32,7 @@ Docker presents itself as a universal, easily accessible solution, with a minima
     ```bash
     chmod +x *.sh; # grant execution rights to the shell scripts
     ./hello.sh "Captain..."
-    ./hello.sh "There be whales\!" # NOTE: Do not write "!"
+    ./hello.sh "Thar be whales\!" # NOTE: Do not write "!"
     ```
 
     If performed correctly, first the docker image will be created.
@@ -55,15 +55,15 @@ Call `. whales_setup/docker.sh --status` to view the status of the containers an
 For example after the above hello-world example, the status looks like this:
 
 ```
-[INFO] Container states:
-CONTAINER ID   NAMES            IMAGE          SIZE                 STATUS
-3exxxxxxxxx2   whales_hello_1   whales:hello   0B (virtual 101MB)   Exited (0) 50 seconds ago
+Container states:
+CONTAINER ID   NAMES                  IMAGE          SIZE                 STATUS
+51xxxxxxxxx0   whales_setup_hello_1   whales:hello   0B (virtual 101MB)   Exited (0) 50 seconds ago
 
-[INFO] Images:
+Images:
 IMAGE ID       REPOSITORY   TAG       SIZE      CREATED AT
-efxxxxxxxxx2   whales       explore   101MB     2021-xxxxx:15:19
-53xxxxxxxxx8   <none>       <none>    101MB     2021-xxxxx:15:02
-d6xxxxxxxxx2   whales       hello     101MB     2021-xxxxx:14:57
+45xxxxxxxxx0   whales       explore   101MB     2021-xxxxxxxx:35:32
+0exxxxxxxxxd   <none>       <none>    101MB     2021-xxxxxxxx:35:24
+73xxxxxxxxxe   whales       hello     101MB     2021-xxxxxxxx:35:20
 ```
 
 Call `. whales_setup/docker.sh --clean` to clean all whale-containers and whale-images.
@@ -131,11 +131,14 @@ This becomes:
 #/bin/bash
 
 SCRIPTARGS="$@";
+ME="build.sh";
+SERVICE="prod";
+
 source whales_setup/.lib.whales.sh;
 source whales_setup/.lib.sh;
 
-# call_within_docker <base_tag> <tag>   <save> <it>  <expose_ports> <script>   <params>
-call_within_docker   "prod"     "setup" false  false true           "build.sh" $SCRIPTARGS;
+# call_within_docker <service>  <tag>   <save> <it>  <expose_ports> <script> <params>
+call_within_docker   "$SERVICE" "setup" false  false false          "$ME"    $SCRIPTARGS;
 
 python3 -m pip install tensorflow;
 python3 src/main.py
@@ -165,23 +168,25 @@ This becomes:
 
 SCRIPTARGS="$@";
 FLAGS=( "$@" );
+ME="test.sh";
+SERVICE="test";
 
 source whales_setup/.lib.whales.sh;
 source whales_setup/.lib.sh;
 
 mode="${FLAGS[0]}";
 if [ "$mode" == "interactive" ]; then
-    # call_within_docker <base_tag> <tag>     <save> <it>  <expose_ports> <script>  <params>
-    call_within_docker   "test"     "explore" true   true  true           "test.sh" $SCRIPTARGS;
+    # call_within_docker <service>  <tag>     <save> <it>  <expose_ports> <script> <params>
+    call_within_docker   "$SERVICE" "explore" true   true  true           "$ME"    $SCRIPTARGS;
     swipl -lq src/main.pl;
 else
-    # call_within_docker <base_tag> <tag>     <save> <it>  <expose_ports> <script>  <params>
-    call_within_docker   "test"     "explore" false  false true           "test.sh" $SCRIPTARGS;
+    # call_within_docker <service> <tag>     <save> <it>  <expose_ports> <script> <params>
+    call_within_docker   "test"    "explore" false  false false          "$ME"    $SCRIPTARGS;
     swipl -fq src/main.pl -t halt;
 fi
 ```
 
 **NOTE 1:** Replace `"test"` by the appropriate service name in `whales_setup/docker-compose.yml`.
 
-**NOTE 2:** Set the `<save>` to true/false, depending upon whether you want to overwrite the state
-of the image after carrying out the commands/interactions in the docker container.
+**NOTE 2:** Set the `<save>` argument to true/false, depending upon whether you want to save.
+If `save=true`, then when complete, the exited container will be committed to an image named `whales:<tag>`.

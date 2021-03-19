@@ -13,10 +13,9 @@ services:
       dockerfile: whales_setup/Dockerfile
       args:
         # MOUNTS_VOLUME: 0
-        WD: $WORK_DIR
-    ## only mount read-only files:
-    volumes:
-      - ./../HELLO_WORLD:$WORK_DIR/HELLO_WORLD:rw  ## <- r/w   allows for live developing
+        WD: $WD
+    # volumes:
+    #   - ./../HELLO_WORLD:$WD/HELLO_WORLD:rw  ## <- r/w   allows for live developing
     command:
       ["bash", "-c", "echo -e \"\\033[1mwhales:\\033[94mhello\\033[0m docker container ready\""]
   #---------------------------------------------------------#
@@ -29,16 +28,15 @@ services:
       dockerfile: whales_setup/Dockerfile
       args:
         # MOUNTS_VOLUME: 0
-        WD: $WORK_DIR
-    ## only mount read-only files:
+        WD: $WD
     volumes:
-      - ./../config.yml:$WORK_DIR/config.yml:ro
-      # - ./../logs:$WORK_DIR/logs:rw   ## <- (r/)w for logging between all docker levels.
-      # - ./../src:$WORK_DIR/src:rw     ## <- r/w   allows for live developing
-      # - ./../test:$WORK_DIR/test:rw   ##          ""
-      # - ./../data:$WORK_DIR/data:rw   ## <- r/w   data folder, images will be stored here.
-      # - ./../dist:$WORK_DIR/dist:rw   ## <- r/w   distribution folder, VERSION + Programm artefact.
-      # - ./../build:$WORK_DIR/build:rw ## <- (r/)w build folder -> artefact of Pyinstaller.
+      - ./../config.yml:$WD/config.yml:ro
+      # - ./../logs:$WD/logs:rw   ## <- (r/)w for logging between all docker levels.
+      # - ./../src:$WD/src:rw     ## <- r/w   allows for live developing
+      # - ./../test:$WD/test:rw   ##          ""
+      # - ./../data:$WD/data:rw   ## <- r/w   data folder, images will be stored here.
+      # - ./../dist:$WD/dist:rw   ## <- r/w   distribution folder, VERSION + Programm artefact.
+      # - ./../build:$WD/build:rw ## <- (r/)w build folder -> artefact of Pyinstaller.
     command:
       ["bash", "-c", "echo -e \"\\033[1mwhales:\\033[94mprod\\033[0m docker container ready\""]
   #---------------------------------------------------------#
@@ -51,15 +49,14 @@ services:
       dockerfile: whales_setup/Dockerfile
       args:
         # MOUNTS_VOLUME: 0
-        WD: $WORK_DIR
-    ## only mount read-only files:
+        WD: $WD
     volumes:
-      - ./../config-test.yml:$WORK_DIR/config.yml:ro
-      # - ./../logs:$WORK_DIR/logs:rw   ## <- (r/)w for logging between all docker levels.
-      # - ./../src:$WORK_DIR/src:rw     ## <- r/w   allows for live developing
-      # - ./../test:$WORK_DIR/test:rw   ##          ""
-      # - ./../data:$WORK_DIR/data:rw   ## <- r/w   data folder, images will be stored here.
-      # - ./../dist:$WORK_DIR/dist:rw   ## <- r/w   distribution folder, VERSION + Programm artefact.
-      # - ./../build:$WORK_DIR/build:rw ## <- (r/)w build folder -> artefact of Pyinstaller.
+      - ./../config-test.yml:$WD/config.yml:ro
+      # - ./../logs:$WD/logs:rw   ## <- (r/)w for logging between all docker levels.
+      # - ./../src:$WD/src:rw     ## <- r/w   allows for live developing
+      # - ./../test:$WD/test:rw   ##          ""
+      # - ./../data:$WD/data:rw   ## <- r/w   data folder, images will be stored here.
+      # - ./../dist:$WD/dist:rw   ## <- r/w   distribution folder, VERSION + Programm artefact.
+      # - ./../build:$WD/build:rw ## <- (r/)w build folder -> artefact of Pyinstaller.
     command:
       ["bash", "-c", "echo -e \"\\033[1mwhales:\\033[94mtest\\033[0m docker container ready\""]

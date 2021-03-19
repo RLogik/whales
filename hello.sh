@@ -5,32 +5,26 @@
 #
 #    Usage:
 #    ~~~~~~
-#    ./hello.sh [--base <tag>] "...message to be printed..."
+#    ./hello.sh [--service <name_of_service>] "...message to be printed..."
 ##############################################################################
 
 SCRIPTARGS="$@";
 FLAGS=( "$@" );
+ME="hello.sh";
 
 source whales_setup/.lib.whales.sh;
 source whales_setup/.lib.sh;
 
-base_tag="$( get_one_kwarg_space "$SCRIPTARGS" "-+base" "hello" )";
+SERVICE="$( get_one_kwarg_space "$SCRIPTARGS" "-+service" "hello" )";
+
 FILE_MESSAGE="HELLO_WORLD";
 
-if ( has_arg "$SCRIPTARGS" "-+base" ); then SCRIPTARGS="${FLAGS[@]:2}"; fi
-if [ "$base_tag" == "hello" ] && ! [ -f "$FILE_MESSAGE" ]; then
-    echo "cwd1 = $PWD";
-    echo "(empty)" >| $FILE_MESSAGE;
-fi
+( has_arg "$SCRIPTARGS" "-+base" ) && SCRIPTARGS="${FLAGS[@]:2}";
 
-## check if inside docker, if not then call script within docker:
-# call_within_docker <base_tag> <tag>                 <save> <it>  <expose_ports> <script>   <params>
-call_within_docker  "$base_tag" "$DOCKER_TAG_EXPLORE" true   false false          "hello.sh" "$SCRIPTARGS";
+# call_within_docker <service> <tag>     <save> <it>  <expose_ports> <script> <params>
+call_within_docker  "$SERVICE" "explore" true   false false          "$ME"    "$SCRIPTARGS";
 
-if ! [ -f "$FILE_MESSAGE" ]; then
-    echo "cwd2 = $PWD";
-    echo "(empty)" >| $FILE_MESSAGE;
-fi
+! [ -f "$FILE_MESSAGE" ] && echo "(empty)" >| $FILE_MESSAGE;
 old_message="$(cat $FILE_MESSAGE)";
 new_message="$SCRIPTARGS";
 echo "$new_message" >| $FILE_MESSAGE;

@@ -6,7 +6,7 @@
 #    Usage:
 #    ~~~~~~
 #    . .docker.sh
-#        --base <tag>
+#        --service <tag>
 #        [--start [--mount|--debug]]
 #        [--stop]
 #        [--status]
@@ -14,8 +14,7 @@
 #
 #    Cli options:
 #    ~~~~~~~~~~~~
-#    --base
-#       <tag>              (required) Name of base image's tag.
+#    --service <string>    Name of original service from which image is to be created / extended.
 #    --start               Builds docker service main.
 #    --stop                Stops all docker containers.
 #    --status              Gets status of all containers and images.
@@ -27,7 +26,7 @@ SCRIPTARGS="$@";
 
 source whales_setup/.lib.whales.sh;
 
-set_base_tag "$( get_one_kwarg_space "$SCRIPTARGS" "-+base" )";
+select_service "$( get_one_kwarg_space "$SCRIPTARGS" "-+service" )";
 
 if ( has_arg "$SCRIPTARGS" "-+(start|up)" ); then
     run_docker_start "$SCRIPTARGS";
@@ -43,7 +42,7 @@ else
     _log_error   "Invalid cli argument.";
     _cli_message "";
     _cli_message "  Call \033[1m./whales_setup/docker.sh\033[0m with the command";
-    _cli_message "    $( _help_cli_key_description "--base" "          " "<string> Tagname of base container in docker-compose.yml." )";
+    _cli_message "    $( _help_cli_key_description "--service" "       " "<string> Name of service in whales_setup/docker-compose.yml." )";
     _cli_message "  and with one of the following commands";
     _cli_message "    $( _help_cli_key_description "--status/state" "  " "Displays status of containers + images." )";
     _cli_message "    $( _help_cli_key_description "--start/up" "      " "Starts container." )";

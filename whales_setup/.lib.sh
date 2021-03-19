@@ -113,11 +113,11 @@ function _cli_message() {
 }
 
 function _log_info() {
-    _cli_message "[\033[94;1mINFO\033[0m] $1" "$2";
+    _cli_message "[\033[94;1mINFO\033[0m] $1" $2;
 }
 
 function _log_debug() {
-    _cli_message "[\033[95;1mDEBUG\033[0m] $1" "$2";
+    _cli_message "[\033[95;1mDEBUG\033[0m] $1" $2;
     if ! [ -f "$PATH_LOGS/$DEBUG" ]; then
         mkdir "$PATH_LOGS" 2> $VERBOSE;
         touch "$PATH_LOGS/$DEBUG";
@@ -126,7 +126,7 @@ function _log_debug() {
 }
 
 function _log_warn() {
-    _cli_message "[\033[93;1mWARNING\033[0m] $1" "$2";
+    _cli_message "[\033[93;1mWARNING\033[0m] $1" $2;
 }
 
 function _log_error() {
@@ -138,7 +138,7 @@ function _log_error() {
 }
 
 function _log_fail() {
-    _log_error "$1" "$2"
+    _log_error "$1" $2;
     exit 1;
 }
 
@@ -362,10 +362,6 @@ function run_explore_console() {
     $CMD_EXPLORE;
 }
 
-function run_clean_docker() {
-    . .docker.sh --clean;
-}
-
-function run_clean_docker_all() {
-    . .docker.sh --clean-all;
+function run_clean_artefacts() {
+    _log_warn "Clean process not yet implemented!";
 }
