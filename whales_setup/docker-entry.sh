@@ -35,7 +35,7 @@ ls -a .*.sh | xargs -i bash -c "chmod +x {}" 2> /dev/null;
 ################################################################
 
 ## add a few entries to bash-history:
-echo "cd /usr/apps/whales"     >> "$HOME/.bash_history";
+echo "cd $WD"                  >> "$HOME/.bash_history";
 echo "./build.sh --mode setup" >> "$HOME/.bash_history";
 echo "./test.sh  --mode setup" >> "$HOME/.bash_history";
 

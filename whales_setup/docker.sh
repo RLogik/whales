@@ -37,6 +37,7 @@ elif ( has_arg "$SCRIPTARGS" "-+(stop|down)" ); then
 elif ( has_arg "$SCRIPTARGS" "-+clean-all" ); then
     run_docker_clean_all;
 elif ( has_arg "$SCRIPTARGS" "-+clean" ); then
+    set_docker_service "$service" false;
     run_docker_clean;
 elif ( has_arg "$SCRIPTARGS" "-+(status|state)" ); then
     get_docker_state;

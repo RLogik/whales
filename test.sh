@@ -23,12 +23,12 @@ source whales_setup/.lib.whales.sh;
 mode="$( get_one_kwarg_space "$SCRIPTARGS" "-+mode" "")";
 
 if [ "$mode" == "setup" ]; then
-    # call_within_docker <service>  <tag-sequence> <save> <it>  <ports> <script> <params>
-    call_within_docker   "$SERVICE" "test,setup"   true   false true    "$ME"    $SCRIPTARGS;
+    # call_within_docker <service>  <tag-sequence>    <save> <it>  <ports> <script> <params>
+    call_within_docker   "$SERVICE" "build,setup"     true   false true    "$ME"    $SCRIPTARGS;
     run_setup;
 elif [ "$mode" == "unit" ]; then
-    # call_within_docker <service>  <tag-sequence> <save> <it>  <ports> <script> <params>
-    call_within_docker   "$SERVICE" "setup,unit"   false  false true    "$ME"    $SCRIPTARGS;
+    # call_within_docker <service>  <tag-sequence>    <save> <it>  <ports> <script> <params>
+    call_within_docker   "$SERVICE" "setup,unit"      false  false true    "$ME"    $SCRIPTARGS;
     run_test_unit;
 elif [ "$mode" == "exlore" ]; then
     # call_within_docker <service>  <tag-sequence>    <save> <it>  <ports> <script> <params>
