@@ -30,7 +30,7 @@ elif [ "$mode" == "run" ]; then
     # call_within_docker <service>  <tag-sequence>  <save> <it>  <expose> <script> <params>
     call_within_docker   "$SERVICE" "setup,run"     false  false true     "$ME"    $SCRIPTARGS;
     run_test;
-elif [ "$mode" == "exlore" ]; then
+elif [ "$mode" == "explore" ]; then
     # call_within_docker <service>  <tag-sequence>    <save> <it>  <expose> <script> <params>
     call_within_docker   "$SERVICE" "setup,(explore)" false  true  true     "$ME"    $SCRIPTARGS;
     run_explore_console;
