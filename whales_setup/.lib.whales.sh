@@ -583,3 +583,11 @@ function get_docker_state() {
     docker images -a --format 'table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}';
     _cli_message "";
 }
+
+function run_docker_enter() {
+    local service="$1";
+    local tag="$2";
+    image="$( docker_get_service_image "$service" )";
+    _log_info "ATTEMPTING TO ENTER \033[1m$image:$tag\033[0m.";
+    enter_docker --service "$service" --enter "$image:$tag" --it true;
+}
