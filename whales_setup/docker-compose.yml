@@ -9,10 +9,9 @@ services:
   helloService:
     image: whales-hello:build
     build:
-      context: .. # !!! important !!! Context = root of project.
+      context: ".." # !!! important !!! Context = root of project.
       dockerfile: whales_setup/Dockerfile
       args:
-        # MOUNTS_VOLUME: 0
         WD: $WD
     # volumes:
     #   - ./../HELLO_WORLD:$WD/HELLO_WORLD:rw  ## <- r/w   allows for live developing
@@ -24,10 +23,9 @@ services:
   prodService:
     image: whales-prod:build
     build:
-      context: .. # !!! important !!! Context = root of project.
+      context: ".." # !!! important !!! Context = root of project.
       dockerfile: whales_setup/Dockerfile
       args:
-        # MOUNTS_VOLUME: 0
         WD: $WD
     # volumes:
     #   - ./../logs:$WD/logs:rw   ## <- (r/)w for logging between all docker levels.
@@ -44,10 +42,9 @@ services:
   testService:
     image: whales-test:build
     build:
-      context: .. # !!! important !!! Context = root of project.
+      context: ".." # !!! important !!! Context = root of project.
       dockerfile: whales_setup/Dockerfile
       args:
-        # MOUNTS_VOLUME: 0
         WD: $WD
     # volumes:
     #   - ./../logs:$WD/logs:rw   ## <- (r/)w for logging between all docker levels.
