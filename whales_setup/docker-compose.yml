@@ -7,7 +7,7 @@ services:
   # CONTAINER: Hello World
   #---------------------------------------------------------#
   helloService:
-    image: $DOCKER_IMAGE:hello # tag must coincide with service name!
+    image: whales-hello:build
     build:
       context: .. # !!! important !!! Context = root of project.
       dockerfile: whales_setup/Dockerfile
@@ -17,12 +17,12 @@ services:
     # volumes:
     #   - ./../HELLO_WORLD:$WD/HELLO_WORLD:rw  ## <- r/w   allows for live developing
     command:
-      ["bash", "-c", "echo -e \"\\033[1mwhales:\\033[94mhello\\033[0m docker container ready\""]
+      ["bash", "-c", "echo -e \"Service \\033[1mhelloService\\033[0m built with image \\033[1mwhales-hello:build\\033[0m.\""]
   #---------------------------------------------------------#
   # CONTAINER: Production
   #---------------------------------------------------------#
   prodService:
-    image: $DOCKER_IMAGE:prod # tag must coincide with service name!
+    image: whales-prod:build
     build:
       context: .. # !!! important !!! Context = root of project.
       dockerfile: whales_setup/Dockerfile
@@ -38,12 +38,12 @@ services:
       # - ./../dist:$WD/dist:rw   ## <- r/w   distribution folder, VERSION + Programm artefact.
       # - ./../build:$WD/build:rw ## <- (r/)w build folder -> artefacts
     command:
-      ["bash", "-c", "echo -e \"\\033[1mwhales:\\033[94mprod\\033[0m docker container ready\""]
+      ["bash", "-c", "echo -e \"Service \\033[1mprodService\\033[0m built with image \\033[1mwhales-prod:build\\033[0m.\""]
   #---------------------------------------------------------#
   # CONTAINER: Test
   #---------------------------------------------------------#
   testService:
-    image: $DOCKER_IMAGE:test # tag must coincide with service name!
+    image: whales-test:build
     build:
       context: .. # !!! important !!! Context = root of project.
       dockerfile: whales_setup/Dockerfile
@@ -59,4 +59,4 @@ services:
       # - ./../dist:$WD/dist:rw   ## <- r/w   distribution folder, VERSION + Programm artefact.
       # - ./../build:$WD/build:rw ## <- (r/)w build folder -> artefacts
     command:
-      ["bash", "-c", "echo -e \"\\033[1mwhales:\\033[94mtest\\033[0m docker container ready\""]
+      ["bash", "-c", "echo -e \"Service \\033[1mtestService\\033[0m built with image \\033[1mwhales-test:build\\033[0m.\""]
