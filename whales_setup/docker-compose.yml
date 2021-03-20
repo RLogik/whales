@@ -36,7 +36,7 @@ services:
       # - ./../test:$WD/test:rw   ##          ""
       # - ./../data:$WD/data:rw   ## <- r/w   data folder, images will be stored here.
       # - ./../dist:$WD/dist:rw   ## <- r/w   distribution folder, VERSION + Programm artefact.
-      # - ./../build:$WD/build:rw ## <- (r/)w build folder -> artefact of Pyinstaller.
+      # - ./../build:$WD/build:rw ## <- (r/)w build folder -> artefacts
     command:
       ["bash", "-c", "echo -e \"\\033[1mwhales:\\033[94mprod\\033[0m docker container ready\""]
   #---------------------------------------------------------#
@@ -57,6 +57,6 @@ services:
       # - ./../test:$WD/test:rw   ##          ""
       # - ./../data:$WD/data:rw   ## <- r/w   data folder, images will be stored here.
       # - ./../dist:$WD/dist:rw   ## <- r/w   distribution folder, VERSION + Programm artefact.
-      # - ./../build:$WD/build:rw ## <- (r/)w build folder -> artefact of Pyinstaller.
+      # - ./../build:$WD/build:rw ## <- (r/)w build folder -> artefacts
     command:
       ["bash", "-c", "echo -e \"\\033[1mwhales:\\033[94mtest\\033[0m docker container ready\""]

@@ -12,13 +12,11 @@
 !/ISSUES.md
 !/LICENSE
 
+!/.lib.sh
 !/build.sh
 !/clean.sh
 !/hello.sh
 !/test.sh
-
-!/config.yml
-!/config-test.yml
 
 ################################################################################################################################
 # PROJECT FILES

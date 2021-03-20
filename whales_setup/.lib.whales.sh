@@ -532,12 +532,13 @@ function call_within_docker() {
         local script="${metaargs[5]}";   # may not be empty.
         local params="${metaargs[@]:6}"; # may be empty.
 
+        ## CHECK VALIDITY OF ARGUMENTS:
         [ ${#metaargs[@]} -lt 6 ] && _log_fail "In whales decorator \033[1mcall_within_docker\033[0m not enough arguments passed.";
         local regexTag="[^,]+";
         ( ( echo "$tags" | grep -E -q "[[:space:]]" ) || ! ( echo "$tags" | grep -E -q "^${regexTag}(,${regexTag})+($|,\(${regexTag}\)$)" ) ) \
             && _log_fail "In whales decorator \033[1mcall_within_docker\033[0m the \033[93;1m<tag-sequence>\033[0m argument must be a comma separated sequence of tags with no spaces and at least two elements."
 
-        ## START/ENTER DOCKER:
+        ## START/ENTER SERVICE:
         _log_info "YOU ARE OUTSIDE THE DOCKER ENVIRONMENT.";
         # Force start docker servic, if not already up:
         select_service "$service";
@@ -556,7 +557,7 @@ function call_within_docker() {
             if (( $i == $nTags - 1 )); then
                 image_exit="$DOCKER_IMAGE:$tag"
                 ## Do not allow final tag to be a start tag, unless it is contained in parantheses:
-                if ! ( echo "$tag" | grep "^\((.*)\)$" ); then continue; fi
+                if ! ( echo "$tag" | grep -E -q "^\((.*)\)$" ); then continue; fi
                 ## strip parantheses and proceed to test for valid entry point:
                 tag="$( echo "$tag" | sed -E "s/^\((.*)\)$/\1/g" )";
                 image_exit="$DOCKER_IMAGE:$tag"

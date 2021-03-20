@@ -1,14 +1,3 @@
-# Whales #
-
-This repository is designed to be a template to ‘dockerise’ coding repositories.
-When working collaboratively on a project, participants often have different operating systems and setups.
-This can be a real nightmare, especially when testing if your code behaves as intended.
-To bypass this, it is useful for all participants to be able to set up the same virtual environment with exactly the same settings,
-within which the project can be compiled, run, and tested.
-Docker presents itself as a universal, easily accessible solution, with a minimal setup effort.
-
-## Hello World Example ##
-
 ```
  /¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\       v ˇ
  | Thar be whales!
@@ -24,15 +13,28 @@ Docker presents itself as a universal, easily accessible solution, with a minima
 #######################################
 ```
 
+# Whales #
+
+This repository is designed to be a template to ‘dockerise’ coding repositories.
+When working collaboratively on a project, participants often have different operating systems and setups.
+This can be a real nightmare, especially when testing if your code behaves as intended.
+To bypass this, it is useful for all participants to be able to set up the same virtual environment with exactly the same settings,
+within which the project can be compiled, run, and tested.
+Docker presents itself as a universal, easily accessible solution, with a minimal setup effort.
+
+## Hello World Example ##
+
 1. Clone this repository.
 2. Ensure you have installed Docker and at least granted access to the folder in which the repository has been cloned.
 3. Ensure you have bash or bash for Windows.
-4. Navigate to the root path of the repository and execute the following commands in bash:
+4. Start the Docker application.
+5. Navigate to the root path of the repository and execute the following commands in bash:
 
     ```bash
     chmod +x *.sh; # grant execution rights to the shell scripts
-    ./hello.sh "Captain..."
-    ./hello.sh "Thar be whales\!" # NOTE: Do not write "!"
+    ./hello.sh "Captain, ...";
+    ./hello.sh "Thar be whales\!"; # NOTE: Do not write "!"
+    ./hello.sh "I am a humpback whale.";
     ```
 
     If performed correctly, first the docker image will be created.
@@ -40,11 +42,13 @@ Docker presents itself as a universal, easily accessible solution, with a minima
     and you will see two whales with messages `(blank)` and `Hello world!`.
     Then upon the second "hello" script execution, the docker image will be started in a container,
     and you will see two whales with messages `Hello world!` and `I am a whale`.
-    One should also see a file `HELLO_WORLD` in the root of the project,
+6. In [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml)
+    one can optionally uncomment the volume mounting and repeat steps 4–5 above.
+    One should now a file `HELLO_WORLD` in the root of the project,
     which will be modified as one calls the above commands.
     If one modifies this file, then calls the script, the modifications
     should display.
-5. If this works as described, then this means the scripts function correctly:
+7. If this works as described, then this means the scripts function correctly:
     Project users are able to start images with ease, execute methods within them
     (_e.g._ compilation of a code, execution of an algorithm, _etc._)
     and the results can be saved (optionally) for the next execution.

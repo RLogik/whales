@@ -12,8 +12,8 @@ SCRIPTARGS="$@";
 FLAGS=( "$@" );
 ME="hello.sh";
 
+source .lib.sh;
 source whales_setup/.lib.whales.sh;
-source whales_setup/.lib.sh;
 
 SERVICE="$( get_one_kwarg_space "$SCRIPTARGS" "-+service" "helloService" )";
 

@@ -16,8 +16,8 @@ SCRIPTARGS="$@";
 FLAGS=( $@ );
 ME="clean.sh";
 
+source .lib.sh;
 source whales_setup/.lib.whales.sh;
-source whales_setup/.lib.sh;
 
 mode="$(    get_one_kwarg_space "$SCRIPTARGS" "-+mode"    "" )";
 SERVICE="$( get_one_kwarg_space "$SCRIPTARGS" "-+service" "" )";
