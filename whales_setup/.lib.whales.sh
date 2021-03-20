@@ -9,212 +9,36 @@ source whales_setup/.lib.utils.sh;
 export WHALES_PATH="whales_setup";
 
 ##############################################################################
-# .ENV EXTRACTION
-##############################################################################
-
-function env_var() {
-    local file="$WHALES_PATH/.env";
-    local key="$1";
-    local pattern="^$key=(.*)$";
-    while read line; do
-        if ! ( echo "$line" | grep -E -q "$pattern" ); then continue; fi
-        echo "$( echo "$line" | sed -E "s/^$1=(.*)$/\1/g" )";
-        return;
-    done <<< "$( cat $file )";
-    _log_fail "Argument \033[93;1m$key\033[0m not found in \033[1m$file\033[0m!";
-}
-
-##############################################################################
 # GLOBAL VARIABLES
 ##############################################################################
 
 # extract from .env:
-export DOCKER_IP="$( env_var DOCKER_IP )";
-export DOCKER_HOST_PORT="$( env_var HOST_PORT )";
-export DOCKER_CONTAINER_PORT="$( env_var CONTAINER_PORT )";
-export DOCKER_IMAGE="$( env_var DOCKER_IMAGE )";
-export DOCKER_CONTAINER_TEMP="$( env_var DOCKER_IMAGE )_temp";
-export DOCKER_SERVICE="$( env_var DOCKER_DEFAULT_SERVICE )"; # <-- NOTE: this gets changed dynamically.
-export DOCKER_TAG_EXPLORE="$( env_var DOCKER_TAG_EXPLORE )";
-export DOCKER_PORTS="$DOCKER_IP:$DOCKER_HOST_PORT:$DOCKER_CONTAINER_PORT";
+export WHALES_DOCKER_IP="$(             env_var "$WHALES_PATH/.env" IP )";
+export WHALES_DOCKER_PORT_HOST="$(      env_var "$WHALES_PATH/.env" PORT_HOST )";
+export WHALES_DOCKER_PORT_CONTAINER="$( env_var "$WHALES_PATH/.env" PORT_CONTAINER )";
+export WHALES_DOCKER_SERVICE="$(        env_var "$WHALES_PATH/.env" DEFAULT_SERVICE )";   # NOTE: This get changed dynamically.
+export WHALES_DOCKER_IMAGE="$(          env_var "$WHALES_PATH/.env" DEFAULT_IMAGE )";     # ""
+export WHALES_DOCKER_CONTAINER="$(      env_var "$WHALES_PATH/.env" DEFAULT_CONTAINER )"; # ""
+export WHALES_DOCKER_TAG_EXPLORE="$(    env_var "$WHALES_PATH/.env" TAG_EXPLORE )";
 
-export DOCKER_COMPOSE_YML="$WHALES_PATH/docker-compose.yml";
-export FILE_DOCKER_DEPTH="$WHALES_PATH/DOCKER_DEPTH";
+export WHALES_DOCKER_PORTS="$WHALES_DOCKER_IP:$WHALES_DOCKER_PORT_HOST:$WHALES_DOCKER_PORT_CONTAINER";
+export WHALES_DOCKER_CONTAINER_TEMP="whales_temp";
+export WHALES_DOCKER_COMPOSE_YML="$WHALES_PATH/docker-compose.yml";
+export WHALES_FILE_DOCKER_DEPTH="$WHALES_PATH/DOCKER_DEPTH";
 
 # NOTE: do not use /bin/bash. Results in error under Windows.  Use \/bin\/bash, bash, sh -c bash, or sh.
-export DOCKER_CMD_EXPLORE="bash";
-
-##############################################################################
-# FOR OS SENSITIVE COMMANDS
-##############################################################################
-
-function is_linux() {
-    [ "$OSTYPE" == "msys" ] && return 1 || return 0;
-}
-
-##############################################################################
-# AUXILIARY METHODS: READING CLI ARGUMENTS
-##############################################################################
-
-## $1 = full argument string, $2 = argument.
-## EXAMPLE:
-## if ( has_arg "$@" "help" ); then ...
-function has_arg() {
-    echo "$1" | grep -E -q "^(.*\s|)$2(\s.*|)$" && return 0 || return 1;
-}
-
-## $1 = full argument string, $2 = key, $3 = default value.
-## EXAMPLE:
-## value="$( get_kwarg "$@" "name" "N/A" )";
-function get_kwarg() {
-    value="$(echo "$1" | grep -E -q "(^.*\s|^)$2=" && echo "$1" | sed -E "s/(^.*[[:space:]]|^)$2=(\"([^\"]*)\"|\'([^\']*)\'|([^[:space:]]*)).*$/\3\4\5/g" || echo "")";
-    echo $value | grep -E -q "[^[:space:]]" && echo "$value" || echo "$3";
-}
-
-## $1 = full argument string
-## $2 = key (including connecter: either = or space)
-## $3 = true/false whether to stop after first value (default=false).
-## $4 = default value, if $4=true and no value obtained
-## EXAMPLE:
-## while read value; do
-##     # do something with $value
-## done <<< "$( get_all_kwargs "$@" "--data=" )";
-function get_all_kwargs() {
-    arguments="$1";
-    key="$2";
-    get_one=$([ "$3" == "" ] && echo "false" || echo "$3");
-    default="$4";
-
-    pattern="(^.*[[:space:]]|^)$key(\"([^\"]*)\"|\'([^\']*)\'|([^[:space:]]*)).*$";
-    while ! [[ "$arguments" == "" ]]; do
-        if ! ( echo "$arguments" | grep -E -q "$pattern" ); then
-            arguments="";
-            break;
-        fi
-        value="$(echo "$arguments" | sed -E "s/$pattern/\3\4\5/g" || echo "")";
-        arguments="$(echo "$arguments" | sed -E "s/$pattern/\1/g" || echo "")";
-        echo "$value";
-        if [ "$get_one" == "true" ]; then return 0; fi
-    done;
-    if [ "$get_one" == "true" ]; then echo "$default"; fi
-}
-
-## $1 = full argument string
-## $2 = key (including connecter: either = or space)
-## $3 = default value.
-function get_one_kwarg() {
-    get_all_kwargs "$1" "$2" true "$3";
-}
-
-## $1 = full argument string
-## $2 = key (no delimeter)
-## $3 = default value.
-function get_one_kwarg_space() {
-    value="$(get_one_kwarg "$1" "$2[[:space:]]+" "$3")";
-    if ( echo "$value" | grep -E -q "^-+" ); then value="$3"; fi
-    echo "$value";
-}
-
-##############################################################################
-# AUXILIARY METHODS: LOGGING AND CLI-INPUTS
-##############################################################################
-
-function check_answer() {
-    echo "$1" | grep -q -E -i "^(y|yes|j|ja|1)$";
-}
-
-function _cli_ask() {
-    echo -ne "$1" >> "$OUT";
-}
-
-function _cli_trailing_message() {
-    echo -ne "$1" >> "$OUT";
-}
-
-function _cli_message() {
-    if [ "$2" == "true" ]; then
-        _cli_trailing_message "$1";
-    else
-        echo -e "$1" >> "$OUT";
-    fi
-}
-
-function _log_info() {
-    _cli_message "[\033[94;1mINFO\033[0m] $1" $2;
-}
-
-function _log_debug() {
-    _cli_message "[\033[95;1mDEBUG\033[0m] $1" $2;
-    if ! [ -f "$PATH_LOGS/$DEBUG" ]; then
-        mkdir "$PATH_LOGS" 2> $VERBOSE;
-        touch "$PATH_LOGS/$DEBUG";
-    fi
-    echo "$1" >> $PATH_LOGS/$DEBUG;
-}
-
-function _log_warn() {
-    _cli_message "[\033[93;1mWARNING\033[0m] $1" $2;
-}
-
-function _log_error() {
-    if [ "$2" == "true" ]; then
-        echo -ne "[\033[91;1mERROR\033[0m] $1" >> "$ERR";
-    else
-        echo -e "[\033[91;1mERROR\033[0m] $1" >> "$ERR";
-    fi
-}
-
-function _log_fail() {
-    _log_error "$1" $2;
-    exit 1;
-}
-
-##############################################################################
-# AUXILIARY METHODS: HELP
-##############################################################################
-
-function _help_cli_key_values() {
-    arguments=( "$@" );
-    key="${arguments[0]}";
-    indent="${arguments[1]}";
-    values="";
-    for arg in "${arguments[@]:2}"; do
-        if ! [ "$values" == "" ]; then values="$values|"; fi
-        values="$values\033[92;1m$arg\033[0m";
-    done
-    cmd="\033[93;1m$key\033[0m$indent$values";
-    echo "$cmd";
-}
-
-function _help_cli_key_description() {
-    arguments=( "$@" );
-    key="${arguments[0]}";
-    indent="${arguments[1]}";
-    descr="${arguments[@]:2}";
-    cmd="\033[93;1m$key\033[0m$indent\033[2;3m$descr\033[0m";
-    echo "$cmd";
-}
-
-function _help_cli_values() {
-    arguments=( "$@" );
-    cmd="";
-    for arg in "${arguments[@]}"; do
-        ! [ "$cmd" == "" ] && cmd="$cmd|";
-        cmd="$cmd\033[92;1m$arg\033[0m";
-    done
-    echo "$cmd";
-}
+export WHALES_DOCKER_CMD_EXPLORE="bash";
 
 ##############################################################################
 # AUXILIARY METHODS: DOCKER, BASIC
 ##############################################################################
 
 function run_docker_compose() {
-    docker-compose --file $DOCKER_COMPOSE_YML $@;
+    docker-compose --file "$WHALES_DOCKER_COMPOSE_YML" $@;
 }
 
 function docker_create_unused_container_name() {
-    local name="$DOCKER_CONTAINER_TEMP";
+    local name="$WHALES_DOCKER_CONTAINER_TEMP";
     k=0;
     while ( docker ps -a --format '{{.Names}}' | grep -E -q "^${name}_${k}$" ); do k=$(( $k + 1 )); done;
     echo "${name}_${k}";
@@ -225,7 +49,7 @@ function docker_create_unused_container_name() {
 ##############################################################################
 
 function docker_get_services() {
-    pattern="^${WHALES_PATH}_";
+    local pattern="^${WHALES_PATH}_";
     while read -r line; do
         ! ( echo "$line" | grep -E -q "$pattern" ) && continue;
         local columns=( $line ); ## format: name, image, tag, image_id
@@ -240,8 +64,8 @@ function docker_get_potential_services() {
 }
 
 function docker_exists_service() {
-    service="$1";
-    pattern="^${WHALES_PATH}_${service}(|_[[:digit:]]+)$";
+    local service="$1";
+    local pattern="^${WHALES_PATH}_${service}($|_[[:digit:]]+$)";
     while read -r name; do
         ( echo "$name" | grep -E -q "$pattern" ) && return 0;
     done <<< "$( docker_get_services )";
@@ -249,16 +73,17 @@ function docker_exists_service() {
 }
 
 function docker_exists_potential_service() {
-    service="$1";
+    local service="$1";
     while read -r name; do
         [ "$service" == "$name" ] && return 0;
     done <<< "$( docker_get_potential_services )";
     return 1;
 }
 
-function docker_get_image_name_from_service() {
-    service="$1";
-    pattern="^${WHALES_PATH}_${service}(|_[[:digit:]]+)$";
+function docker_get_service_image_plus_tag() {
+    local service="$1";
+    [ "$service" == "" ] && return;
+    local pattern="^${WHALES_PATH}_${service}($|_[[:digit:]]+$)";
     while read -r line; do
         local columns=( $line ); ## format: name, image, tag, image_id
         local name="${columns[0]}";
@@ -266,16 +91,20 @@ function docker_get_image_name_from_service() {
         local tag="${columns[2]}";
         ( echo "$name" | grep -E -q "$pattern" ) && echo "$image:$tag" && return;
     done <<< "$( run_docker_compose images )";
+    _log_fail "Could not find any images for service \033[1m$service\033[0m!";
 }
 
-function docker_get_image_name_of_service() {
-    local image_service="$( docker_get_image_name_from_service "$DOCKER_SERVICE" )";
-    [ "$image_service" == "" ] && _log_fail "Could not find service \033[1m$DOCKER_SERVICE\033[0m!";
-    echo "$image_service";
+function docker_get_service_image() {
+    local service="$1";
+    local image_service="$( docker_get_service_image_plus_tag "$service" 2> $VERBOSE )";
+    [ "$image_service" == "" ] && _log_fail "Could not find image associated to service \033[1m$service\033[0m!";
+    local pattern="^(.*):.*$";
+    ! ( echo "$image_service" | grep -E -q "$pattern" ) && echo "$image_service" && return;
+    echo "$image_service" | sed -E "s/$pattern/\1/g";
 }
 
 function get_container_patterns() {
-    local pattern="$DOCKER_CONTAINER_TEMP";
+    local pattern="$WHALES_DOCKER_CONTAINER_TEMP";
     while read service; do
         [ "$service" == "" ] && continue;
         pattern="${pattern}|${WHALES_PATH}_${service}";
@@ -337,14 +166,16 @@ function docker_get_image_id_from_image_tag() {
 }
 
 function docker_get_container_id_service() {
-    local image_service="$( docker_get_image_name_of_service 2> $VERBOSE )";
-    [ "$image_service" == "" ] && _log_fail "Could not find container associated to service!";
+    local service="$1";
+    local image_service="$( docker_get_service_image_plus_tag "$service" 2> $VERBOSE )";
+    [ "$image_service" == "" ] && _log_fail "Could not find container associated to service \033[1m$service\033[0m!";
     docker_get_container_id_from_image_tag "$image_service";
 }
 
 function docker_get_image_id_service() {
-    local image_service="$( docker_get_image_name_of_service 2> $VERBOSE )";
-    [ "$image_service" == "" ] && _log_fail "Could not find image associated to service!";
+    local service="$1";
+    local image_service="$( docker_get_service_image_plus_tag "$service" 2> $VERBOSE )";
+    [ "$image_service" == "" ] && _log_fail "Could not find image associated to service \033[1m$service\033[0m!";
     docker_get_image_id_from_image_tag "$image_service";
 }
 
@@ -355,10 +186,11 @@ function docker_exists_image_tag() {
 }
 
 function docker_get_image_name_latest_stage() {
-    local image="$1";
+    local service="$1";
+    local image="$2";
     if ! ( docker_exists_image_tag "$image" ); then
-        local image_service="$( docker_get_image_name_from_service "$DOCKER_SERVICE" 2> $VERBOSE )";
-        [ "$image_service" == "" ] && _log_fail "Could not find docker image \033[1m$image\033[0m or base image \033[1m$image_service\033[0m!";
+        local image_service="$( docker_get_service_image_plus_tag "$service" )";
+        [ "$image_service" == "" ] && _log_fail "Could not find docker image \033[1m$image\033[0m or image for service \033[1m$service\033[0m!";
         image="$image_service";
     fi
     echo "$image";
@@ -472,8 +304,8 @@ function docker_remove_all_images() {
 
 function get_docker_depth() {
     local depth=0;
-    if [ -f "$FILE_DOCKER_DEPTH" ]; then
-        depth="$( head -n 1 $FILE_DOCKER_DEPTH )";
+    if [ -f "$WHALES_FILE_DOCKER_DEPTH" ]; then
+        depth="$( head -n 1 $WHALES_FILE_DOCKER_DEPTH )";
         if ! ( echo "$depth" | grep -E -q "^(0|[1-9][0-9]*|-[1-9][0-9]*)$" ); then depth=1; fi
     fi
     echo $depth;
@@ -487,7 +319,34 @@ function is_docker() {
 function select_service() {
     service="$1";
     ! ( docker_exists_potential_service "$service" ) && _log_fail "Service \033[1m$service\033[0m does not exist!";
-    export DOCKER_SERVICE="$service";
+    export WHALES_DOCKER_SERVICE="$service";
+}
+
+function select_service_image() {
+    export WHALES_DOCKER_IMAGE="$1";
+}
+
+function select_service_container_id() {
+    export WHALES_DOCKER_CONTAINER="$1";
+}
+
+function set_docker_service() {
+    service="$1";
+    force_build=$2;
+    # Force start docker servic, if not already up:
+    select_service "$service";
+    local image_service="$(     docker_get_service_image        "$service" 2> $VERBOSE )";
+    local container_id="$( docker_get_container_id_service "$service" 2> $VERBOSE )";
+    if ( $force_build ) && ( [ "$image_service" == "" ] || [ "$container_id" == "" ] ); then
+        _log_info "FORCE-BUILD DOCKER SERVICE.";
+        run_docker_start;
+        image_service="$(     docker_get_service_image        "$service" 2> $VERBOSE )";
+        container_id="$( docker_get_container_id_service "$service" 2> $VERBOSE )";
+    ## else
+    ## TODO: if container_id == "" but image_service =/= "", then start a container for service.
+    fi
+    select_service_image "$image_service";
+    select_service_container_id "$container_id";
 }
 
 ##############################################################################
@@ -541,9 +400,8 @@ function call_within_docker() {
         ## START/ENTER SERVICE:
         _log_info "YOU ARE OUTSIDE THE DOCKER ENVIRONMENT.";
         # Force start docker servic, if not already up:
-        select_service "$service";
-        local container_service="$( docker_get_container_id_service 2> $VERBOSE )";
-        [ "$container_service" == "" ] && _log_info "FORCE-BUILD DOCKER SERVICE." && run_docker_start;
+        set_docker_service "$service" true;
+        ( [ "$WHALES_DOCKER_IMAGE" == "" ] || [ "$WHALES_DOCKER_CONTAINER" == "" ] ) && _log_fail "In whales decorator \033[1mcall_within_docker\033[0m the service \033[1m$service\033[0m has not been build!";
 
         ## DETERMINE ENTRY + EXIT IMAGES:
         local tagParts=( ${tags//","/" "} );
@@ -555,14 +413,14 @@ function call_within_docker() {
         for (( i=$nTags-1; i >= 0; i-- )); do
             local tag="${tagParts[$i]}";
             if (( $i == $nTags - 1 )); then
-                image_exit="$DOCKER_IMAGE:$tag"
+                image_exit="$WHALES_DOCKER_IMAGE:$tag"
                 ## Do not allow final tag to be a start tag, unless it is contained in parantheses:
                 if ! ( echo "$tag" | grep -E -q "^\((.*)\)$" ); then continue; fi
                 ## strip parantheses and proceed to test for valid entry point:
                 tag="$( echo "$tag" | sed -E "s/^\((.*)\)$/\1/g" )";
-                image_exit="$DOCKER_IMAGE:$tag"
+                image_exit="$WHALES_DOCKER_IMAGE:$tag"
             fi
-            image_enter="$DOCKER_IMAGE:$tag";
+            image_enter="$WHALES_DOCKER_IMAGE:$tag";
             ( docker_exists_image_tag "$image_enter" ) && found_entry=true && break;
         done
 
@@ -620,17 +478,16 @@ function enter_docker() {
 
     _log_info "ENTER DOCKER ENVIRONMENT.";
     ## Get container of service (in order to connect mounted volumes):
-    select_service "$service";
-    local container_service="$( docker_get_container_id_service 2> $VERBOSE )";
-    [ "$container_service" == "" ] && _log_fail "In whales method \033[1menter_docker\033[0m could not find service \033[1m$service\033[0m!";
+    set_docker_service "$service" false;
+    ( [ "$WHALES_DOCKER_IMAGE" == "" ] || [ "$WHALES_DOCKER_CONTAINER" == "" ] ) && _log_fail "In whales method \033[1menter_docker\033[0m the service \033[1m$service\033[0m has not been build!";
 
     ## Get image:tag for entry point:
     local entry_orig="$entry";
     if [ "$entry" == "" ]; then
         ## only if "--entry" argument is missing / empty, force the explore tag:
-        entry="$DOCKER_IMAGE:$DOCKER_TAG_EXPLORE";
+        entry="$WHALES_DOCKER_IMAGE:$WHALES_DOCKER_TAG_EXPLORE";
         entry_orig="$entry";
-        entry="$( docker_get_image_name_latest_stage "$entry" 2> $VERBOSE )";
+        entry="$( docker_get_image_name_latest_stage "$service" "$entry" 2> $VERBOSE )";
     fi
     ! ( docker_exists_image_tag "$entry" ) && _log_fail "In whales method \033[1menter_docker\033[0m could not find image with tag \033[1m$tag\033[0m!";
 
@@ -640,12 +497,12 @@ function enter_docker() {
 
     ## Set arguments, if empty:
     [ "$save" == "" ] && save=false;
-    [ "$command" == "" ] && command="$DOCKER_CMD_EXPLORE" && it=true;
+    [ "$command" == "" ] && command="$WHALES_DOCKER_CMD_EXPLORE" && it=true;
     [ "$expose" == "" ] && expose=$it;
     [ "$imageFinal" == "" ] && imageFinal="$entry_orig";
 
     ## Set ports command:
-    local ports_option="$( ( $expose ) && echo "-p $DOCKER_PORTS" || echo "" )";
+    local ports_option="$( ( $expose ) && echo "-p $WHALES_DOCKER_PORTS" || echo "" )";
 
     ################################
     # ENTER DOCKER: create container and run command
@@ -653,10 +510,10 @@ function enter_docker() {
     _log_info "START TEMPORARY CONTAINER \033[92;1m$container_tmp\033[0m.";
     if ( $it ); then
         _log_info "EXECUTE COMMAND {\033[93;1m$command\033[0m} INTERACTIVELY.";
-        docker run --name="$container_tmp" $ports_option --volumes-from="$container_service:rw" -it $id bash -c "$command";
+        docker run --name="$container_tmp" $ports_option --volumes-from=$WHALES_DOCKER_CONTAINER:rw -it $id bash -c "$command";
     else
         _log_info "EXECUTE COMMAND {\033[93;1m$command\033[0m} NON-INTERACTIVELY.";
-        docker run --name="$container_tmp" $ports_option --volumes-from="$container_service:rw" -d $id bash -c "$command";
+        docker run --name="$container_tmp" $ports_option --volumes-from=$WHALES_DOCKER_CONTAINER:rw -d $id bash -c "$command";
         docker logs --follow $container_tmp;
     fi
     _log_info "WAIT FOR CONTAINER \033[92;1m$container_tmp\033[0m TO STOP.";
@@ -683,7 +540,7 @@ function enter_docker() {
 ##############################################################################
 
 function run_docker_start() {
-    local service="$DOCKER_SERVICE";
+    local service="$WHALES_DOCKER_SERVICE";
     _log_info "START DOCKER SERVICE \033[92;1m$service\033[0m.";
     local success=false;
     run_docker_compose up --build $service && success=true;
@@ -699,7 +556,7 @@ function run_docker_stop_down() {
 
 function run_docker_clean() {
     docker_remove_some_containers key="{{.Names}}"               pattern="$( get_container_patterns )";
-    docker_remove_some_images     key="{{.Repository}}:{{.Tag}}" pattern="^$DOCKER_IMAGE:.+$";
+    docker_remove_some_images     key="{{.Repository}}:{{.Tag}}" pattern="^$WHALES_DOCKER_IMAGE:.+$";
     docker image prune -a --force; ## prunes any image non used by a container and any dangling images.
 }
 

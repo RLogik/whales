@@ -24,6 +24,22 @@ function is_linux() {
 }
 
 ##############################################################################
+# .ENV EXTRACTION
+##############################################################################
+
+function env_var() {
+    local file="$1";
+    local key="$2";
+    local pattern="^$key=(.*)$";
+    while read line; do
+        ! ( echo "$line" | grep -E -q "$pattern" ) && continue;
+        echo "$( echo "$line" | sed -E "s/^.*=(.*)$/\1/g" )";
+        return;
+    done <<< "$( cat "$file" )";
+    _log_fail "Argument \033[93;1m$key\033[0m not found in \033[1m$file\033[0m!";
+}
+
+##############################################################################
 # AUXILIARY METHODS: READING CLI ARGUMENTS
 ##############################################################################
 
@@ -31,14 +47,14 @@ function is_linux() {
 ## EXAMPLE:
 ## if ( has_arg "$@" "help" ); then ...
 function has_arg() {
-    echo "$1" | grep -E -q "^(.*\s|)$2(\s.*|)$" && return 0 || return 1;
+    echo "$1" | grep -E -q "(^.*[[:space:]]|^)$2([[:space:]].*$|$)" && return 0 || return 1;
 }
 
 ## $1 = full argument string, $2 = key, $3 = default value.
 ## EXAMPLE:
 ## value="$( get_kwarg "$@" "name" "N/A" )";
 function get_kwarg() {
-    value="$(echo "$1" | grep -E -q "(^.*\s|^)$2=" && echo "$1" | sed -E "s/(^.*[[:space:]]|^)$2=(\"([^\"]*)\"|\'([^\']*)\'|([^[:space:]]*)).*$/\3\4\5/g" || echo "")";
+    local value="$(echo "$1" | grep -E -q "(^.*\s|^)$2=" && echo "$1" | sed -E "s/(^.*[[:space:]]|^)$2=(\"([^\"]*)\"|\'([^\']*)\'|([^[:space:]]*)).*$/\3\4\5/g" || echo "")";
     echo $value | grep -E -q "[^[:space:]]" && echo "$value" || echo "$3";
 }
 
@@ -51,18 +67,18 @@ function get_kwarg() {
 ##     # do something with $value
 ## done <<< "$( get_all_kwargs "$@" "--data=" )";
 function get_all_kwargs() {
-    arguments="$1";
-    key="$2";
-    get_one=$([ "$3" == "" ] && echo "false" || echo "$3");
-    default="$4";
+    local arguments="$1";
+    local key="$2";
+    local get_one=$([ "$3" == "" ] && echo "false" || echo "$3");
+    local default="$4";
 
-    pattern="(^.*[[:space:]]|^)$key(\"([^\"]*)\"|\'([^\']*)\'|([^[:space:]]*)).*$";
+    local pattern="(^.*[[:space:]]|^)$key(\"([^\"]*)\"|\'([^\']*)\'|([^[:space:]]*)).*$";
     while ! [[ "$arguments" == "" ]]; do
         if ! ( echo "$arguments" | grep -E -q "$pattern" ); then
             arguments="";
             break;
         fi
-        value="$(echo "$arguments" | sed -E "s/$pattern/\3\4\5/g" || echo "")";
+        local value="$(echo "$arguments" | sed -E "s/$pattern/\3\4\5/g" || echo "")";
         arguments="$(echo "$arguments" | sed -E "s/$pattern/\1/g" || echo "")";
         echo "$value";
         if [ "$get_one" == "true" ]; then return 0; fi
@@ -81,8 +97,8 @@ function get_one_kwarg() {
 ## $2 = key (no delimeter)
 ## $3 = default value.
 function get_one_kwarg_space() {
-    value="$(get_one_kwarg "$1" "$2[[:space:]]+" "$3")";
-    if ( echo "$value" | grep -E -q "^-+" ); then value="$3"; fi
+    local value="$(get_one_kwarg "$1" "$2[[:space:]]+" "$3")";
+    ( echo "$value" | grep -E -q "^-+" ) && value="$3";
     echo "$value";
 }
 
@@ -95,18 +111,18 @@ function check_answer() {
 }
 
 function _cli_ask() {
-    echo -ne "$1" >> "$OUT";
+    echo -ne "$1" >> $OUT;
 }
 
 function _cli_trailing_message() {
-    echo -ne "$1" >> "$OUT";
+    echo -ne "$1" >> $OUT;
 }
 
 function _cli_message() {
     if [ "$2" == "true" ]; then
         _cli_trailing_message "$1";
     else
-        echo -e "$1" >> "$OUT";
+        echo -e "$1" >> $OUT;
     fi
 }
 
@@ -120,7 +136,7 @@ function _log_debug() {
         mkdir "$PATH_LOGS" 2> $VERBOSE;
         touch "$PATH_LOGS/$DEBUG";
     fi
-    echo "$1" >> $PATH_LOGS/$DEBUG;
+    echo "$1" >> "$PATH_LOGS/$DEBUG";
 }
 
 function _log_warn() {
@@ -129,9 +145,9 @@ function _log_warn() {
 
 function _log_error() {
     if [ "$2" == "true" ]; then
-        echo -ne "[\033[91;1mERROR\033[0m] $1" >> "$ERR";
+        echo -ne "[\033[91;1mERROR\033[0m] $1" >> $ERR;
     else
-        echo -e "[\033[91;1mERROR\033[0m] $1" >> "$ERR";
+        echo -e "[\033[91;1mERROR\033[0m] $1" >> $ERR;
     fi
 }
 
@@ -145,30 +161,30 @@ function _log_fail() {
 ##############################################################################
 
 function _help_cli_key_values() {
-    arguments=( "$@" );
-    key="${arguments[0]}";
-    indent="${arguments[1]}";
-    values="";
+    local arguments=( "$@" );
+    local key="${arguments[0]}";
+    local indent="${arguments[1]}";
+    local values="";
     for arg in "${arguments[@]:2}"; do
         if ! [ "$values" == "" ]; then values="$values|"; fi
         values="$values\033[92;1m$arg\033[0m";
     done
-    cmd="\033[93;1m$key\033[0m$indent$values";
+    local cmd="\033[93;1m$key\033[0m$indent$values";
     echo "$cmd";
 }
 
 function _help_cli_key_description() {
-    arguments=( "$@" );
-    key="${arguments[0]}";
-    indent="${arguments[1]}";
-    descr="${arguments[@]:2}";
-    cmd="\033[93;1m$key\033[0m$indent\033[2;3m$descr\033[0m";
+    local arguments=( "$@" );
+    local key="${arguments[0]}";
+    local indent="${arguments[1]}";
+    local descr="${arguments[@]:2}";
+    local cmd="\033[93;1m$key\033[0m$indent\033[2;3m$descr\033[0m";
     echo "$cmd";
 }
 
 function _help_cli_values() {
-    arguments=( "$@" );
-    cmd="";
+    local arguments=( "$@" );
+    local cmd="";
     for arg in "${arguments[@]}"; do
         ! [ "$cmd" == "" ] && cmd="$cmd|";
         cmd="$cmd\033[92;1m$arg\033[0m";
@@ -181,7 +197,7 @@ function _help_cli_values() {
 ##############################################################################
 
 function show_progressbar() {
-    pid=$1 # Process Id of the previous running command
+    local pid=$1 # Process Id of the previous running command
 
     function shutdown() {
         tput cnorm; # reset cursor
@@ -193,7 +209,7 @@ function show_progressbar() {
 
     trap shutdown EXIT;
 
-    displayed=false;
+    local displayed=false;
     # tput civis; # cursor invisible
     while kill -0 $pid 2> $VERBOSE; do
         if [ "$displayed" == "false" ]; then
@@ -206,7 +222,7 @@ function show_progressbar() {
     done
     # tput cnorm; # cursor visible
     wait $pid;
-    success=$?;
+    local success=$?;
     [ "$displayed" == "true" ] && _cli_trailing_message "\n";
     return $success;
 }
@@ -216,24 +232,23 @@ function show_progressbar() {
 ##############################################################################
 
 function _trim() {
-    line="$1";
-    echo "$line" | grep -E -q "[^[:space:]]" && echo "$line" | sed -E "s/^[[:space:]]*(.*[^[:space:]]+)[[:space:]]*$/\1/g" || echo "";
+    local line="$1";
+    ( echo "$line" | grep -E -q "[^[:space:]]" ) && echo "$line" | sed -E "s/^[[:space:]]*(.*[^[:space:]]+)[[:space:]]*$/\1/g";
 }
 
 function to_lower() {
-    echo "$(echo $1 |tr '[:upper:]' '[:lower:]')";
+    echo "$(echo "$1" |tr '[:upper:]' '[:lower:]')";
 }
 
 function to_upper() {
-    echo "$(echo $1 |tr '[:lower:]' '[:upper:]')";
+    echo "$(echo "$1" |tr '[:lower:]' '[:upper:]')";
 }
 
 ## $1 = full line entry.
 ## example:
 ## if (is_comment "$line"); then ...
 function is_comment() {
-    line="$1";
-    echo "$line" | grep -E -q "^\s*\#" && return 0 || return 1;
+    echo "$1" | grep -E -q "^\s*\#" && return 0 || return 1;
 }
 
 ## Replaces all occurrences of ~ with $HOME.
