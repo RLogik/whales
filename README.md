@@ -158,7 +158,6 @@ SCRIPTARGS="$@";
 ME="build.sh";
 SERVICE="prod-service";
 
-source whales_setup/.lib.whales.sh;
 source whales_setup/.lib.sh;
 
 # call_within_docker <service>  <tag-sequence> <save> <it>  <expose> <script> <params>
@@ -195,7 +194,6 @@ FLAGS=( "$@" );
 ME="test.sh";
 SERVICE="test-service";
 
-source whales_setup/.lib.whales.sh;
 source whales_setup/.lib.sh;
 
 mode="${FLAGS[0]}";
@@ -252,24 +250,30 @@ explorative testing: call_within_docker "boats-service" "precompile,compile,(exp
 
 #### Syntax ####
 
-The `<tag-sequence>` argument must consist of at least two members, and be a comma-separated list.
-The last entry can be contained in parentheses. So
+The `<tag-sequence>` argument must contain no spaces and be a comma-separated list.
+The final entry in a list of length `n`≥2 can be contained in parentheses.
+The script pre-transforms arguments as follows
 
-- `"tag_1,tag_2,...,tag_n"`
-- `"tag_1,tag_2,...,(tag_n)"`
+- `"tag_1,tag_2,...,(tag_n)"` ⟶ `"tag_1,tag_2,...,tag_n,tag_n"`;
+- `"tag_1"` ⟶ `"tag_1,tag_1"`
 
-are valid, provided `n`≥2.
+Then the `<tag-sequence>`-argument is valid, exactly in case
+the resulting pre-transformed argument is of the form
+`"tag_1,tag_2,...,tag_n"`
+where `n`≥2 and each `tag_i` contains no spaces (or commas).
+
 #### Interpretation ####
 
-- If the `<tag-sequence>` argument ist `"tag_1,tag_2,...,tag_n"`,
+- If the `<tag-sequence>` argument is pre-transformed to `"tag_1,tag_2,...,tag_n"`,
     then the entry point will be taken to be the latest tag, `tag_i`, where `i` ∈ {1,2,...,`n`-1},
     for which an image `<service>:tag_i` exists.
     And the image name for saving will be `<service>:tag_n`.
     That is, we allow up to the penultimate element in the list to be used as the starting point.
-- If the `<tag-sequence>` argument ist `"tag_1,tag_2,...,(tag_n)"`,
-    then the entry point will be taken to be the latest tag, `tag_i`, where `i` ∈ {1,2,...,`n`},
-    for which an image `<service>:tag_i` exists.
-    And the image name for saving will be `<service>:tag_n`.
-    That is, we allow up and including the finale element in the list to be used as the starting point.
+- Observe that if the `<tag-sequence>` argument was originally of the form `"tag_1,tag_2,...,(tag_n)"`,
+    then the penultimate element in the pre-transformed list coincide with the final element.
+    So effectively, we allow up and including the finale element in the list to be used as the starting point.
     If the starting point and saving point are the same, then saving simply means overwriting the image.
-- If no valid starting point is found, an error is thrown.
+- If the `<tag-sequence>` argument was originally of the form `"tag_1"`,
+    then since the pre-transformed list becomes `"tag_1,tag_1"`,
+    the instruction is simply: start and end points are the same image.
+- Finally, if no valid starting point is found, an error is thrown.
