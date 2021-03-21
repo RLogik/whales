@@ -6,10 +6,11 @@
 # WHALES SETUP
 ################################################################################################################################
 !/.env
-!/docker-compose.yml
-!/Dockerfile
 !/.lib.logging.sh
 !/.lib.utils.sh
 !/.lib.whales.sh
 !/docker-entry.sh
 !/docker.sh
+
+!/docker-compose.yml
+!/Dockerfile

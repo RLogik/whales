@@ -6,13 +6,16 @@
 ##############################################################################
 
 source whales_setup/.lib.utils.sh;
-export WHALES_PATH="whales_setup";
 
 ##############################################################################
 # GLOBAL VARIABLES
 ##############################################################################
 
-# extract from .env:
+# extract from project .env file:
+export WHALES_PATH="$( env_var ".env" WHALES_SETUP_PATH )";
+export WHALES_DOCKER_COMPOSE_YML="$( env_var ".env" DOCKER_COMPOSE_CONFIG_FILE )";
+
+# extract from whales_seutp .env:
 export WHALES_DOCKER_IP="$(             env_var "$WHALES_PATH/.env" IP )";
 export WHALES_DOCKER_PORT_HOST="$(      env_var "$WHALES_PATH/.env" PORT_HOST )";
 export WHALES_DOCKER_PORT_CONTAINER="$( env_var "$WHALES_PATH/.env" PORT_CONTAINER )";
@@ -23,7 +26,6 @@ export WHALES_DOCKER_TAG_EXPLORE="$(    env_var "$WHALES_PATH/.env" TAG_EXPLORE 
 
 export WHALES_DOCKER_PORTS="$WHALES_DOCKER_IP:$WHALES_DOCKER_PORT_HOST:$WHALES_DOCKER_PORT_CONTAINER";
 export WHALES_DOCKER_CONTAINER_TEMP="whales_temp";
-export WHALES_DOCKER_COMPOSE_YML="$WHALES_PATH/docker-compose.yml";
 export WHALES_FILE_DOCKER_DEPTH="$WHALES_PATH/DOCKER_DEPTH";
 
 # NOTE: do not use /bin/bash. Results in error under Windows.  Use \/bin\/bash, bash, sh -c bash, or sh.
@@ -576,10 +578,15 @@ function run_docker_clean_all() {
 
 function get_docker_state() {
     _cli_message "";
-    _cli_message "Container states:";
+    _cli_message "\033[94;1mSERVICES\033[0m:";
+    run_docker_compose ps -a;
+    _cli_message "";
+    run_docker_compose images;
+    _cli_message "";
+    _cli_message "\033[94;1mCONTAINERS\033[0m:";
     docker ps -a --format 'table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Size}}\t{{.Status}}\t{{.CreatedAt}} ago';
     _cli_message "";
-    _cli_message "Images:"
+    _cli_message "\033[94;1mIMAGES\033[0m:";
     docker images -a --format 'table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}';
     _cli_message "";
 }
