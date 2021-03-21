@@ -11,12 +11,13 @@ services:
     build:
       context: ".." # !!! important !!! Context = root of project.
       dockerfile: whales_setup/Dockerfile
-      args:
+      args: &ref_args
         WD: "$WD"
+        ENTRY_SCRIPT: "$ENTRY_SCRIPT"
     # volumes:
     #   - ./../HELLO_WORLD:$WD/HELLO_WORLD:rw  ## <- r/w   allows for live developing
     command:
-      ["bash", "-c", "echo -e \"Service \\033[1mhelloService\\033[0m built with image \\033[1mwhales-hello:build\\033[0m.\""]
+      ["bash", "-c", "echo -e \"Service \\033[1mhello-service\\033[0m built with image \\033[1mwhales-hello:build\\033[0m.\""]
   #---------------------------------------------------------#
   # Production
   #---------------------------------------------------------#
@@ -26,7 +27,7 @@ services:
       context: ".." # !!! important !!! Context = root of project.
       dockerfile: whales_setup/Dockerfile
       args:
-        WD: "$WD"
+        <<: *ref_args
     # volumes:
     #   - ./../logs:$WD/logs:rw   ## <- (r/)w for logging between all docker levels.
     #   - ./../src:$WD/src:rw     ## <- r/w   allows for live developing
@@ -35,7 +36,7 @@ services:
     #   - ./../dist:$WD/dist:rw   ## <- r/w   distribution folder, VERSION + Programm artefact.
     #   - ./../build:$WD/build:rw ## <- (r/)w build folder -> artefacts
     command:
-      ["bash", "-c", "echo -e \"Service \\033[1mprodService\\033[0m built with image \\033[1mwhales-prod:build\\033[0m.\""]
+      ["bash", "-c", "echo -e \"Service \\033[1mprod-service\\033[0m built with image \\033[1mwhales-prod:build\\033[0m.\""]
   #---------------------------------------------------------#
   # Test
   #---------------------------------------------------------#
@@ -45,7 +46,7 @@ services:
       context: ".." # !!! important !!! Context = root of project.
       dockerfile: whales_setup/Dockerfile
       args:
-        WD: "$WD"
+        <<: *ref_args
     # volumes:
     #   - ./../logs:$WD/logs:rw   ## <- (r/)w for logging between all docker levels.
     #   - ./../src:$WD/src:rw     ## <- r/w   allows for live developing
@@ -54,4 +55,4 @@ services:
     #   - ./../dist:$WD/dist:rw   ## <- r/w   distribution folder, VERSION + Programm artefact.
     #   - ./../build:$WD/build:rw ## <- (r/)w build folder -> artefacts
     command:
-      ["bash", "-c", "echo -e \"Service \\033[1mtestService\\033[0m built with image \\033[1mwhales-test:build\\033[0m.\""]
+      ["bash", "-c", "echo -e \"Service \\033[1mtest-service\\033[0m built with image \\033[1mwhales-test:build\\033[0m.\""]
