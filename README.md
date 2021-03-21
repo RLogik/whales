@@ -55,24 +55,33 @@ Docker presents itself as a universal, easily accessible solution, with a minima
 
 ## Status and cleaning ##
 
-Call `. whales_setup/docker.sh --status` to view the status of the containers and images.
+Call `./whales_setup/docker.sh --status` to view the status of the containers and images.
 For example after the above hello-world example, the status looks like this:
 
 ```
-Container states:
-CONTAINER ID   NAMES                  IMAGE          SIZE                 STATUS
-51xxxxxxxxx0   whales_setup_hello_1   whales:hello   0B (virtual 101MB)   Exited (0) 50 seconds ago
+SERVICES:
+            Name                          Command               State    Ports
+------------------------------------------------------------------------------
+whales_setup_hello-service_1   bash -c echo -e "Service \ ...   Exit 0
 
-Images:
-IMAGE ID       REPOSITORY   TAG       SIZE      CREATED AT
-45xxxxxxxxx0   whales       explore   101MB     2021-xxxxxxxx:35:32
-0exxxxxxxxxd   <none>       <none>    101MB     2021-xxxxxxxx:35:24
-73xxxxxxxxxe   whales       hello     101MB     2021-xxxxxxxx:35:20
+         Container              Repository     Tag      Image Id       Size
+-----------------------------------------------------------------------------
+whales_setup_hello-service_1   whales-hello   build   35xxxxxxxxx6   101.3 MB
+
+CONTAINERS:
+CONTAINER ID   NAMES                          IMAGE                SIZE                 STATUS                     CREATED AT ago
+e8xxxxxxxxx4   whales_setup_hello-service_1   whales-hello:build   0B (virtual 101MB)   Exited (0) 4 minutes ago   2021-xxxxxxxx:29:05 ago
+
+IMAGES:
+IMAGE ID       REPOSITORY     TAG       SIZE      CREATED AT
+18xxxxxxxxx4   whales-hello   explore   101MB     2021-xxxxxxxx:31:54
+e5xxxxxxxxx0   <none>         <none>    101MB     2021-xxxxxxxx:29:12
+35xxxxxxxxx6   whales-hello   build     101MB     2021-xxxxxxxx:29:04
 ```
 
-Call `. whales_setup/docker.sh --clean` to clean all whale-containers and whale-images.
+Call `./whales_setup/docker.sh --clean` to clean all whale-containers and whale-images.
 
-Call `. whales_setup/docker.sh --clean-all` to clean all containers and images.
+Call `./whales_setup/docker.sh --clean-all` to clean all containers and images.
 
 ## How to start a project with Whales ##
 
@@ -87,11 +96,16 @@ Call `. whales_setup/docker.sh --clean-all` to clean all containers and images.
 
 See also the subfolders in [/examples](examples) for further implementation examples of projects with Whales.
 
+**NOTE:** If you wish to move or rename the [/whales_setup](whales_setup) folder
+or wish to move `docker-compose.yml`/`Dockerfile` files,
+then ensure that the corresponding variables in the [.env-file](.env)
+in the root directory are adjusted.
+(You may also need to adjust the `.gitignore`+ `.dockerignore` files in the root directory + the whales setup-directory.)
+
 ## How to add Whales to existing projects ##
 
 1. Add the folder [/whales_setup](whales_setup) and a `.dockerignore` file (if one does not exist) to the root folder of your project.
     In `./.dockerignore` append the line
-
     ```.dockerignore
     !/whales_setup
     ```
@@ -103,6 +117,12 @@ See also the subfolders in [/examples](examples) for further implementation exam
     provided the context in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml) has been set appropriately,
     there should be no need to worry about relativising paths.
 4. Modify process scripts (see section [_How to modify bash scripts_](#how-to-modify-bash-scripts-to-work-with-whales)).
+
+**NOTE:** If you wish to move or rename the [/whales_setup](whales_setup) folder
+or wish to move `docker-compose.yml`/`Dockerfile` files,
+then ensure that the corresponding variables in the [.env-file](.env)
+in the root directory are adjusted.
+(You may also need to adjust the `.gitignore`+ `.dockerignore` files in the root directory + the whales setup-directory.)
 
 ## How to modify bash scripts to work with Whales ##
 
@@ -136,7 +156,7 @@ This becomes:
 
 SCRIPTARGS="$@";
 ME="build.sh";
-SERVICE="prodService";
+SERVICE="prod-service";
 
 source whales_setup/.lib.whales.sh;
 source whales_setup/.lib.sh;
@@ -148,7 +168,7 @@ python3 -m pip install tensorflow;
 python3 src/main.py
 ```
 
-**NOTE:** Replace `"prodService"` by the appropriate service name in `whales_setup/docker-compose.yml`.
+**NOTE:** Replace `"prod-service"` by the appropriate service name in `whales_setup/docker-compose.yml`.
 
 ### Example 2 ###
 
@@ -173,7 +193,7 @@ This becomes:
 SCRIPTARGS="$@";
 FLAGS=( "$@" );
 ME="test.sh";
-SERVICE="testService";
+SERVICE="test-service";
 
 source whales_setup/.lib.whales.sh;
 source whales_setup/.lib.sh;
@@ -190,7 +210,7 @@ else
 fi
 ```
 
-**NOTE 1:** Replace `"testService"` by the appropriate service name in `whales_setup/docker-compose.yml`.
+**NOTE 1:** Replace `"test-service"` by the appropriate service name in `whales_setup/docker-compose.yml`.
 
 **NOTE 2:** Set the `<save>` argument to true/false, depending upon whether you want to save.
 If `save=true`, then when complete, the exited container will be committed to an image named `whales:<tag>`.
@@ -199,7 +219,7 @@ If `save=true`, then when complete, the exited container will be committed to an
 
 The `<tag-sequence>` argument is a comma separated list of tag-names,
 representing a route from the service image to the desired tag name of the save image (if at all desired).
-For example, suppose we have service called `boatsService` defined in `whales_setup/docker-compose.yml`
+For example, suppose we have service called `boats-service` defined in `whales_setup/docker-compose.yml`
 to build an image with the designation `whales:boats`.
 And suppose we have some testing processes,
 
@@ -222,12 +242,12 @@ for which we wish to build images with the following dependencies:
 Then in our scripts the `<tag-sequence>` in the `call_within_docker` would be given as follows:
 
 ```
-pre-compilation:     call_within_docker "boatsService" "boats,precompile"             true  false ...
-compilation:         call_within_docker "boatsService" "precompile,compile"           true  false ...
-unit-testing:        call_within_docker "boatsService" "compile,unit"                 true  false ...
-e2e-testing:         call_within_docker "boatsService" "unit,e2e"                     true  false ...
-artefact-creation:   call_within_docker "boatsService" "e2e,zip"                      false false ...
-explorative testing: call_within_docker "boatsService" "precompile,compile,(explore)" true  true ...
+pre-compilation:     call_within_docker "boats-service" "boats,precompile"             true  false ...
+compilation:         call_within_docker "boats-service" "precompile,compile"           true  false ...
+unit-testing:        call_within_docker "boats-service" "compile,unit"                 true  false ...
+e2e-testing:         call_within_docker "boats-service" "unit,e2e"                     true  false ...
+artefact-creation:   call_within_docker "boats-service" "e2e,zip"                      false false ...
+explorative testing: call_within_docker "boats-service" "precompile,compile,(explore)" true  true ...
 ```
 
 #### Syntax ####
