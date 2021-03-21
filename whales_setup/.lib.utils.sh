@@ -27,7 +27,7 @@ function is_linux() {
 # .ENV EXTRACTION
 ##############################################################################
 
-function env_var() {
+function env_value() {
     local file="$1";
     local key="$2";
     local pattern="^$key=(.*)$";
@@ -36,7 +36,12 @@ function env_var() {
         echo "$( echo "$line" | sed -E "s/^.*=(.*)$/\1/g" )";
         return;
     done <<< "$( cat "$file" )";
-    _log_fail "Argument \033[93;1m$key\033[0m not found in \033[1m$file\033[0m!";
+}
+
+function env_required() {
+    local value="$( env_value "$1" "$2" )";
+    [ "$value" == "" ] && _log_fail "Argument \033[93;1m$key\033[0m not found in \033[1m$file\033[0m!";
+    echo "$value";
 }
 
 ##############################################################################

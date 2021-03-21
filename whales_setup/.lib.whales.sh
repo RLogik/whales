@@ -12,17 +12,18 @@ source whales_setup/.lib.utils.sh;
 ##############################################################################
 
 # extract from project .env file:
-export WHALES_PATH="$( env_var ".env" WHALES_SETUP_PATH )";
-export WHALES_DOCKER_COMPOSE_YML="$( env_var ".env" DOCKER_COMPOSE_CONFIG_FILE )";
+export WHALES_PATH="$(               env_required ".env" WHALES_SETUP_PATH          )";
+export WHALES_DOCKER_COMPOSE_YML="$( env_required ".env" DOCKER_COMPOSE_CONFIG_FILE )";
 
 # extract from whales_seutp .env:
-export WHALES_DOCKER_IP="$(             env_var "$WHALES_PATH/.env" IP )";
-export WHALES_DOCKER_PORT_HOST="$(      env_var "$WHALES_PATH/.env" PORT_HOST )";
-export WHALES_DOCKER_PORT_CONTAINER="$( env_var "$WHALES_PATH/.env" PORT_CONTAINER )";
-export WHALES_DOCKER_SERVICE="$(        env_var "$WHALES_PATH/.env" DEFAULT_SERVICE )";   # NOTE: This get changed dynamically.
-export WHALES_DOCKER_IMAGE="$(          env_var "$WHALES_PATH/.env" DEFAULT_IMAGE )";     # ""
-export WHALES_DOCKER_CONTAINER="$(      env_var "$WHALES_PATH/.env" DEFAULT_CONTAINER )"; # ""
-export WHALES_DOCKER_TAG_EXPLORE="$(    env_var "$WHALES_PATH/.env" TAG_EXPLORE )";
+export WHALES_DOCKER_IP="$(             env_required "$WHALES_PATH/.env" IP )";
+export WHALES_DOCKER_PORT_HOST="$(      env_required "$WHALES_PATH/.env" PORT_HOST )";
+export WHALES_DOCKER_PORT_CONTAINER="$( env_required "$WHALES_PATH/.env" PORT_CONTAINER )";
+export WHALES_DOCKER_TAG_EXPLORE="$(    env_required "$WHALES_PATH/.env" TAG_EXPLORE )";
+
+export WHALES_DOCKER_SERVICE="";   # NOTE: This get changed dynamically.
+export WHALES_DOCKER_IMAGE="";     # ""
+export WHALES_DOCKER_CONTAINER=""; # ""
 
 export WHALES_DOCKER_PORTS="$WHALES_DOCKER_IP:$WHALES_DOCKER_PORT_HOST:$WHALES_DOCKER_PORT_CONTAINER";
 export WHALES_DOCKER_CONTAINER_TEMP="whales_temp";
