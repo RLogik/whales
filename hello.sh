@@ -5,24 +5,25 @@
 #
 #    Usage:
 #    ~~~~~~
-#    ./hello.sh [--base <tag>] "...message to be printed..."
+#    ./hello.sh "...message to be printed..."
 ##############################################################################
 
 SCRIPTARGS="$@";
-splitargs=( "$@" );
+FLAGS=( "$@" );
+ME="hello.sh";
+SERVICE="hello-service";
 
-. .lib.sh;
-
-base_tag="$( get_one_kwarg_space "$SCRIPTARGS" "-+base" "hello" )";
-if ( has_arg "$SCRIPTARGS" "-+base" ); then SCRIPTARGS="${splitargs[@]:2}"; fi
-if [ "$base_tag" == "hello" ] && ! [ -f "HELLO_WORLD" ]; then touch HELLO_WORLD; fi
-
-## check if inside docker, if not then call script within docker:
-# call_within_docker <base_tag> <tag>                 <save> <it>  <expose_ports> <script>   <params>
-call_within_docker  "$base_tag" "$DOCKER_TAG_EXPLORE" true   false false          "hello.sh" "$SCRIPTARGS";
+source .lib.sh;
+source whales_setup/.lib.sh;
 
 FILE_MESSAGE="HELLO_WORLD";
-if ! [ -f "$FILE_MESSAGE" ]; then echo "(empty)" >| $FILE_MESSAGE; fi
+
+( has_arg "$SCRIPTARGS" "-+base" ) && SCRIPTARGS="${FLAGS[@]:2}";
+
+# call_within_docker <service>  <tag-sequence>    <save> <it>  <expose> <script> <params>
+call_within_docker   "$SERVICE" "build,(explore)" true   false false    "$ME"    "$SCRIPTARGS";
+
+! [ -f "$FILE_MESSAGE" ] && echo "(empty)" >| $FILE_MESSAGE;
 old_message="$(cat $FILE_MESSAGE)";
 new_message="$SCRIPTARGS";
 echo "$new_message" >| $FILE_MESSAGE;

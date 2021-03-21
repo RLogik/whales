@@ -1,0 +1,58 @@
+version: "3"
+networks:
+  default:
+    driver: bridge
+services:
+  #---------------------------------------------------------#
+  # Hello World Service
+  #---------------------------------------------------------#
+  hello-service:
+    image: whales-hello:build
+    build:
+      context: ".." # !!! important !!! Context = root of project.
+      dockerfile: whales_setup/Dockerfile
+      args: &ref_args
+        WD: "$WD"
+        ENTRY_SCRIPT: "$ENTRY_SCRIPT"
+    # volumes:
+    #   - ./../HELLO_WORLD:$WD/HELLO_WORLD:rw  ## <- r/w   allows for live developing
+    command:
+      ["bash", "-c", "echo -e \"Service \\033[1mhello-service\\033[0m built with image \\033[1mwhales-hello:build\\033[0m.\""]
+  #---------------------------------------------------------#
+  # Production
+  #---------------------------------------------------------#
+  prod-service:
+    image: whales-prod:build
+    build:
+      context: ".." # !!! important !!! Context = root of project.
+      dockerfile: whales_setup/Dockerfile
+      args:
+        <<: *ref_args
+    # volumes:
+    #   - ./../logs:$WD/logs:rw   ## <- (r/)w for logging between all docker levels.
+    #   - ./../src:$WD/src:rw     ## <- r/w   allows for live developing
+    #   - ./../test:$WD/test:rw   ##          ""
+    #   - ./../data:$WD/data:rw   ## <- r/w   data folder, images will be stored here.
+    #   - ./../dist:$WD/dist:rw   ## <- r/w   distribution folder, VERSION + Programm artefact.
+    #   - ./../build:$WD/build:rw ## <- (r/)w build folder -> artefacts
+    command:
+      ["bash", "-c", "echo -e \"Service \\033[1mprod-service\\033[0m built with image \\033[1mwhales-prod:build\\033[0m.\""]
+  #---------------------------------------------------------#
+  # Test
+  #---------------------------------------------------------#
+  test-service:
+    image: whales-test:build
+    build:
+      context: ".." # !!! important !!! Context = root of project.
+      dockerfile: whales_setup/Dockerfile
+      args:
+        <<: *ref_args
+    # volumes:
+    #   - ./../logs:$WD/logs:rw   ## <- (r/)w for logging between all docker levels.
+    #   - ./../src:$WD/src:rw     ## <- r/w   allows for live developing
+    #   - ./../test:$WD/test:rw   ##          ""
+    #   - ./../data:$WD/data:rw   ## <- r/w   data folder, images will be stored here.
+    #   - ./../dist:$WD/dist:rw   ## <- r/w   distribution folder, VERSION + Programm artefact.
+    #   - ./../build:$WD/build:rw ## <- (r/)w build folder -> artefacts
+    command:
+      ["bash", "-c", "echo -e \"Service \\033[1mtest-service\\033[0m built with image \\033[1mwhales-test:build\\033[0m.\""]

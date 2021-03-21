@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##############################################################################
-#    DESCRIPTION: paths for logging
+#    DESCRIPTION: Paths for logging.
 ##############################################################################
 
 export OUT="/dev/stdout";
@@ -11,3 +11,4 @@ export VERBOSE="/dev/null";
 ## local logging in subfolder ./logs:
 export DEBUG="debug.log";
 export PATH_LOGS="logs";
+export LOGGINGPREFIX="";
