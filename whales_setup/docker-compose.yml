@@ -4,29 +4,29 @@ networks:
     driver: bridge
 services:
   #---------------------------------------------------------#
-  # CONTAINER: Hello World
+  # Hello World Service
   #---------------------------------------------------------#
-  helloService:
+  hello-service:
     image: whales-hello:build
     build:
       context: ".." # !!! important !!! Context = root of project.
       dockerfile: whales_setup/Dockerfile
       args:
-        WD: $WD
+        WD: "$WD"
     # volumes:
     #   - ./../HELLO_WORLD:$WD/HELLO_WORLD:rw  ## <- r/w   allows for live developing
     command:
       ["bash", "-c", "echo -e \"Service \\033[1mhelloService\\033[0m built with image \\033[1mwhales-hello:build\\033[0m.\""]
   #---------------------------------------------------------#
-  # CONTAINER: Production
+  # Production
   #---------------------------------------------------------#
-  prodService:
+  prod-service:
     image: whales-prod:build
     build:
       context: ".." # !!! important !!! Context = root of project.
       dockerfile: whales_setup/Dockerfile
       args:
-        WD: $WD
+        WD: "$WD"
     # volumes:
     #   - ./../logs:$WD/logs:rw   ## <- (r/)w for logging between all docker levels.
     #   - ./../src:$WD/src:rw     ## <- r/w   allows for live developing
@@ -37,15 +37,15 @@ services:
     command:
       ["bash", "-c", "echo -e \"Service \\033[1mprodService\\033[0m built with image \\033[1mwhales-prod:build\\033[0m.\""]
   #---------------------------------------------------------#
-  # CONTAINER: Test
+  # Test
   #---------------------------------------------------------#
-  testService:
+  test-service:
     image: whales-test:build
     build:
       context: ".." # !!! important !!! Context = root of project.
       dockerfile: whales_setup/Dockerfile
       args:
-        WD: $WD
+        WD: "$WD"
     # volumes:
     #   - ./../logs:$WD/logs:rw   ## <- (r/)w for logging between all docker levels.
     #   - ./../src:$WD/src:rw     ## <- r/w   allows for live developing
