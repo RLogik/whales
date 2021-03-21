@@ -17,19 +17,19 @@ FLAGS=( $@ );
 ME="clean.sh";
 
 source .lib.sh;
-source whales_setup/.lib.whales.sh;
+source whales_setup/.lib.sh;
 
 mode="$(    get_one_kwarg_space "$SCRIPTARGS" "-+mode"    "" )";
 SERVICE="$( get_one_kwarg_space "$SCRIPTARGS" "-+service" "" )";
 TAGS="$(     get_one_kwarg_space "$SCRIPTARGS" "-+tags"     "" )";
 
 if [ "$mode" == "docker" ]; then
-    select_service "$SERVICE";
+    select_service "$SERVICE" || exit 1;
     run_docker_clean;
 elif [ "$mode" == "docker-all" ]; then
     run_docker_clean_all;
 elif [ "$mode" == "artefacts" ]; then
-    select_service "$SERVICE";
+    select_service "$SERVICE" || exit 1;
     # call_within_docker <service> <tag-sequence> <save> <it>  <expose> <script> <params>
     call_within_docker  "$SERVICE" "$TAGS"        true   false false    "$ME"    "$SCRIPTARGS";
     run_clean_artefacts;
