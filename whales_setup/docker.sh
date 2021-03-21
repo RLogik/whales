@@ -26,7 +26,7 @@
 
 SCRIPTARGS="$@";
 
-source whales_setup/.lib.whales.sh;
+source whales_setup/.lib.sh;
 
 service="$( get_one_kwarg_space "$SCRIPTARGS" "-+service" )";
 
@@ -34,15 +34,15 @@ if ( has_arg "$SCRIPTARGS" "-+enter" ); then
     tag="$( get_one_kwarg_space "$SCRIPTARGS" "-+enter" )";
     run_docker_enter "$service" "$tag";
 elif ( has_arg "$SCRIPTARGS" "-+(start|up)" ); then
-    select_service "$service";
+    select_service "$service" || exit 1;
     run_docker_start "$SCRIPTARGS";
 elif ( has_arg "$SCRIPTARGS" "-+(stop|down)" ); then
-    select_service "$service";
+    select_service "$service" || exit 1;
     run_docker_stop_down;
 elif ( has_arg "$SCRIPTARGS" "-+clean-all" ); then
     run_docker_clean_all;
 elif ( has_arg "$SCRIPTARGS" "-+clean" ); then
-    set_docker_service "$service" false;
+    select_service "$service" || exit 1;
     run_docker_clean;
 elif ( has_arg "$SCRIPTARGS" "-+(status|state)" ); then
     get_docker_state;
@@ -52,13 +52,13 @@ else
     _cli_message "  Call \033[1m./whales_setup/docker.sh\033[0m with the command";
     _cli_message "    $( _help_cli_key_description "--clean-all" "     " "Cleans+Prunes all docker images and containers after prompt." )";
     _cli_message "  or";
-    _cli_message "    $( _help_cli_key_description "--service" "       " "<string> Name of service in whales_setup/docker-compose.yml." )";
+    _cli_message "    $( _help_cli_key_description "--service" "       " "<string> Name of service in docker-compose.yml." )";
     _cli_message "  + one of the following commands:";
     _cli_message "      $( _help_cli_key_description "--enter" "         " "<string> Tag name of docker image to be entered interactively." )";
     _cli_message "      $( _help_cli_key_description "--status/state" "  " "Displays status of containers + images." )";
-    _cli_message "      $( _help_cli_key_description "--start/up" "      " "Starts container." )";
-    _cli_message "      $( _help_cli_key_description "--stop/down" "     " "Stops container." )";
-    _cli_message "      $( _help_cli_key_description "--clean" "         " "Cleans all docker images and containers with name 'whales:...'." )";
+    _cli_message "      $( _help_cli_key_description "--start/up" "      " "Starts container associated to service." )";
+    _cli_message "      $( _help_cli_key_description "--stop/down" "     " "Stops container associated to service." )";
+    _cli_message "      $( _help_cli_key_description "--clean" "         " "Cleans all docker images and containers associated to the service." )";
     _cli_message "";
     exit 1;
 fi

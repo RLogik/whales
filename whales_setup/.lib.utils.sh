@@ -39,7 +39,9 @@ function env_value() {
 }
 
 function env_required() {
-    local value="$( env_value "$1" "$2" )";
+    local file="$1";
+    local key="$2";
+    local value="$( env_value "$file" "$key" )";
     [ "$value" == "" ] && _log_fail "Argument \033[93;1m$key\033[0m not found in \033[1m$file\033[0m!";
     echo "$value";
 }

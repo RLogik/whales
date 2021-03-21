@@ -9,6 +9,7 @@
 !/.lib.logging.sh
 !/.lib.utils.sh
 !/.lib.whales.sh
+!/.lib.sh
 !/docker-entry.sh
 !/docker.sh
 
