@@ -13,6 +13,7 @@ services:
       dockerfile: whales_setup/Dockerfile
       args: &ref_args
         WD: "$WD"
+        SETUP_PATH: "$WHALES_SETUP_PATH"
         ENTRY_SCRIPT: "$ENTRY_SCRIPT"
     # volumes:
     #   - ./../HELLO_WORLD:$WD/HELLO_WORLD:rw  ## <- r/w   allows for live developing

@@ -5,6 +5,8 @@
 #    Include using source whales_setup/.lib.sh
 ##############################################################################
 
+source whales_setup/.lib.globals.sh;
+source whales_setup/.lib.utils.sh;
 source whales_setup/.lib.whales.sh;
 
 ##############################################################################

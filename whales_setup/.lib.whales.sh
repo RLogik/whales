@@ -5,34 +5,6 @@
 #    Include using source whales_setup/.lib.whales.sh
 ##############################################################################
 
-source whales_setup/.lib.utils.sh;
-
-##############################################################################
-# GLOBAL VARIABLES
-##############################################################################
-
-# extract from project .env file:
-export WHALES_PATH="$(               env_required ".env" WHALES_SETUP_PATH          )";
-export WHALES_DOCKER_COMPOSE_YML="$( env_required ".env" DOCKER_COMPOSE_CONFIG_FILE )";
-
-# extract from whales_seutp .env:
-export WHALES_DOCKER_IP="$(               env_required "$WHALES_PATH/.env" IP )";
-export WHALES_DOCKER_PORT_HOST="$(        env_required "$WHALES_PATH/.env" PORT_HOST )";
-export WHALES_DOCKER_PORT_CONTAINER="$(   env_required "$WHALES_PATH/.env" PORT_CONTAINER )";
-export WHALES_DOCKER_TAG_EXPLORE="$(      env_required "$WHALES_PATH/.env" TAG_EXPLORE )";
-export WHALES_CONTAINER_SCHEME_PREFIX="$( env_required "$WHALES_PATH/.env" CONTAINER_SCHEME_PREFIX )";
-
-export WHALES_DOCKER_SERVICE="";   # NOTE: This get changed dynamically.
-export WHALES_DOCKER_IMAGE="";     # ""
-export WHALES_DOCKER_CONTAINER=""; # ""
-
-export WHALES_DOCKER_PORTS="$WHALES_DOCKER_IP:$WHALES_DOCKER_PORT_HOST:$WHALES_DOCKER_PORT_CONTAINER";
-export WHALES_FILE_DOCKER_DEPTH="$WHALES_PATH/DOCKER_DEPTH";
-export WHALES_TEMPCONTAINER_SCHEME_PREFIX="temp_$WHALES_CONTAINER_SCHEME_PREFIX";
-
-# NOTE: do not use /bin/bash. Results in error under Windows.  Use \/bin\/bash, bash, sh -c bash, or sh.
-export WHALES_DOCKER_CMD_EXPLORE="bash";
-
 ##############################################################################
 # AUXILIARY METHODS: DOCKER, BASIC
 ##############################################################################
