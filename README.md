@@ -263,14 +263,14 @@ for which we wish to build images with the following dependencies:
 
 Then in our scripts the `<tag-sequence>` in the `call_within_docker` would be given as follows:
 
-| Process             | Command `call_within_docker`<br/>Arguments: `<service>  <tag-sequence> <save> <it>  <expose> <script> <params>` |
+| Process             | Command: `call_within_docker`<br/>Arguments: `<service> <tag-sequence> <save> <it>` |
 | :------------------ | :---------------------------------------------------------------------------------- |
-| pre-compilation     | `call_within_docker "boats-service" "boats,precompile"             true  false ...` |
-| compilation:        | `call_within_docker "boats-service" "precompile,compile"           true  false ...` |
-| unit-testing        | `call_within_docker "boats-service" "compile,unit"                 true  false ...` |
-| e2e-testing         | `call_within_docker "boats-service" "unit,e2e"                     true  false ...` |
-| artefact-creation   | `call_within_docker "boats-service" "e2e,zip"                      false false ...` |
-| explorative testing | `call_within_docker "boats-service" "precompile,compile,(explore)" true  true  ...` |
+| pre-compilation     | `"boats-service" "boats,precompile"             true  false` |
+| compilation:        | `"boats-service" "precompile,compile"           true  false` |
+| unit-testing        | `"boats-service" "compile,unit"                 true  false` |
+| e2e-testing         | `"boats-service" "unit,e2e"                     true  false` |
+| artefact-creation   | `"boats-service" "e2e,zip"                      false false` |
+| explorative testing | `"boats-service" "precompile,compile,(explore)" true  true ` |
 
 
 #### Syntax ####
