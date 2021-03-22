@@ -5,20 +5,15 @@
 ##############################################################################
 
 function env_value() {
-    local file="$1";
-    local key="$2";
-    local pattern="^$key=(.*)$";
-    while read line; do
-        ! ( echo "$line" | grep -E -q "$pattern" ) && continue;
-        echo "$( echo "$line" | sed -E "s/^.*=(.*)$/\1/g" )" && return;
-    done <<< "$( cat "$file" )";
+    source "$1";
+    bash -c "echo \$$2";
 }
 
 function env_required() {
     local file="$1";
     local key="$2";
     local value="$( env_value "$file" "$key" )";
-    [ "$value" == "" ] && echo -e "[\033[91mERROR\033[0m]Argument \033[93;1m$key\033[0m not found in \033[1m$file\033[0m!" && return 1;
+    [ "$value" == "" ] && echo -e "[\033[91mERROR\033[0m]Argument \033[93;1m$key\033[0m not found in \033[1m$file\033[0m!" >> /dev/stderr && return 1;
     echo "$value";
 }
 
