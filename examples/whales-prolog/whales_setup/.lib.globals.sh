@@ -26,9 +26,9 @@ export CMD_EXPLORE="bash";
 export WAIT_PERIOD_IN_SECONDS=1;
 export PENDING_SYMBOL="#";
 
-export OUT="$(           env_required ".env" CONSOLE_OUT )";
-export ERR="$(           env_required ".env" CONSOLE_ERR )";
-export VERBOSE="$(       env_required ".env" CONSOLE_VERBOSE )";
-export DEBUG_FILE="$(    env_required ".env" CONSOLE_DEBUG_FILE )";
-export PATH_LOGS="$(     env_required ".env" CONSOLE_PATH_LOGS )";
+export OUT="$(           env_required ".env" WHALES_CONSOLE_OUT )";
+export ERR="$(           env_required ".env" WHALES_CONSOLE_ERR )";
+export VERBOSE="$(       env_required ".env" WHALES_CONSOLE_VERBOSE )";
+export DEBUG_FILE="$(    env_required ".env" WHALES_CONSOLE_DEBUG_FILE )";
+export PATH_LOGS="$(     env_required ".env" WHALES_CONSOLE_PATH_LOGS )";
 export LOGGINGPREFIX="";
