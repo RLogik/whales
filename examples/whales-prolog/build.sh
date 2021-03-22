@@ -5,7 +5,7 @@
 #
 #    Usage:
 #    ~~~~~~
-#    ./test.sh [options]
+#    ./build.sh [options]
 #
 #    Cli options:
 #    ~~~~~~~~~~~~
@@ -14,8 +14,8 @@
 
 SCRIPTARGS="$@";
 FLAGS=( $@ );
-ME="test.sh";
-SERVICE="test-service";
+ME="build.sh";
+SERVICE="pl-main-service";
 
 source .lib.sh;
 source whales_setup/.lib.sh;
@@ -37,7 +37,7 @@ elif [ "$mode" == "explore" ]; then
 else
     _log_error   "Invalid cli argument.";
     _cli_message "";
-    _cli_message "  Call \033[1m./test.sh\033[0m with one of the commands";
+    _cli_message "  Call \033[1m./build.sh\033[0m with one of the commands";
     _cli_message "    $( _help_cli_key_values      "--mode" "         " "run" "unit" "explore" )";
     _cli_message "    $( _help_cli_key_description "--mode run" "     " "compiles programme with test configuration" )";
     _cli_message "    $( _help_cli_key_description "--mode unit" "    " "runs unit test" )";

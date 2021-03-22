@@ -1,15 +1,35 @@
+################################################################
+# DOCKER IMAGE: STRAWBERRY PROLOG
 FROM swipl:stable
+#
+################################################################
+
+################################################################################
+# INSTRUCTIONS REQUIRED FOR WHALES PROJECT
+# !!! The following lines are necessary for the Whales project !!!
+# DEV-NOTE: Add `&& sleep 5` to lines, in order to see the console output.
+################################################################################
+
 ARG WD
-ARG DEBIAN_FRONTEND=noninteractive
-## need this, to make scripts accessible under all OSs:
-RUN apt-get -y update 2> /dev/null >> /dev/null
-# RUN apt-get -y upgrade 2> /dev/null >> /dev/null
-RUN apt-get install -y dos2unix 2> /dev/null >> /dev/null
-RUN apt-get clean 2> /dev/null >> /dev/null
-## copy project folder to docker container:
-COPY . $WD
-WORKDIR $WD
-## NOTE: To avoid writing lots of awkward commands here, one can pack themm in a bash script
-## and (depending on the docker image) run the bash script within the container.
+COPY . "$WD"
+WORKDIR "$WD"
+
+ARG SETUP_PATH
+# set the Docker-Depth to 1:
+RUN echo "1" >| "$SETUP_PATH/DOCKER_DEPTH"
+# add prefix to logging levels:
+RUN echo "export LOGGINGPREFIX=\">\";" >> "${SETUP_PATH}/.lib.globals.sh"
+
+# Install dos2unix, to make scripts accessible under all OSs:
+RUN DEBIAN_FRONTEND=noninteractive && apt-get -y update           2> /dev/null >> /dev/null
+RUN DEBIAN_FRONTEND=noninteractive && apt-get install -y dos2unix 2> /dev/null
+RUN DEBIAN_FRONTEND=noninteractive && apt-get clean               2> /dev/null >> /dev/null
+
+# make all bash files in project root + whales_setup readable in unix and grant them execution permissions:
+RUN [ "/bin/bash", "-c", "ls -a {,$SETUP_PATH/}{,.}*.sh 2> /dev/null | xargs -i bash -c \"dos2unix {} && chmod +x {}\"" ]
+
+# NOTE: To avoid writing lots of awkward commands here, one can pack themm in a bash script
+# and (depending on the docker image) run the bash script within the container.
 ARG ENTRY_SCRIPT
-RUN [ -f "$ENTRY_SCRIPT" ] && cat "$ENTRY_SCRIPT" | dos2unix | bash || exit 1
+RUN [ "/bin/bash", "-c", "[ -f \"$ENTRY_SCRIPT\" ] && cat \"$ENTRY_SCRIPT\" | dos2unix | bash || exit 1" ]
+# (Alternative: Use as ENTRYPOINT instead of RUN. )
