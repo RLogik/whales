@@ -185,7 +185,7 @@ Original bash file, `build.sh`:
 #/bin/bash
 
 python3 -m pip install tensorflow;
-python3 src/main.py
+python3 src/main.py $1;
 ```
 
 This becomes:
@@ -203,10 +203,10 @@ source whales_setup/.lib.sh;
 call_within_docker   "$SERVICE" "prod,setup"   true   false false    "$ME"    $SCRIPTARGS;
 
 python3 -m pip install tensorflow;
-python3 src/main.py
+python3 src/main.py "${SCRIPTARGS[0]}";
 ```
 
-**NOTE:** Replace `"prod-service"` by the appropriate service name in `whales_setup/docker-compose.yml`.
+**NOTE:** Replace `"prod-service"` by the appropriate service name in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml).
 
 ### Example 2 ###
 
@@ -247,7 +247,7 @@ else
 fi
 ```
 
-**NOTE 1:** Replace `"test-service"` by the appropriate service name in `whales_setup/docker-compose.yml`.
+**NOTE 1:** Replace `"test-service"` by the appropriate service name in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml).
 
 **NOTE 2:** Set the `<save>` argument to true/false, depending upon whether you want to save.
 If `save=true`, then when complete, the exited container will be committed to an image named `whales:<tag>`.
@@ -256,7 +256,7 @@ If `save=true`, then when complete, the exited container will be committed to an
 
 The `<tag-sequence>` argument is a comma separated list of tag-names,
 representing a route from the service image to the desired tag name of the save image (if at all desired).
-For example, suppose we have service called `boats-service` defined in `whales_setup/docker-compose.yml`
+For example, suppose we have service called `boats-service` defined in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml)
 to build an image with the designation `whales:boats`.
 And suppose we have some testing processes,
 
@@ -304,10 +304,13 @@ where `n`≥2 and each `tag_i` contains no spaces (or commas).
 
 #### Interpretation ####
 
+Here `<image>` denotes the image name (without tag) of the service
+in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml).
+
 - If the `<tag-sequence>` argument is pre-transformed to `"tag_1,tag_2,...,tag_n"`,
     then the entry point will be taken to be the latest tag, `tag_i`, where `i` ∈ {1,2,...,`n`-1},
-    for which an image `<service>:tag_i` exists.
-    And the image name for saving will be `<service>:tag_n`.
+    for which an image `<image>:tag_i` exists.
+    And the image name for saving will be `<image>:tag_n`.
     That is, we allow up to the penultimate element in the list to be used as the starting point.
 - Observe that if the `<tag-sequence>` argument was originally of the form `"tag_1,tag_2,...,(tag_n)"`,
     then the penultimate element in the pre-transformed list coincide with the final element.
