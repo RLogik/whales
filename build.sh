@@ -18,7 +18,6 @@ ME="build.sh";
 SERVICE="prod-service";
 
 source .lib.sh;
-source whales_setup/.lib.sh;
 
 mode="$( get_one_kwarg_space "$SCRIPTARGS" "-+mode" "" )";
 

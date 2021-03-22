@@ -4,7 +4,7 @@ networks:
     driver: bridge
 services:
   #---------------------------------------------------------#
-  # Hello World Service
+  # SERVICE: Hello World
   #---------------------------------------------------------#
   hello-service:
     image: whales-hello:build
@@ -13,13 +13,14 @@ services:
       dockerfile: whales_setup/Dockerfile
       args: &ref_args
         WD: "$WD"
+        SETUP_PATH: "$WHALES_SETUP_PATH"
         ENTRY_SCRIPT: "$ENTRY_SCRIPT"
     # volumes:
     #   - ./../HELLO_WORLD:$WD/HELLO_WORLD:rw  ## <- r/w   allows for live developing
     command:
-      ["bash", "-c", "echo -e \"Service \\033[1mhello-service\\033[0m built with image \\033[1mwhales-hello:build\\033[0m.\""]
+      [ "/bin/bash", "-c", "echo -e \"Service \\033[1mhello-service\\033[0m built with image \\033[1mwhales-hello:build\\033[0m.\"" ]
   #---------------------------------------------------------#
-  # Production
+  # SERVICE: Production
   #---------------------------------------------------------#
   prod-service:
     image: whales-prod:build
@@ -36,9 +37,9 @@ services:
     #   - ./../dist:$WD/dist:rw   ## <- r/w   distribution folder, VERSION + Programm artefact.
     #   - ./../build:$WD/build:rw ## <- (r/)w build folder -> artefacts
     command:
-      ["bash", "-c", "echo -e \"Service \\033[1mprod-service\\033[0m built with image \\033[1mwhales-prod:build\\033[0m.\""]
+      [ "/bin/bash", "-c", "echo -e \"Service \\033[1mprod-service\\033[0m built with image \\033[1mwhales-prod:build\\033[0m.\"" ]
   #---------------------------------------------------------#
-  # Test
+  # SERVICE: Test
   #---------------------------------------------------------#
   test-service:
     image: whales-test:build
@@ -55,4 +56,4 @@ services:
     #   - ./../dist:$WD/dist:rw   ## <- r/w   distribution folder, VERSION + Programm artefact.
     #   - ./../build:$WD/build:rw ## <- (r/)w build folder -> artefacts
     command:
-      ["bash", "-c", "echo -e \"Service \\033[1mtest-service\\033[0m built with image \\033[1mwhales-test:build\\033[0m.\""]
+      [ "/bin/bash", "-c", "echo -e \"Service \\033[1mtest-service\\033[0m built with image \\033[1mwhales-test:build\\033[0m.\"" ]

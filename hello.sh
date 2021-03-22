@@ -14,7 +14,6 @@ ME="hello.sh";
 SERVICE="hello-service";
 
 source .lib.sh;
-source whales_setup/.lib.sh;
 
 FILE_MESSAGE="HELLO_WORLD";
 

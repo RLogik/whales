@@ -5,30 +5,29 @@
 #    Include using source whales_setup/.lib.whales.sh
 ##############################################################################
 
-source whales_setup/.lib.utils.sh;
+
 
 ##############################################################################
-# GLOBAL VARIABLES
+# GLOBAL VARIABLES: .lib.whales.sh
 ##############################################################################
 
 # extract from project .env file:
-export WHALES_PATH="$(               env_required ".env" WHALES_SETUP_PATH          )";
-export WHALES_DOCKER_COMPOSE_YML="$( env_required ".env" DOCKER_COMPOSE_CONFIG_FILE )";
+export WHALES_PATH="$(               env_required ".env" WHALES_SETUP_PATH                 )";
+export WHALES_DOCKER_COMPOSE_YML="$( env_required ".env" WHALES_DOCKER_COMPOSE_CONFIG_FILE )";
 
 # extract from whales_seutp .env:
-export WHALES_DOCKER_IP="$(               env_required "$WHALES_PATH/.env" IP )";
-export WHALES_DOCKER_PORT_HOST="$(        env_required "$WHALES_PATH/.env" PORT_HOST )";
-export WHALES_DOCKER_PORT_CONTAINER="$(   env_required "$WHALES_PATH/.env" PORT_CONTAINER )";
-export WHALES_DOCKER_TAG_EXPLORE="$(      env_required "$WHALES_PATH/.env" TAG_EXPLORE )";
+export WHALES_DOCKER_IP="$(               env_required "$WHALES_PATH/.env" IP                      )";
+export WHALES_DOCKER_PORT_HOST="$(        env_required "$WHALES_PATH/.env" PORT_HOST               )";
+export WHALES_DOCKER_PORT_CONTAINER="$(   env_required "$WHALES_PATH/.env" PORT_CONTAINER          )";
+export WHALES_DOCKER_TAG_EXPLORE="$(      env_required "$WHALES_PATH/.env" TAG_EXPLORE             )";
 export WHALES_CONTAINER_SCHEME_PREFIX="$( env_required "$WHALES_PATH/.env" CONTAINER_SCHEME_PREFIX )";
 
 export WHALES_DOCKER_SERVICE="";   # NOTE: This get changed dynamically.
 export WHALES_DOCKER_IMAGE="";     # ""
 export WHALES_DOCKER_CONTAINER=""; # ""
-
-export WHALES_DOCKER_PORTS="$WHALES_DOCKER_IP:$WHALES_DOCKER_PORT_HOST:$WHALES_DOCKER_PORT_CONTAINER";
-export WHALES_FILE_DOCKER_DEPTH="$WHALES_PATH/DOCKER_DEPTH";
 export WHALES_TEMPCONTAINER_SCHEME_PREFIX="temp_$WHALES_CONTAINER_SCHEME_PREFIX";
+export WHALES_FILE_DOCKER_DEPTH="$WHALES_PATH/DOCKER_DEPTH";
+export WHALES_DOCKER_PORTS="$WHALES_DOCKER_IP:$WHALES_DOCKER_PORT_HOST:$WHALES_DOCKER_PORT_CONTAINER";
 
 # NOTE: do not use /bin/bash. Results in error under Windows.  Use \/bin\/bash, bash, sh -c bash, or sh.
 export WHALES_DOCKER_CMD_EXPLORE="bash";
@@ -374,7 +373,7 @@ function is_docker() {
 }
 
 ##############################################################################
-# MAIN METHODS: SETTING SERVICES, IMAGES, CONTAINERS
+# MAIN METHODS: GET/SET SERVICES, ENTER DOCKER
 ##############################################################################
 
 function select_service() {
@@ -435,4 +434,106 @@ function get_docker_service() {
     select_service "$service" 2> $VERBOSE >> $VERBOSE && success=true || success=false;
     ! ( $success ) && _log_error "Could not set the service to \033[1m$service\033[0m." && return 1;
     return 0;
+}
+
+####
+# This method starts container from a specified image,
+# performs a command, and then saves to a specified image.
+# The following relations hold/are forced between the images:
+#
+#    service image
+#    \____> ...
+#             \____> entry image (or == service image)
+#                  \
+#      [ after container finished ]
+#                   \________> save image
+#
+# Usage:
+#    enter_docker
+#        --service <name> --enter <image:tag> [--save [<image:tag>]]
+#        --it <bool> --expose <bool>
+#        [--command <string>]
+#
+# Flags:
+#    --service <string>      The name of the service in whales_setup/docker-compose.yml.
+#    --enter <image:tag>     If argument left empty, will overwrite original.
+#    [--save [<image:tag>]]  If used, will save the container to an image upon completion.
+#                              (Default: coincides with --entry)
+#    --it <bool>             Whether or not to run docker container interactive mode.
+#      false (default)         Docker will run discretely and logs will be followed.
+#    --expose <bool>         Whether or not ports are to be exposed.
+#                              (Default: coincides with --it)
+#    [--command <string>]    Use to start container with a command.
+#                              (Default: "bash")
+####
+function enter_docker() {
+    local metaargs="$@";
+    local service="$( get_one_kwarg_space "$metaargs" "-+service" ""      )";
+    local entry="$(   get_one_kwarg_space "$metaargs" "-+enter"   ""      )";
+    local save_arg=false;
+    ( has_arg "$metaargs" "-+save" ) && save_arg=true;
+    local imageFinal="$(   get_one_kwarg_space "$metaargs" "-+save"    ""      )";
+    local it=$(       get_one_kwarg_space "$metaargs" "-+it"      "false" );
+    local expose=$(   get_one_kwarg_space "$metaargs" "-+expose"  ""      );
+    local command="$( get_one_kwarg_space "$metaargs" "-+command" ""      )";
+
+    _log_info "ENTER DOCKER ENVIRONMENT.";
+    ## Get container of service (in order to connect mounted volumes):
+    # DEV-NOTE: Do not enclose in ( ... ) here, otherwise exports do not work.
+    get_docker_service "$service" false 2> $VERBOSE >> $VERBOSE \
+        || _log_fail "In whales decorator \033[1mcall_within_docker\033[0m the service \033[93;1m$service\033[0m could not be found.";
+
+    ## Get image:tag for entry point:
+    local entry_orig="$entry";
+    if [ "$entry" == "" ]; then
+        ## only if "--entry" argument is missing / empty, force the explore tag:
+        entry="$WHALES_DOCKER_IMAGE:$WHALES_DOCKER_TAG_EXPLORE";
+        entry_orig="$entry";
+        entry="$( docker_get_image_name_latest_stage "$service" "$entry" 2> $VERBOSE )";
+    fi
+    ! ( docker_exists_image_tag "$entry" ) && _log_fail "In whales method \033[1menter_docker\033[0m could not find image with tag \033[1m$tag\033[0m!";
+
+    local id="$( docker_get_image_id_from_image_tag "$entry" 2> $VERBOSE )";
+    [ "$id" == "" ] && _log_fail "In whales method \033[1menter_docker\033[0m could not find image for entry point, \033[1m$entry\033[0m!";
+    _log_info "CONTINUE WITH IMAGE \033[92;1m$entry\033[0m (\033[93;1m$id\033[0m).";
+
+    ## Set arguments, if empty:
+    [ "$save" == "" ] && save=false;
+    [ "$command" == "" ] && command="$WHALES_DOCKER_CMD_EXPLORE" && it=true;
+    [ "$expose" == "" ] && expose=$it;
+    [ "$imageFinal" == "" ] && imageFinal="$entry_orig";
+
+    ## Set ports command:
+    local ports_option="$( ( $expose ) && echo "-p $WHALES_DOCKER_PORTS" || echo "" )";
+
+    ################################
+    # ENTER DOCKER: create container and run command
+    local container_tmp="$( docker_create_unused_tmpcontainer_name )";
+    _log_info "START TEMPORARY CONTAINER \033[92;1m$container_tmp\033[0m.";
+    if ( $it ); then
+        _log_info "EXECUTE COMMAND {\033[93;1m$command\033[0m} INTERACTIVELY.";
+        docker run --name="$container_tmp" $ports_option --volumes-from=$WHALES_DOCKER_CONTAINER:rw -it $id bash -c "$command";
+    else
+        _log_info "EXECUTE COMMAND {\033[93;1m$command\033[0m} NON-INTERACTIVELY.";
+        docker run --name="$container_tmp" $ports_option --volumes-from=$WHALES_DOCKER_CONTAINER:rw -d $id bash -c "$command";
+        docker logs --follow $container_tmp;
+    fi
+    _log_info "WAIT FOR CONTAINER \033[92;1m$container_tmp\033[0m TO STOP.";
+    _log_info "TEMPORARY CONTAINER \033[92;1m$container_tmp\033[0m TERMINATED.";
+    wait_for_container_to_stop "$container_tmp";
+    # EXIT DOCKER
+    ################################
+
+    ## Save state upon exit:
+    if ( $save_arg ); then
+        if [ "$imageFinal" == "$entry_orig" ]; then
+            imageFinal="$entry_orig";
+            _log_info "SAVE STATE TO \033[92;1m$imageFinal\033[0m (OVERWRITING).";
+        else
+            _log_info "SAVE STATE TO \033[92;1m$imageFinal\033[0m.";
+        fi
+        docker commit "$container_tmp" $imageFinal >> $VERBOSE;
+    fi
+    docker_remove_container "$container_tmp" 2> $VERBOSE >> $VERBOSE;
+    _log_info "TEMPORARY CONTAINER \033[92;1m$container_tmp\033[0m REMOVED.";
 }

@@ -5,45 +5,12 @@
 #    Include using source whales_setup/.lib.utils.sh
 ##############################################################################
 
-source whales_setup/.lib.logging.sh;
-
-##############################################################################
-# GLOBAL VARIABLES
-##############################################################################
-
-# periodic waiting time to check a process;
-export WAIT_PERIOD_IN_SECONDS=1;
-export PENDING_SYMBOL="#";
-
 ##############################################################################
 # FOR OS SENSITIVE COMMANDS
 ##############################################################################
 
 function is_linux() {
     [ "$OSTYPE" == "msys" ] && return 1 || return 0;
-}
-
-##############################################################################
-# .ENV EXTRACTION
-##############################################################################
-
-function env_value() {
-    local file="$1";
-    local key="$2";
-    local pattern="^$key=(.*)$";
-    while read line; do
-        ! ( echo "$line" | grep -E -q "$pattern" ) && continue;
-        echo "$( echo "$line" | sed -E "s/^.*=(.*)$/\1/g" )";
-        return;
-    done <<< "$( cat "$file" )";
-}
-
-function env_required() {
-    local file="$1";
-    local key="$2";
-    local value="$( env_value "$file" "$key" )";
-    [ "$value" == "" ] && _log_fail "Argument \033[93;1m$key\033[0m not found in \033[1m$file\033[0m!";
-    echo "$value";
 }
 
 ##############################################################################
@@ -134,11 +101,11 @@ function _cli_message() {
 }
 
 function _log_info() {
-    _cli_message "[\033[94;1mINFO\033[0m] $1" $2;
+    _cli_message "${LOGGINGPREFIX}[\033[94;1mINFO\033[0m] $1" $2;
 }
 
 function _log_debug() {
-    _cli_message "[\033[95;1mDEBUG\033[0m] $1" $2;
+    _cli_message "${LOGGINGPREFIX}[\033[95;1mDEBUG\033[0m] $1" $2;
     if ! [ -f "$PATH_LOGS/$DEBUG" ]; then
         mkdir "$PATH_LOGS" 2> $VERBOSE;
         touch "$PATH_LOGS/$DEBUG";
@@ -147,14 +114,14 @@ function _log_debug() {
 }
 
 function _log_warn() {
-    _cli_message "[\033[93;1mWARNING\033[0m] $1" $2;
+    _cli_message "${LOGGINGPREFIX}[\033[93;1mWARNING\033[0m] $1" $2;
 }
 
 function _log_error() {
     if [ "$2" == "true" ]; then
-        echo -ne "[\033[91;1mERROR\033[0m] $1" >> $ERR;
+        echo -ne "${LOGGINGPREFIX}[\033[91;1mERROR\033[0m] $1" >> $ERR;
     else
-        echo -e "[\033[91;1mERROR\033[0m] $1" >> $ERR;
+        echo -e "${LOGGINGPREFIX}[\033[91;1mERROR\033[0m] $1" >> $ERR;
     fi
 }
 
