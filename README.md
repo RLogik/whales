@@ -92,7 +92,14 @@ Call `./whales_setup/docker.sh --clean-all` to clean all containers and images.
     and
     [whales_setup/Dockerfile](whales_setup/Dockerfile)
     to suit the needs of your application.
-3. Modify process scripts (see section [_How to modify bash scripts_](#how-to-modify-bash-scripts-to-work-with-whales)).
+3. Modify the [.env](.env) file.
+    Even if you wish to leave most values as is, definitely consider changing the value of the following key:
+    ```.env
+    WHALES_COMPOSE_PROJECT_NAME=whales
+    ```
+    Setting this argument to be different for different projects prevents
+    Docker from confusing your images and containers with those of other projects.
+4. Modify process scripts (see section [_How to modify bash scripts_](#how-to-modify-bash-scripts-to-work-with-whales)).
 
 See also the notes aboving [_Moving the Whales folder_](#moving-whales-files/folder-within-a-project).
 See also the subfolders in [./examples](examples) for further implementation examples of projects with Whales.
@@ -104,14 +111,22 @@ See also the subfolders in [./examples](examples) for further implementation exa
     ```.dockerignore
     !/whales_setup
     ```
-2. Add services to [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml).
+2. Add the file [.env](.env) to the root folder, if one does not exist.
+    Otherwise append the values to the end of your existing `.env` file (ensure there are no naming conflicts).
+    Even if you wish to leave most values as is, definitely consider changing the value of the following key:
+    ```.env
+    WHALES_COMPOSE_PROJECT_NAME=whales
+    ```
+    Setting this argument to be different for different projects prevents
+    Docker from confusing your images and containers with those of other projects.
+3. Add services to [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml).
     Take care to use the build context `..` (or `../path/to/subfolder`) instead of `.` (or `path/to/subfolder`).
     For mounted volumes, again take care to relativise to the `whales_setup` subfolder
     (_e.g._ `-./../src:$WD/src` and not `-src:$WD/src`).
-3. In [whales_setup/Dockerfile](whales_setup/Dockerfile),
+4. In [whales_setup/Dockerfile](whales_setup/Dockerfile),
     provided the context in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml) has been set appropriately,
     there should be no need to worry about relativising paths.
-4. Modify process scripts (see section [_How to modify bash scripts_](#how-to-modify-bash-scripts-to-work-with-whales)).
+5. Modify process scripts (see section [_How to modify bash scripts_](#how-to-modify-bash-scripts-to-work-with-whales)).
 
 See also the notes aboving [_Moving the Whales folder_](#moving-whales-files/folder-within-a-project).
 
