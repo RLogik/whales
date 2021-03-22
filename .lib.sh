@@ -8,14 +8,13 @@
 #
 ##############################################################################
 
-source whales_setup/.lib.utils.sh;
+source whales_setup/.lib.sh;
 
 ##############################################################################
 # GLOBAL VARIABLES
 ##############################################################################
 
-# NOTE: do not use /bin/bash. Results in error under Windows.  Use \/bin\/bash, bash, sh -c bash, or sh.
-export CMD_EXPLORE="bash";
+#
 
 ##############################################################################
 # MAIN METHODS: PROCESSES

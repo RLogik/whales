@@ -85,7 +85,7 @@ Call `./whales_setup/docker.sh --clean-all` to clean all containers and images.
 
 ## How to start a project with Whales ##
 
-1. Clone this repository (and delete unnecessary subfolders like [/examples](examples)).
+1. Clone this repository (and delete unnecessary subfolders like [./examples](examples)).
 2. Modify
     [whales_setup/.env](whales_setup/.env),
     [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml),
@@ -94,17 +94,12 @@ Call `./whales_setup/docker.sh --clean-all` to clean all containers and images.
     to suit the needs of your application.
 3. Modify process scripts (see section [_How to modify bash scripts_](#how-to-modify-bash-scripts-to-work-with-whales)).
 
-See also the subfolders in [/examples](examples) for further implementation examples of projects with Whales.
-
-**NOTE:** If you wish to move or rename the [/whales_setup](whales_setup) folder
-or wish to move `docker-compose.yml`/`Dockerfile` files,
-then ensure that the corresponding variables in the [.env-file](.env)
-in the root directory are adjusted.
-(You may also need to adjust the `.gitignore`+ `.dockerignore` files in the root directory + the whales setup-directory.)
+See also the notes aboving [_Moving the Whales folder_](#moving-whales-files/folder-within-a-project).
+See also the subfolders in [./examples](examples) for further implementation examples of projects with Whales.
 
 ## How to add Whales to existing projects ##
 
-1. Add the folder [/whales_setup](whales_setup) and a `.dockerignore` file (if one does not exist) to the root folder of your project.
+1. Add the folder [./whales_setup](whales_setup) and a `.dockerignore` file (if one does not exist) to the root folder of your project.
     In `./.dockerignore` append the line
     ```.dockerignore
     !/whales_setup
@@ -118,15 +113,44 @@ in the root directory are adjusted.
     there should be no need to worry about relativising paths.
 4. Modify process scripts (see section [_How to modify bash scripts_](#how-to-modify-bash-scripts-to-work-with-whales)).
 
-**NOTE:** If you wish to move or rename the [/whales_setup](whales_setup) folder
-or wish to move `docker-compose.yml`/`Dockerfile` files,
-then ensure that the corresponding variables in the [.env-file](.env)
-in the root directory are adjusted.
-(You may also need to adjust the `.gitignore`+ `.dockerignore` files in the root directory + the whales setup-directory.)
+See also the notes aboving [_Moving the Whales folder_](#moving-whales-files/folder-within-a-project).
+
+## Moving Whales files/folder within a project ##
+
+If you wish to move or rename the [./whales_setup](whales_setup) folder
+or wish to move the Docker files contain in this folder (`docker-compose.yml` + `Dockerfile`),
+then ensure that the corresponding variables in
+    [.env-file](.env) + [whales_setup/.env](whales_setup/.env)
+are adjusted.
+By default these are as follows:
+```.env
+# in .env
+WHALES_SETUP_PATH=whales_setup
+WHALES_DOCKER_COMPOSE_CONFIG_FILE=whales_setup/docker-compose.yml
+
+# in whales_setup/.env
+WHALES_SETUP_PATH=whales_setup
+```
+
+Also adjust the exclusion/inclusion rules in
+    [.gitignore](.gitignore)
+    + [.dockerignore](.dockerignore)
+    + [whales_setup/.gitignore](whales_setup/.gitignore)
+appropriately.
+By default these are as follows:
+```
+# in .gitignore + .dockerignore
+!/whales_setup
+
+# in whales_setup/.gitignore
+# (NOTE: not in whales_setup/.dockerignore as docker files not needed inside container)
+!/docker-compose.yml
+!/Dockerfile
+```
 
 ## How to modify bash scripts to work with Whales ##
 
-The `call_within_docker` command in [whales_setup/.lib.whales.sh](whales_setup/.lib.whales.sh) acts as a quasi decorator.
+The `call_within_docker` command in [whales_setup/.lib.sh](whales_setup/.lib.sh) acts as a quasi decorator.
 When used, it
 
 - interrupts a running script
@@ -136,7 +160,7 @@ When used, it
 and then call the original script within the container.
 
 Modification of existing bash scripts, _e.g._ `build.sh`, `test.sh`, _etc._ in the root folder of your project
-are can be modified quite simply as the following example demonstrate.
+can be modified quite simply as the following examples demonstrate.
 
 ### Example 1 ###
 
@@ -239,14 +263,15 @@ for which we wish to build images with the following dependencies:
 
 Then in our scripts the `<tag-sequence>` in the `call_within_docker` would be given as follows:
 
-```
-pre-compilation:     call_within_docker "boats-service" "boats,precompile"             true  false ...
-compilation:         call_within_docker "boats-service" "precompile,compile"           true  false ...
-unit-testing:        call_within_docker "boats-service" "compile,unit"                 true  false ...
-e2e-testing:         call_within_docker "boats-service" "unit,e2e"                     true  false ...
-artefact-creation:   call_within_docker "boats-service" "e2e,zip"                      false false ...
-explorative testing: call_within_docker "boats-service" "precompile,compile,(explore)" true  true ...
-```
+| Process             | Command: `call_within_docker`<br/>Arguments: `<service> <tag-sequence> <save> <it>` |
+| :------------------ | :---------------------------------------------------------------------------------- |
+| pre-compilation     | `"boats-service" "boats,precompile"             true  false` |
+| compilation:        | `"boats-service" "precompile,compile"           true  false` |
+| unit-testing        | `"boats-service" "compile,unit"                 true  false` |
+| e2e-testing         | `"boats-service" "unit,e2e"                     true  false` |
+| artefact-creation   | `"boats-service" "e2e,zip"                      false false` |
+| explorative testing | `"boats-service" "precompile,compile,(explore)" true  true ` |
+
 
 #### Syntax ####
 
