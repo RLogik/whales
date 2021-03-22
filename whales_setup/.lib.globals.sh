@@ -5,15 +5,14 @@
 ##############################################################################
 
 function env_value() {
-    source "$1";
-    bash -c "echo \$$2";
+    [ -f "$1" ] && source "$1" && echo "${!2}";
 }
 
 function env_required() {
-    local file="$1";
-    local key="$2";
-    local value="$( env_value "$file" "$key" )";
-    [ "$value" == "" ] && echo -e "[\033[91mERROR\033[0m]Argument \033[93;1m$key\033[0m not found in \033[1m$file\033[0m!" >> /dev/stderr && return 1;
+    ! [ -f "$1" ] && echo -e "[\033[91mERROR\033[0m] Could not find environment file \033[1m$1\033[0m!" >> /dev/stderr && return 1;
+    source "$1";
+    local value="${!2}";
+    [ "$value" == "" ] && echo -e "[\033[91mERROR\033[0m] Argument \033[93;1m$2\033[0m not found in \033[1m$1\033[0m!" >> /dev/stderr && return 1;
     echo "$value";
 }
 
