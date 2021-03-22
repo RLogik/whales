@@ -10,8 +10,9 @@
 ##############################################################################
 
 # extract from project .env file:
-export WHALES_PATH="$(               env_required ".env" WHALES_SETUP_PATH                 )";
-export WHALES_DOCKER_COMPOSE_YML="$( env_required ".env" WHALES_DOCKER_COMPOSE_CONFIG_FILE )";
+export WHALES_PATH="$(                    env_required ".env" WHALES_SETUP_PATH                 )";
+export WHALES_COMPOSE_PROJECT_NAME="$(    env_required ".env" WHALES_COMPOSE_PROJECT_NAME       )";
+export WHALES_DOCKER_COMPOSE_YML="$(      env_required ".env" WHALES_DOCKER_COMPOSE_CONFIG_FILE )";
 
 # extract from whales_seutp .env:
 export WHALES_DOCKER_IP="$(               env_required "$WHALES_PATH/.env" IP                      )";
@@ -35,7 +36,7 @@ export WHALES_DOCKER_CMD_EXPLORE="bash";
 ##############################################################################
 
 function run_docker_compose() {
-    docker-compose --file "$WHALES_DOCKER_COMPOSE_YML" $@;
+    docker-compose --project-name "$WHALES_COMPOSE_PROJECT_NAME" --file "$WHALES_DOCKER_COMPOSE_YML" $@;
 }
 
 function docker_create_unused_name() {
@@ -479,7 +480,7 @@ function enter_docker() {
     ## Get container of service (in order to connect mounted volumes):
     # DEV-NOTE: Do not enclose in ( ... ) here, otherwise exports do not work.
     get_docker_service "$service" false 2> $VERBOSE >> $VERBOSE \
-        || _log_fail "In whales decorator \033[1mcall_within_docker\033[0m the service \033[93;1m$service\033[0m could not be found.";
+        || _log_fail "In whales decorator \033[1menter_docker\033[0m the service \033[93;1m$service\033[0m could not be found.";
 
     ## Get image:tag for entry point:
     local entry_orig="$entry";

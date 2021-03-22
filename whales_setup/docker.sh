@@ -44,6 +44,7 @@ elif ( has_arg "$SCRIPTARGS" "-+clean-all" ); then
 elif ( has_arg "$SCRIPTARGS" "-+clean" ); then
     select_service "$service" || exit 1;
     run_docker_clean;
+    run_docker_prune;
 elif ( has_arg "$SCRIPTARGS" "-+(status|state)" ); then
     get_docker_state;
 else

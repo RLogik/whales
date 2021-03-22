@@ -120,10 +120,15 @@ function run_docker_stop_down() {
     run_docker_compose down;
 }
 
+function run_docker_prune() {
+    # Prune images not used by containers and any dangling images.
+    # DEV-NOTE: do not use -a flag, as this will remove images from other projects!
+    docker image prune --force;
+}
+
 function run_docker_clean() {
     docker_remove_some_containers key="{{.Names}}"               pattern="$( get_container_pattern "$WHALES_DOCKER_SERVICE" )";
     docker_remove_some_images     key="{{.Repository}}:{{.Tag}}" pattern="^$WHALES_DOCKER_IMAGE:.+$";
-    docker image prune -a --force; ## prunes any image non used by a container and any dangling images.
 }
 
 function run_docker_clean_all() {
