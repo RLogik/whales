@@ -6,7 +6,7 @@ services:
   #---------------------------------------------------------#
   # Service: Main Prolog
   #---------------------------------------------------------#
-  pl-main-service:
+  main-service:
     image: polarwhales-main:build
     build:
       context: ".." # !!! important !!! Context = root of project.
