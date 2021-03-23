@@ -15,11 +15,11 @@ export WHALES_COMPOSE_PROJECT_NAME="$(    env_required ".env" WHALES_COMPOSE_PRO
 export WHALES_DOCKER_COMPOSE_YML="$(      env_required ".env" WHALES_DOCKER_COMPOSE_CONFIG_FILE )";
 
 # extract from whales_seutp .env:
-export WHALES_DOCKER_IP="$(               env_required "$WHALES_PATH/.env" IP                      )";
-export WHALES_DOCKER_PORT_HOST="$(        env_required "$WHALES_PATH/.env" PORT_HOST               )";
-export WHALES_DOCKER_PORT_CONTAINER="$(   env_required "$WHALES_PATH/.env" PORT_CONTAINER          )";
-export WHALES_DOCKER_TAG_EXPLORE="$(      env_required "$WHALES_PATH/.env" TAG_EXPLORE             )";
-export WHALES_CONTAINER_SCHEME_PREFIX="$( env_required "$WHALES_PATH/.env" CONTAINER_SCHEME_PREFIX )";
+export WHALES_DOCKER_IP="$(               env_required "$WHALES_PATH/.env" IP                             )";
+export WHALES_DOCKER_PORT_HOST="$(        env_required "$WHALES_PATH/.env" PORT_HOST                      )";
+export WHALES_DOCKER_PORT_CONTAINER="$(   env_required "$WHALES_PATH/.env" PORT_CONTAINER                 )";
+export WHALES_DOCKER_TAG_EXPLORE="$(      env_required "$WHALES_PATH/.env" WHALES_TAG_EXPLORE             )";
+export WHALES_CONTAINER_SCHEME_PREFIX="$( env_required "$WHALES_PATH/.env" WHALES_CONTAINER_SCHEME_PREFIX )";
 
 export WHALES_DOCKER_SERVICE="";   # NOTE: This get changed dynamically.
 export WHALES_DOCKER_IMAGE="";     # ""
