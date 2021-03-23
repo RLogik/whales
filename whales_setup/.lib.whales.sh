@@ -42,9 +42,13 @@ export WHALES_FILE_DOCKER_DEPTH="$WHALES_PATH/DOCKER_DEPTH";
 export WHALES_DOCKER_PORTS="$WHALES_DOCKER_IP:$WHALES_DOCKER_PORT_HOST:$WHALES_DOCKER_PORT_CONTAINER";
 export WHALES_TEMPCONTAINER_SCHEME_PREFIX="temp_$WHALES_CONTAINER_SCHEME_PREFIX";
 export WHALES_DOCKER_TAG_EXPLORE="explore";
-export WHALES_DOCKER_SERVICE="";   # NOTE: This get changed dynamically.
-export WHALES_DOCKER_IMAGE="";     # ""
-export WHALES_DOCKER_CONTAINER=""; # ""
+export WHALES_CONTAINER_SCHEME_PREFIX="$WHALES_COMPOSE_PROJECT_NAME";
+export WHALES_DOCKER_SERVICE="";      # NOTE: This get changed dynamically.
+export WHALES_IMAGE_SCHEME="";        # ""
+export WHALES_DOCKER_IMAGE_NAME="";   # ""
+export WHALES_DOCKER_IMAGE_TAG="";   # ""
+export WHALES_DOCKER_IMAGE_ID="";     # ""
+export WHALES_DOCKER_CONTAINER_ID=""; # ""
 
 # NOTE: do not use /bin/bash. Results in error under Windows.  Use \/bin\/bash, bash, sh -c bash, or sh.
 export WHALES_DOCKER_CMD_EXPLORE="bash";
@@ -71,81 +75,6 @@ function docker_create_unused_container_name_for_service() {
 
 function docker_create_unused_tmpcontainer_name() {
     echo "$( docker_create_unused_name "${WHALES_TEMPCONTAINER_SCHEME_PREFIX}" )";
-}
-
-##############################################################################
-# AUXILIARY METHODS: DOCKER, SERVICES
-##############################################################################
-
-function docker_get_services() {
-    local pattern="^${WHALES_PATH}_";
-    while read -r line; do
-        ! ( echo "$line" | grep -E -q "$pattern" ) && continue;
-        local columns=( $line ); ## format: name, image, tag, image_id
-        echo "${columns[0]}";
-    done <<< "$( run_docker_compose images )";
-}
-
-function docker_get_potential_services() {
-    while read -r line; do
-        echo "$line";
-    done <<< "$( run_docker_compose ps --services --all )";
-}
-
-function docker_exists_service() {
-    local service="$1";
-    local pattern="^${WHALES_CONTAINER_SCHEME_PREFIX}_${service}($|_[[:digit:]]+$)";
-    while read -r name; do
-        ( echo "$name" | grep -E -q "$pattern" ) && return 0;
-    done <<< "$( docker_get_services )";
-    return 1;
-}
-
-function docker_exists_potential_service() {
-    local service="$1";
-    while read -r name; do
-        [ "$service" == "$name" ] && return 0;
-    done <<< "$( docker_get_potential_services )";
-    return 1;
-}
-
-function docker_get_service_image_plus_tag() {
-    local service="$1";
-    [ "$service" == "" ] && return;
-    local pattern="^${WHALES_CONTAINER_SCHEME_PREFIX}_${service}($|_[[:digit:]]+$)";
-    while read -r line; do
-        local columns=( $line ); ## format: name, image, tag, image_id
-        local name="${columns[0]}";
-        local image="${columns[1]}";
-        local tag="${columns[2]}";
-        ( echo "$name" | grep -E -q "$pattern" ) && echo "$image:$tag" && return;
-    done <<< "$( run_docker_compose images )";
-    _log_fail "Could not find any images for service \033[1m$service\033[0m!";
-}
-
-function docker_get_service_image() {
-    local service="$1";
-    local image_service="$( docker_get_service_image_plus_tag "$service" 2> $VERBOSE )";
-    [ "$image_service" == "" ] && _log_fail "Could not find image associated to service \033[1m$service\033[0m!";
-    local pattern="^(.*):.*$";
-    ! ( echo "$image_service" | grep -E -q "$pattern" ) && echo "$image_service" && return;
-    echo "$image_service" | sed -E "s/$pattern/\1/g";
-}
-
-function get_container_pattern() {
-    local pattern="$WHALES_TEMPCONTAINER_SCHEME_PREFIX";
-    local service="$1";
-    pattern="${pattern}|${WHALES_CONTAINER_SCHEME_PREFIX}_${service}";
-    echo "^($pattern)($|_[[:digit:]]+$)";
-}
-
-function get_container_patterns() {
-    local pattern="$WHALES_TEMPCONTAINER_SCHEME_PREFIX";
-    while read service; do
-        [ "$service" == "" ] && continue;
-        pattern="${pattern}|${WHALES_CONTAINER_SCHEME_PREFIX}_${service}";
-    done <<< "$( docker_get_potential_services )";
-    echo "^($pattern)($|_[[:digit:]]+$)";
 }
 
 ##############################################################################
@@ -227,6 +156,7 @@ function docker_get_id_via_inspect() {
 }
 
 function docker_get_container_id_from_image_id() {
+    # DEV-NOTE: scheme in table for image_id is /sha:.*/
     docker_get_id_via_inspect part=container format="{{.Image}}" match="(^|^[^:]*:)$1";
 }
 
@@ -238,35 +168,110 @@ function docker_get_image_id_from_image_tag() {
     docker_get_id part=image key="{{.Repository}}:{{.Tag}}" pattern="^$1$";
 }
 
-function docker_get_container_id_service() {
-    local service="$1";
-    local image_service="$( docker_get_service_image_plus_tag "$service" 2> $VERBOSE )";
-    [ "$image_service" == "" ] && _log_fail "Could not find container associated to service \033[1m$service\033[0m!";
-    docker_get_container_id_from_image_tag "$image_service";
-}
-
-function docker_get_image_id_service() {
-    local service="$1";
-    local image_service="$( docker_get_service_image_plus_tag "$service" 2> $VERBOSE )";
-    [ "$image_service" == "" ] && _log_fail "Could not find image associated to service \033[1m$service\033[0m!";
-    docker_get_image_id_from_image_tag "$image_service";
-}
-
 function docker_exists_image_tag() {
     [ "$1" == "" ] && return 1;
     id="$( docker_get_image_id_from_image_tag "$1" 2> $VERBOSE )";
     [ "$id" == "" ] && return 1 || return 0;
 }
 
-function docker_get_image_name_latest_stage() {
+function docker_exists_image_id() {
+    local id="$1";
+    [ "$id" == "" ] && return 1;
+    while read line; do
+        [ "$line" == "$id" ] && return 0;
+    done <<< "$( docker images -aq --format '{{.ID}}' )";
+    return 1;
+}
+
+##############################################################################
+# AUXILIARY METHODS: DOCKER, SERVICES
+##############################################################################
+
+function docker_get_services() {
+    local pattern="^${WHALES_PATH}_";
+    while read -r line; do
+        ! ( echo "$line" | grep -E -q "$pattern" ) && continue;
+        local columns=( $line ); ## format: name, image, tag, image_id
+        echo "${columns[0]}";
+    done <<< "$( run_docker_compose images )";
+}
+
+function docker_get_potential_services() {
+    while read -r line; do
+        echo "$line";
+    done <<< "$( run_docker_compose ps --services --all )";
+}
+
+function docker_exists_service() {
     local service="$1";
-    local image="$2";
-    if ! ( docker_exists_image_tag "$image" ); then
-        local image_service="$( docker_get_service_image_plus_tag "$service" )";
-        [ "$image_service" == "" ] && _log_fail "Could not find docker image \033[1m$image\033[0m or image for service \033[1m$service\033[0m!";
-        image="$image_service";
-    fi
-    echo "$image";
+    local pattern="^${WHALES_CONTAINER_SCHEME_PREFIX}_${service}($|_[[:digit:]]+$)";
+    while read -r name; do
+        ( echo "$name" | grep -E -q "$pattern" ) && return 0;
+    done <<< "$( docker_get_services )";
+    return 1;
+}
+
+function docker_exists_potential_service() {
+    local service="$1";
+    while read -r name; do
+        [ "$service" == "$name" ] && return 0;
+    done <<< "$( docker_get_potential_services )";
+    return 1;
+}
+
+function docker_get_service_image() {
+    local service="$1";
+    [ "$service" == "" ] && return;
+    local pattern="^${WHALES_CONTAINER_SCHEME_PREFIX}_${service}($|_[[:digit:]]+$)";
+    while read -r line; do
+        local columns=( $line ); ## format: name, image, tag, image_id
+        local name="${columns[0]}";
+        local image="${columns[1]}";
+        local tag="${columns[2]}";
+        ( echo "$image" | grep -Ei "<none>" ) && image="";
+        ( echo "$tag" | grep -Ei "<none>" ) && tag="";
+        local image_id="${columns[3]}"
+        ( echo "$name" | grep -E -q "$pattern" ) && echo "${image_id} ${image} ${tag}" && return;
+    done <<< "$( run_docker_compose images )";
+    _log_fail "Could not find any images for service \033[1m$service\033[0m!";
+}
+
+function docker_set_service_container() {
+    local service="$1";
+    local image_id="$WHALES_DOCKER_IMAGE_ID";
+    [ "$image_id" == "" ] && _log_error "Could not find container associated to service \033[1m$service\033[0m!" && return 1;
+    local container_id="$( docker_get_container_id_from_image_id "$image_id" 2> $VERBOSE )";
+    [ "$container_id" == "" ] && _log_error "There is no container associated to the service \033[1m$service\033[0m." && return 1;
+    export WHALES_DOCKER_CONTAINER_ID="$container_id";
+}
+
+function docker_set_service_image() {
+    local service="$1";
+    export WHALES_IMAGE_SCHEME="${WHALES_COMPOSE_PROJECT_NAME}_${service}";
+    local output=( $( docker_get_service_image "$service" 2> $VERBOSE ) );
+    local image_id="${output[0]}";
+    local image="${output[1]}";
+    local tag="${output[2]}";
+    [ "$image_id" == "" ] && _log_error "There is no image associated to the service \033[1m$service\033[0m." && return 1;
+    export WHALES_DOCKER_IMAGE_NAME="$image";
+    export WHALES_DOCKER_IMAGE_TAG="$tag";
+    export WHALES_DOCKER_IMAGE_ID="$image_id";
+}
+
+function get_container_pattern() {
+    local pattern="$WHALES_TEMPCONTAINER_SCHEME_PREFIX";
+    local service="$1";
+    pattern="${pattern}|${WHALES_CONTAINER_SCHEME_PREFIX}_${service}";
+    echo "^($pattern)($|_[[:digit:]]+$)";
+}
+
+function get_container_patterns() {
+    local pattern="$WHALES_TEMPCONTAINER_SCHEME_PREFIX";
+    while read service; do
+        [ "$service" == "" ] && continue;
+        pattern="${pattern}|${WHALES_CONTAINER_SCHEME_PREFIX}_${service}";
+    done <<< "$( docker_get_potential_services )";
+    echo "^($pattern)($|_[[:digit:]]+$)";
 }
 
 ##############################################################################
@@ -393,19 +398,31 @@ function is_docker() {
 # MAIN METHODS: GET/SET SERVICES, ENTER DOCKER
 ##############################################################################
 
+function get_service_image_name() {
+    local name="$WHALES_DOCKER_IMAGE_NAME";
+    [ "$name" == "" ] && echo "$WHALES_IMAGE_SCHEME" || echo "$name";
+}
+
+function get_service_image_name_plus_tag() {
+    local name="$WHALES_DOCKER_IMAGE_NAME";
+    local tag="$WHALES_DOCKER_IMAGE_TAG";
+    [ "$name" == "" ] && echo "$WHALES_IMAGE_SCHEME" || echo "$name:$tag";
+}
+
+function get_service_image_name_plus_tag_or_id() {
+    local name="$WHALES_DOCKER_IMAGE_NAME";
+    local tag="$WHALES_DOCKER_IMAGE_TAG";
+    [ "$name" == "" ] && echo "$WHALES_DOCKER_IMAGE_ID" || echo "$name:$tag";
+}
+
 function select_service() {
     local service="$1";
     ! ( docker_exists_potential_service "$service" ) \
         && _log_error "There is no valid definition for \033[1m$service\033[0m in \033[1m$WHALES_DOCKER_COMPOSE_YML\033[0m!" \
         && return 1;
-    local image_service="$( docker_get_service_image        "$service" 2> $VERBOSE )";
-    local container_id="$(  docker_get_container_id_service "$service" 2> $VERBOSE )";
     export WHALES_DOCKER_SERVICE="$service";
-    export WHALES_DOCKER_IMAGE="$image_service";
-    export WHALES_DOCKER_CONTAINER="$container_id";
-    ( [ "$WHALES_DOCKER_IMAGE" == "" ] || [ "$WHALES_DOCKER_CONTAINER" == "" ] ) \
-        && _log_error "There is no image or container associated to the service \033[1m$service\033[0m." \
-        && return 1;
+    docker_set_service_image "$service" || return 1;
+    docker_set_service_container "$service" || return 1;
     return 0;
 }
 
@@ -485,14 +502,14 @@ function get_docker_service() {
 ####
 function enter_docker() {
     local metaargs="$@";
-    local service="$( get_one_kwarg_space "$metaargs" "-+service" ""      )";
-    local entry="$(   get_one_kwarg_space "$metaargs" "-+enter"   ""      )";
+    local service="$(    get_one_kwarg_space "$metaargs" "-+service" ""      )";
+    local entry="$(      get_one_kwarg_space "$metaargs" "-+enter"   ""      )";
     local save_arg=false;
     ( has_arg "$metaargs" "-+save" ) && save_arg=true;
-    local imageFinal="$(   get_one_kwarg_space "$metaargs" "-+save"    ""      )";
-    local it=$(       get_one_kwarg_space "$metaargs" "-+it"      "false" );
-    local expose=$(   get_one_kwarg_space "$metaargs" "-+expose"  ""      );
-    local command="$( get_one_kwarg_space "$metaargs" "-+command" ""      )";
+    local imageFinal="$( get_one_kwarg_space "$metaargs" "-+save"    ""      )";
+    local it=$(          get_one_kwarg_space "$metaargs" "-+it"      "false" );
+    local expose=$(      get_one_kwarg_space "$metaargs" "-+expose"  ""      );
+    local command="$(    get_one_kwarg_space "$metaargs" "-+command" ""      )";
 
     _log_info "ENTER DOCKER ENVIRONMENT.";
     ## Get container of service (in order to connect mounted volumes):
@@ -504,11 +521,13 @@ function enter_docker() {
     local entry_orig="$entry";
     if [ "$entry" == "" ]; then
         ## only if "--entry" argument is missing / empty, force the explore tag:
-        entry="$WHALES_DOCKER_IMAGE:$WHALES_DOCKER_TAG_EXPLORE";
+        entry="$WHALES_DOCKER_IMAGE_NAME:$WHALES_DOCKER_TAG_EXPLORE";
         entry_orig="$entry";
         entry="$( docker_get_image_name_latest_stage "$service" "$entry" 2> $VERBOSE )";
+        ! ( docker_exists_image_tag "$entry" ) && entry="$( get_service_image_name_plus_tag_or_id )";
+    else
+        ! ( docker_exists_image_tag "$entry" ) && _log_fail "In whales method \033[1menter_docker\033[0m could not find image \033[1m$entry\033[0m!";
     fi
-    ! ( docker_exists_image_tag "$entry" ) && _log_fail "In whales method \033[1menter_docker\033[0m could not find image with tag \033[1m$tag\033[0m!";
 
     local id="$( docker_get_image_id_from_image_tag "$entry" 2> $VERBOSE )";
     [ "$id" == "" ] && _log_fail "In whales method \033[1menter_docker\033[0m could not find image for entry point, \033[1m$entry\033[0m!";
@@ -529,10 +548,10 @@ function enter_docker() {
     _log_info "START TEMPORARY CONTAINER \033[92;1m$container_tmp\033[0m.";
     if ( $it ); then
         _log_info "EXECUTE COMMAND {\033[93;1m$command\033[0m} INTERACTIVELY.";
-        docker run --name="$container_tmp" $ports_option --volumes-from=$WHALES_DOCKER_CONTAINER:rw -it $id bash -c "$command";
+        docker run --name="$container_tmp" $ports_option --volumes-from=$WHALES_DOCKER_CONTAINER_ID:rw -it $id bash -c "$command";
     else
         _log_info "EXECUTE COMMAND {\033[93;1m$command\033[0m} NON-INTERACTIVELY.";
-        docker run --name="$container_tmp" $ports_option --volumes-from=$WHALES_DOCKER_CONTAINER:rw -d $id bash -c "$command";
+        docker run --name="$container_tmp" $ports_option --volumes-from=$WHALES_DOCKER_CONTAINER_ID:rw -d $id bash -c "$command";
         docker logs --follow $container_tmp;
     fi
     _log_info "WAIT FOR CONTAINER \033[92;1m$container_tmp\033[0m TO STOP.";

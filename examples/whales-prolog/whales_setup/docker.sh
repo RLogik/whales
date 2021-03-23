@@ -32,6 +32,7 @@ service="$( get_one_kwarg_space "$SCRIPTARGS" "-+service" )";
 
 if ( has_arg "$SCRIPTARGS" "-+enter" ); then
     tag="$( get_one_kwarg_space "$SCRIPTARGS" "-+enter" )";
+    select_service "$service" || exit 1;
     run_docker_enter "$service" "$tag";
 elif ( has_arg "$SCRIPTARGS" "-+(start|up)" ); then
     select_service "$service" || exit 1;

@@ -74,19 +74,20 @@ function call_within_docker() {
         local nTags=${#tagParts[@]};
         local image_exit="";
         local image_enter="";
+        local service_image_name="$( get_service_image_name )";
         local found_entry=false;
         local i=0;
         for (( i=$nTags-1; i >= 0; i-- )); do
             local tag="${tagParts[$i]}";
             if (( $i == $nTags - 1 )); then
-                image_exit="$WHALES_DOCKER_IMAGE:$tag"
+                image_exit="$service_image_name:$tag"
                 ## Do not allow final tag to be a start tag, unless it is contained in parantheses:
                 if ! ( echo "$tag" | grep -E -q "^\((.*)\)$" ); then continue; fi
                 ## strip parantheses and proceed to test for valid entry point:
                 tag="$( echo "$tag" | sed -E "s/^\((.*)\)$/\1/g" )";
-                image_exit="$WHALES_DOCKER_IMAGE:$tag"
+                image_exit="$service_image_name:$tag"
             fi
-            image_enter="$WHALES_DOCKER_IMAGE:$tag";
+            image_enter="$service_image_name:$tag";
             ( docker_exists_image_tag "$image_enter" ) && found_entry=true && break;
         done
 
@@ -127,8 +128,10 @@ function run_docker_prune() {
 }
 
 function run_docker_clean() {
+    local im="$WHALES_IMAGE_SCHEME";
+    [ "$WHALES_DOCKER_IMAGE_NAME" == "" ] && im="($im|$WHALES_DOCKER_IMAGE_NAME)";
     docker_remove_some_containers key="{{.Names}}"               pattern="$( get_container_pattern "$WHALES_DOCKER_SERVICE" )";
-    docker_remove_some_images     key="{{.Repository}}:{{.Tag}}" pattern="^$WHALES_DOCKER_IMAGE:.+$";
+    docker_remove_some_images     key="{{.Repository}}:{{.Tag}}" pattern="^$im:.+$";
 }
 
 function run_docker_clean_all() {
@@ -163,7 +166,7 @@ function get_docker_state() {
 function run_docker_enter() {
     local service="$1";
     local tag="$2";
-    image="$( docker_get_service_image "$service" )";
-    _log_info "ATTEMPTING TO ENTER \033[1m$image:$tag\033[0m.";
-    enter_docker --service "$service" --enter "$image:$tag" --it true;
+    local image="$( get_service_image_name )";
+    _log_info "ATTEMPTING TO ENTER \033[1m${image}\033[0m.";
+    enter_docker --service "$service" --enter "${image}" --it true;
 }
