@@ -228,10 +228,10 @@ function docker_get_service_image() {
         local name="${columns[0]}";
         local image="${columns[1]}";
         local tag="${columns[2]}";
-        ( echo "$image" | grep -Ei "<none>" ) && image="";
-        ( echo "$tag" | grep -Ei "<none>" ) && tag="";
-        local image_id="${columns[3]}"
-        ( echo "$name" | grep -E -q "$pattern" ) && echo "${image_id} ${image} ${tag}" && return;
+        local image_id="${columns[3]}";
+        ( echo "$image" | grep -Eqi "<none>" ) && image="";
+        ( echo "$tag" | grep -Eqi "<none>" ) && tag="";
+        ( echo "$name" | grep -Eq "$pattern" ) && echo "${image_id} ${image} ${tag}" && return;
     done <<< "$( run_docker_compose images )";
     _log_fail "Could not find any images for service \033[1m$service\033[0m!";
 }
@@ -420,10 +420,11 @@ function select_service() {
     ! ( docker_exists_potential_service "$service" ) \
         && _log_error "There is no valid definition for \033[1m$service\033[0m in \033[1m$WHALES_DOCKER_COMPOSE_YML\033[0m!" \
         && return 1;
+    local success=true;
     export WHALES_DOCKER_SERVICE="$service";
-    docker_set_service_image "$service" || return 1;
-    docker_set_service_container "$service" || return 1;
-    return 0;
+    docker_set_service_image "$service" || success=false;
+    docker_set_service_container "$service" || success=false;
+    ( $success ) && return 0 || return 1;
 }
 
 function get_docker_service() {

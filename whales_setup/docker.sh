@@ -36,14 +36,13 @@ if ( has_arg "$SCRIPTARGS" "-+enter" ); then
     run_docker_enter "$service" "$tag";
 elif ( has_arg "$SCRIPTARGS" "-+(start|up)" ); then
     select_service "$service" || exit 1;
-    run_docker_start "$SCRIPTARGS";
+    run_docker_start;
 elif ( has_arg "$SCRIPTARGS" "-+(stop|down)" ); then
-    select_service "$service" || exit 1;
     run_docker_stop_down;
 elif ( has_arg "$SCRIPTARGS" "-+clean-all" ); then
     run_docker_clean_all;
 elif ( has_arg "$SCRIPTARGS" "-+clean" ); then
-    select_service "$service" || exit 1;
+    select_service "$service" 2> $VERBOSE;
     run_docker_clean;
     run_docker_prune;
 elif ( has_arg "$SCRIPTARGS" "-+(status|state)" ); then

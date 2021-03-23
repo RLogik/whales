@@ -131,7 +131,8 @@ function run_docker_clean() {
     local im="$WHALES_IMAGE_SCHEME";
     [ "$WHALES_DOCKER_IMAGE_NAME" == "" ] && im="($im|$WHALES_DOCKER_IMAGE_NAME)";
     docker_remove_some_containers key="{{.Names}}"               pattern="$( get_container_pattern "$WHALES_DOCKER_SERVICE" )";
-    docker_remove_some_images     key="{{.Repository}}:{{.Tag}}" pattern="^$im:.+$";
+    docker_remove_some_images     key="{{.Repository}}:{{.Tag}}" pattern="^$im:.+$" 2> $VERBOSE;
+    docker_remove_some_images     key="{{.ID}}"                  pattern="^$WHALES_DOCKER_IMAGE_ID$";
 }
 
 function run_docker_clean_all() {
