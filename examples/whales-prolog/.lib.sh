@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ##############################################################################
 # !!! When creating a Whales project, add to + change methods in this file !!!

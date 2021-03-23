@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ##############################################################################
 #    DESCRIPTION: A hello-world script for development purposes only.

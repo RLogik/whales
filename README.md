@@ -182,7 +182,7 @@ can be modified quite simply as the following examples demonstrate.
 Original bash file, `build.sh`:
 
 ```bash
-#/bin/bash
+#!/usr/bin/env bash
 
 python3 -m pip install tensorflow;
 python3 src/main.py $1;
@@ -191,7 +191,7 @@ python3 src/main.py $1;
 This becomes:
 
 ```bash
-#/bin/bash
+#!/usr/bin/env bash
 
 SCRIPTARGS="$@";
 ME="build.sh";
@@ -213,7 +213,7 @@ python3 src/main.py "${SCRIPTARGS[0]}";
 Original bash file, `test.sh`:
 
 ```bash
-#/bin/bash
+#!/usr/bin/env bash
 
 mode="$1";
 if [ "$mode" == "interactive" ]; then
@@ -226,7 +226,7 @@ fi
 This becomes:
 
 ```bash
-#/bin/bash
+#!/usr/bin/env bash
 
 SCRIPTARGS="$@";
 FLAGS=( "$@" );
