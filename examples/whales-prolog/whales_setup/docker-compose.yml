@@ -4,10 +4,10 @@ networks:
     driver: bridge
 services:
   #---------------------------------------------------------#
-  # Service: Main Prolog
+  # SERVICE: Production
   #---------------------------------------------------------#
-  main-service:
-    image: polarwhales-main:build
+  prod-service:
+    image: whales-prod:build
     build:
       context: ".." # !!! important !!! Context = root of project.
       dockerfile: whales_setup/Dockerfile

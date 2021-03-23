@@ -15,7 +15,7 @@
 SCRIPTARGS="$@";
 FLAGS=( $@ );
 ME="build.sh";
-SERVICE="main-service";
+SERVICE="prod-service";
 
 source .lib.sh;
 source whales_setup/.lib.sh;
