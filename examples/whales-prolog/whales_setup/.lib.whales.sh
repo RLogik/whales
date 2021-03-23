@@ -6,27 +6,45 @@
 ##############################################################################
 
 ##############################################################################
-# GLOBAL VARIABLES: .lib.whales.sh
+# AUXILIARY METHODS: .env
 ##############################################################################
 
-# extract from project .env file:
-export WHALES_PATH="$(                    env_required ".env" WHALES_SETUP_PATH                 )";
-export WHALES_COMPOSE_PROJECT_NAME="$(    env_required ".env" WHALES_COMPOSE_PROJECT_NAME       )";
-export WHALES_DOCKER_COMPOSE_YML="$(      env_required ".env" WHALES_DOCKER_COMPOSE_CONFIG_FILE )";
+function env_create_local() {
+    local path="$1";
+    local local_env_init="${path}/docker.env";
+    local local_env="${path}/.env";
+    [ -f "$local_env" ] && rm "$local_env";
+    cat "$local_env_init" >| "$local_env";
+    echo ""                                          >> "$local_env";
+    echo "WHALES_SETUP_PATH=$path"                   >> "$local_env";
+    echo "WHALES_ENTRY_SCRIPT=$path/docker-entry.sh" >> "$local_env";
+}
+
+##############################################################################
+# GLOBAL VARIABLES
+##############################################################################
+
+# extract from global .env file:
+env_from ".env" import WHALES_SETUP_PATH                 as WHALES_PATH;
+env_from ".env" import WHALES_COMPOSE_PROJECT_NAME       as WHALES_COMPOSE_PROJECT_NAME;
+env_from ".env" import WHALES_DOCKER_COMPOSE_CONFIG_FILE as WHALES_DOCKER_COMPOSE_YML;
+env_from ".env" import WHALES_COMPOSE_PROJECT_NAME       as WHALES_CONTAINER_SCHEME_PREFIX;
+
+## create local .env file first:
+env_create_local "$WHALES_PATH";
 
 # extract from whales_seutp .env:
-export WHALES_DOCKER_IP="$(               env_required "$WHALES_PATH/.env" IP                             )";
-export WHALES_DOCKER_PORT_HOST="$(        env_required "$WHALES_PATH/.env" PORT_HOST                      )";
-export WHALES_DOCKER_PORT_CONTAINER="$(   env_required "$WHALES_PATH/.env" PORT_CONTAINER                 )";
-export WHALES_DOCKER_TAG_EXPLORE="$(      env_required "$WHALES_PATH/.env" WHALES_TAG_EXPLORE             )";
-export WHALES_CONTAINER_SCHEME_PREFIX="$( env_required "$WHALES_PATH/.env" WHALES_CONTAINER_SCHEME_PREFIX )";
+env_from "$WHALES_PATH/.env" import IP                 as WHALES_DOCKER_IP;
+env_from "$WHALES_PATH/.env" import PORT_HOST          as WHALES_DOCKER_PORT_HOST;
+env_from "$WHALES_PATH/.env" import PORT_CONTAINER     as WHALES_DOCKER_PORT_CONTAINER;
 
+export WHALES_FILE_DOCKER_DEPTH="$WHALES_PATH/DOCKER_DEPTH";
+export WHALES_DOCKER_PORTS="$WHALES_DOCKER_IP:$WHALES_DOCKER_PORT_HOST:$WHALES_DOCKER_PORT_CONTAINER";
+export WHALES_TEMPCONTAINER_SCHEME_PREFIX="temp_$WHALES_CONTAINER_SCHEME_PREFIX";
+export WHALES_DOCKER_TAG_EXPLORE="explore";
 export WHALES_DOCKER_SERVICE="";   # NOTE: This get changed dynamically.
 export WHALES_DOCKER_IMAGE="";     # ""
 export WHALES_DOCKER_CONTAINER=""; # ""
-export WHALES_TEMPCONTAINER_SCHEME_PREFIX="temp_$WHALES_CONTAINER_SCHEME_PREFIX";
-export WHALES_FILE_DOCKER_DEPTH="$WHALES_PATH/DOCKER_DEPTH";
-export WHALES_DOCKER_PORTS="$WHALES_DOCKER_IP:$WHALES_DOCKER_PORT_HOST:$WHALES_DOCKER_PORT_CONTAINER";
 
 # NOTE: do not use /bin/bash. Results in error under Windows.  Use \/bin\/bash, bash, sh -c bash, or sh.
 export WHALES_DOCKER_CMD_EXPLORE="bash";
