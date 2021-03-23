@@ -1,7 +1,12 @@
 #!/bin/bash
 
 ##############################################################################
-#    DESCRIPTION: .ENV EXTRACTION
+#    DESCRIPTION: Library for extraction of global vars from environment.
+#    Include using source whales_setup/.lib.globals.sh
+##############################################################################
+
+##############################################################################
+# MAIN METHODS: .env
 ##############################################################################
 
 function env_value() {
@@ -9,11 +14,23 @@ function env_value() {
 }
 
 function env_required() {
-    ! [ -f "$1" ] && echo -e "[\033[91mERROR\033[0m] Could not find environment file \033[1m$1\033[0m!" >> /dev/stderr && return 1;
+    ! [ -f "$1" ] && echo -e "[\033[91mERROR\033[0m] Could not find environment file \033[1m$1\033[0m!" >> /dev/stderr && exit 1;
     source "$1";
     local value="${!2}";
-    [ "$value" == "" ] && echo -e "[\033[91mERROR\033[0m] Argument \033[93;1m$2\033[0m not found in \033[1m$1\033[0m!" >> /dev/stderr && return 1;
+    [ "$value" == "" ] && echo -e "[\033[91mERROR\033[0m] Argument \033[93;1m$2\033[0m not found in \033[1m$1\033[0m!" >> /dev/stderr && exit 1;
     echo "$value";
+}
+
+function env_from() {
+    local arguments=( "$@" );
+    local path="${arguments[0]}";
+    local key_from="${arguments[2]}";
+    local key_to="${key_from}";
+    ( echo "${arguments[3]}" | grep -Eiq "^as$" ) && key_to="${arguments[4]}";
+    ! ( echo "$key_to" | grep -Eiq "^([[:alpha:]]|_)([[:alpha:]]|_|[[:digit:]])*$" ) && echo -e "[\033[91mERROR\033[0m] Key argument \"\033[1m$key_to\033[0m\" not a valid name for a variable!" >> /dev/stderr && exit 1;
+    local value="$( env_required "$path" "$key_from" )";
+    [ "$value" == "" ] && exit 1;
+    export $key_to="$value";
 }
 
 ##############################################################################
@@ -26,9 +43,10 @@ export CMD_EXPLORE="bash";
 export WAIT_PERIOD_IN_SECONDS=1;
 export PENDING_SYMBOL="#";
 
-export OUT="$(           env_required ".env" WHALES_CONSOLE_OUT )";
-export ERR="$(           env_required ".env" WHALES_CONSOLE_ERR )";
-export VERBOSE="$(       env_required ".env" WHALES_CONSOLE_VERBOSE )";
-export DEBUG_FILE="$(    env_required ".env" WHALES_CONSOLE_DEBUG_FILE )";
-export PATH_LOGS="$(     env_required ".env" WHALES_CONSOLE_PATH_LOGS )";
+env_from ".env" import WHALES_CONSOLE_OUT        as OUT;
+env_from ".env" import WHALES_CONSOLE_ERR        as ERR;
+env_from ".env" import WHALES_CONSOLE_VERBOSE    as VERBOSE;
+env_from ".env" import WHALES_CONSOLE_DEBUG_FILE as DEBUG_FILE;
+env_from ".env" import WHALES_CONSOLE_PATH_LOGS  as PATH_LOGS;
+
 export LOGGINGPREFIX="";

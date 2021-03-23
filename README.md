@@ -83,22 +83,31 @@ Call `./whales_setup/docker.sh --clean` to clean all whale-containers and whale-
 
 Call `./whales_setup/docker.sh --clean-all` to clean all containers and images.
 
-## How to start a project with Whales ##
+## How to start a new project with Whales ##
 
 1. Clone this repository (and delete unnecessary subfolders like [./examples](examples)).
-2. Modify
-    [whales_setup/.env](whales_setup/.env),
-    [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml),
-    and
-    [whales_setup/Dockerfile](whales_setup/Dockerfile)
-    to suit the needs of your application.
-3. Modify the [.env](.env) file.
+2. Modify the [.env](.env) file in the project root.
     Even if you wish to leave most values as is, definitely consider changing the value of the following key:
     ```.env
     WHALES_COMPOSE_PROJECT_NAME=whales
     ```
     Setting this argument to be different for different projects prevents
     Docker from confusing your images and containers with those of other projects.
+3. Modify
+    [whales_setup/docker.env](whales_setup/docker.env)
+    +
+    [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml)
+    +
+    [whales_setup/Dockerfile](whales_setup/Dockerfile)
+    to suit the needs of your application.
+    </br>
+    **Note:**
+        [.env](.env)
+        +
+        [whales_setup/docker.env](whales_setup/docker.env)
+    are used to dynamically create
+        `whales_setup/.env`,
+    which is used in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml).
 4. Modify process scripts (see section [_How to modify bash scripts_](#how-to-modify-bash-scripts-to-work-with-whales)).
 
 See also the notes aboving [_Moving the Whales folder_](#moving-whales-files/folder-within-a-project).
@@ -123,6 +132,14 @@ See also the subfolders in [./examples](examples) for further implementation exa
     Take care to use the build context `..` (or `../path/to/subfolder`) instead of `.` (or `path/to/subfolder`).
     For mounted volumes, again take care to relativise to the `whales_setup` subfolder
     (_e.g._ `-./../src:$WD/src` and not `-src:$WD/src`).
+    </br>
+    **Note:**
+        [.env](.env)
+        +
+        [whales_setup/docker.env](whales_setup/docker.env)
+    are used to dynamically create
+        `whales_setup/.env`,
+    which is used in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml).
 4. In [whales_setup/Dockerfile](whales_setup/Dockerfile),
     provided the context in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml) has been set appropriately,
     there should be no need to worry about relativising paths.
@@ -134,17 +151,12 @@ See also the notes aboving [_Moving the Whales folder_](#moving-whales-files/fol
 
 If you wish to move or rename the [./whales_setup](whales_setup) folder
 or wish to move the Docker files contain in this folder (`docker-compose.yml` + `Dockerfile`),
-then ensure that the corresponding variables in
-    [.env-file](.env) + [whales_setup/.env](whales_setup/.env)
-are adjusted.
+then ensure that the corresponding variables in [.env-file](.env) are adjusted.
 By default these are as follows:
 ```.env
 # in .env
 WHALES_SETUP_PATH=whales_setup
 WHALES_DOCKER_COMPOSE_CONFIG_FILE=whales_setup/docker-compose.yml
-
-# in whales_setup/.env
-WHALES_SETUP_PATH=whales_setup
 ```
 
 Also adjust the exclusion/inclusion rules in
