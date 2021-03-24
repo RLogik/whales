@@ -22,13 +22,30 @@ To bypass this, it is useful for all participants to be able to set up the same 
 within which the project can be compiled, run, and tested.
 Docker presents itself as a universal, easily accessible solution, with a minimal setup effort.
 
+## Requirements ##
+
+This project has been developed with
+
+- **Docker** version **20.10.5**;
+- **docker-compose** version **1.28.5**;
+- the **Docker app** version **3.2.2**.
+
+This may work with previous versions, and _should_ work with future versions,
+but we cannot at the moment guarantee this.
+
+For **Windows users**:
+
+- **bash** is required, see _e.g._ <https://gitforwindows.org>.
+- it may be necessary to install [**WSL2**](https://docs.microsoft.com/de-de/windows/wsl/wsl2-kernel#download-the-linux-kernel-update-package).
+- optionally, instead of the usual Docker app, [**Docker Edge**](https://docs.docker.com/docker-for-windows/edge-release-notes/) is recommended,
+as it is apparently faster.
+
 ## Hello World Example ##
 
-1. Clone this repository.
-2. Ensure you have installed Docker and at least granted access to the folder in which the repository has been cloned.
-3. Ensure you have bash or bash for Windows.
-4. Start the Docker application.
-5. Navigate to the root path of the repository and execute the following commands in bash:
+1. Clone this repository to some path.
+2. Ensure the Docker app has been granted access to the path (or a directory containing it).
+3. Start the Docker application.
+4. Navigate to the root path of the repository and execute the following commands in bash:
 
     ```bash
     chmod +x *.sh; # grant execution rights to the shell scripts
@@ -42,46 +59,18 @@ Docker presents itself as a universal, easily accessible solution, with a minima
     and you will see two whales with messages `(blank)` and `Hello world!`.
     Then upon the second "hello" script execution, the docker image will be started in a container,
     and you will see two whales with messages `Hello world!` and `I am a whale`.
-6. In [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml)
-    one can optionally uncomment the volume mounting and repeat steps 4–5 above.
-    One should now a file `HELLO_WORLD` in the root of the project,
-    which will be modified as one calls the above commands.
-    If one modifies this file, then calls the script, the modifications
-    should display.
-7. If this works as described, then this means the scripts function correctly:
-    Project users are able to start images with ease, execute methods within them
-    (_e.g._ compilation of a code, execution of an algorithm, _etc._)
-    and the results can be saved (optionally) for the next execution.
 
-## Status and cleaning ##
+In [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml)
+one can optionally uncomment the volume mounting and repeat step 4 above.
+One should now a file `HELLO_WORLD` in the root of the project,
+which will be modified as one calls the above commands.
+If one modifies this file, then calls the script, the modifications
+should display.
 
-Call `./whales_setup/docker.sh --status` to view the status of the containers and images.
-For example after the above hello-world example, the status looks like this:
-
-```
-SERVICES:
-            Name                          Command               State    Ports
-------------------------------------------------------------------------------
-whales_setup_hello-service_1   bash -c echo -e "Service \ ...   Exit 0
-
-         Container              Repository     Tag      Image Id       Size
------------------------------------------------------------------------------
-whales_setup_hello-service_1   whales-hello   build   35xxxxxxxxx6   101.3 MB
-
-CONTAINERS:
-CONTAINER ID   NAMES                          IMAGE                SIZE                 STATUS                     CREATED AT ago
-e8xxxxxxxxx4   whales_setup_hello-service_1   whales-hello:build   0B (virtual 101MB)   Exited (0) 4 minutes ago   2021-xxxxxxxx:29:05 ago
-
-IMAGES:
-IMAGE ID       REPOSITORY     TAG       SIZE      CREATED AT
-18xxxxxxxxx4   whales-hello   explore   101MB     2021-xxxxxxxx:31:54
-e5xxxxxxxxx0   <none>         <none>    101MB     2021-xxxxxxxx:29:12
-35xxxxxxxxx6   whales-hello   build     101MB     2021-xxxxxxxx:29:04
-```
-
-Call `./whales_setup/docker.sh --clean` to clean all whale-containers and whale-images.
-
-Call `./whales_setup/docker.sh --clean-all` to clean all containers and images.
+If this works as described, then this means the scripts function correctly:
+Project users are able to start images with ease, execute methods within them
+(_e.g._ compilation of a code, execution of an algorithm, _etc._)
+and the results can be saved (optionally) for the next execution.
 
 ## How to start a new project with Whales ##
 
@@ -146,6 +135,35 @@ See also the subfolders in [./examples](examples) for further implementation exa
 5. Modify process scripts (see section [_How to modify bash scripts_](#how-to-modify-bash-scripts-to-work-with-whales)).
 
 See also the notes aboving [_Moving the Whales folder_](#moving-whales-files/folder-within-a-project).
+
+## Status and cleaning ##
+
+Call `./whales_setup/docker.sh --status` to view the status of the containers and images. For example after the above hello-world example, the status looks like this:
+
+```
+SERVICES:
+            Name                          Command               State    Ports
+------------------------------------------------------------------------------
+whales_setup_hello-service_1   bash -c echo -e "Service \ ...   Exit 0
+
+         Container              Repository     Tag      Image Id       Size
+-----------------------------------------------------------------------------
+whales_setup_hello-service_1   whales-hello   build   35xxxxxxxxx6   101.3 MB
+
+CONTAINERS:
+CONTAINER ID   NAMES                          IMAGE                SIZE                 STATUS                     CREATED AT ago
+e8xxxxxxxxx4   whales_setup_hello-service_1   whales-hello:build   0B (virtual 101MB)   Exited (0) 4 minutes ago   2021-xxxxxxxx:29:05 ago
+
+IMAGES:
+IMAGE ID       REPOSITORY     TAG       SIZE      CREATED AT
+18xxxxxxxxx4   whales-hello   explore   101MB     2021-xxxxxxxx:31:54
+e5xxxxxxxxx0   <none>         <none>    101MB     2021-xxxxxxxx:29:12
+35xxxxxxxxx6   whales-hello   build     101MB     2021-xxxxxxxx:29:04
+```
+
+Call `./whales_setup/docker.sh --clean` to clean all whale-containers and whale-images.
+
+Call `./whales_setup/docker.sh --clean-all` to clean all containers and images.
 
 ## Moving Whales files/folder within a project ##
 
