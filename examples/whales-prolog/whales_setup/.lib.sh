@@ -7,7 +7,7 @@
 
 source whales_setup/.lib.globals.sh;
 source whales_setup/.lib.utils.sh;
-source whales_setup/.lib.whales.sh;
+source whales_setup/.lib.docker.sh;
 
 ##############################################################################
 # WHALES METHODS: "DECORATORS"
@@ -160,7 +160,7 @@ function get_docker_state() {
     docker ps -a --format 'table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Size}}\t{{.Status}}\t{{.CreatedAt}} ago';
     _cli_message "";
     _cli_message "\033[94;1mIMAGES\033[0m:";
-    docker images -a --format 'table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}';
+    docker images -a --format 'table {{.ID}}\t{{.Repository}}:{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}';
     _cli_message "";
 }
 

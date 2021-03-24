@@ -11,7 +11,7 @@
 
 !/.lib.globals.sh
 !/.lib.utils.sh
-!/.lib.whales.sh
+!/.lib.docker.sh
 !/.lib.sh
 !/docker-entry.sh
 !/docker.sh

@@ -14,10 +14,14 @@ function env_create_local() {
     local local_env_init="${path}/docker.env";
     local local_env="${path}/.env";
     [ -f "$local_env" ] && rm "$local_env";
-    cat "$local_env_init" >| "$local_env";
-    echo ""                                          >> "$local_env";
-    echo "WHALES_SETUP_PATH=$path"                   >> "$local_env";
-    echo "WHALES_ENTRY_SCRIPT=$path/docker-entry.sh" >> "$local_env";
+    touch "$local_env";
+    echo "# environment variables from setup folder:"   >> "$local_env";
+    cat  "$local_env_init"                              >> "$local_env";
+    echo ""                                             >> "$local_env";
+    echo "# environment variables from project source:" >> "$local_env";
+    echo "WHALES_SETUP_PATH=$path"                      >> "$local_env";
+    echo "WHALES_ENTRY_SCRIPT=$path/docker-entry.sh"    >> "$local_env";
+    echo "WHALES_PROJECT_NAME=$WHALES_PROJECT_NAME"     >> "$local_env";
 }
 
 ##############################################################################
@@ -25,10 +29,10 @@ function env_create_local() {
 ##############################################################################
 
 # extract from global .env file:
-env_from ".env" import WHALES_SETUP_PATH                 as WHALES_PATH;
-env_from ".env" import WHALES_COMPOSE_PROJECT_NAME       as WHALES_COMPOSE_PROJECT_NAME;
-env_from ".env" import WHALES_DOCKER_COMPOSE_CONFIG_FILE as WHALES_DOCKER_COMPOSE_YML;
-env_from ".env" import WHALES_COMPOSE_PROJECT_NAME       as WHALES_CONTAINER_SCHEME_PREFIX;
+env_from "whales.env" import WHALES_SETUP_PATH         as WHALES_PATH;
+env_from "whales.env" import WHALES_PROJECT_NAME       as WHALES_COMPOSE_PROJECT_NAME;
+env_from "whales.env" import WHALES_DOCKER_COMPOSE_YML as WHALES_DOCKER_COMPOSE_YML;
+env_from "whales.env" import WHALES_PROJECT_NAME       as WHALES_CONTAINER_SCHEME_PREFIX;
 
 ## create local .env file first:
 env_create_local "$WHALES_PATH";
@@ -228,7 +232,7 @@ function docker_get_service_image() {
         local name="${columns[0]}";
         local image="${columns[1]}";
         local tag="${columns[2]}";
-        local image_id="${columns[3]}"
+        local image_id="${columns[3]}";
         ( echo "$image" | grep -Eqi "<none>" ) && image="";
         ( echo "$tag" | grep -Eqi "<none>" ) && tag="";
         ( echo "$name" | grep -Eq "$pattern" ) && echo "${image_id} ${image} ${tag}" && return;
@@ -329,11 +333,11 @@ function docker_remove_some_containers() {
     while read id; do
         [ "$id" == "" ] && continue;
         found=true;
-        docker_remove_container "$id" 2> $VERBOSE >> $VERBOSE                          \
+        docker_remove_container "$id" 2> $VERBOSE >> $VERBOSE                      \
             && _log_info  "Removed \033[1mcontainer\033[0m with id \033[1m$id\033[0m." \
             || _log_error "Could not remove \033[1mcontainer\033[0m with id \033[1m$id\033[0m.";
     done <<< "$( docker_get_ids part=container key="$key" pattern="$pattern" )";
-    ! ( $found ) && _log_error "No containers were found.";
+    ! ( $found ) && _log_info "No containers were found.";
 }
 
 function docker_remove_some_images() {
@@ -345,11 +349,11 @@ function docker_remove_some_images() {
     while read id; do
         [ "$id" == "" ] && continue;
         found=true;
-        docker_remove_image "$id" 2> $VERBOSE >> $VERBOSE                         \
-            && _log_info "Removed \033[1mimage\033[0m with id \033[1m$id\033[0m." \
+        docker_remove_image "$id" 2> $VERBOSE >> $VERBOSE                          \
+            &&  _log_info "Removed \033[1mimage\033[0m with id \033[1m$id\033[0m." \
             || _log_error "Could not remove \033[1mimage\033[0m with id \033[1m$id\033[0m.";
     done <<< "$( docker_get_ids part=image key="$key" pattern="$pattern" )";
-    ! ( $found ) && _log_error "No images were found.";
+    ! ( $found ) && _log_info "No images were found.";
 }
 
 function docker_remove_all_containers() {
@@ -549,10 +553,18 @@ function enter_docker() {
     _log_info "START TEMPORARY CONTAINER \033[92;1m$container_tmp\033[0m.";
     if ( $it ); then
         _log_info "EXECUTE COMMAND {\033[93;1m$command\033[0m} INTERACTIVELY.";
-        docker run --name="$container_tmp" $ports_option --volumes-from=$WHALES_DOCKER_CONTAINER_ID:rw -it $id bash -c "$command";
+        docker run --name="$container_tmp" $ports_option --volumes-from=$WHALES_DOCKER_CONTAINER_ID:rw \
+            --label org.whales.project="$WHALES_PROJECT_NAME" \
+            --label org.whales.service="$service" \
+            --label org.whales.image="$imageFinal" \
+            it $id bash -c "$command";
     else
         _log_info "EXECUTE COMMAND {\033[93;1m$command\033[0m} NON-INTERACTIVELY.";
-        docker run --name="$container_tmp" $ports_option --volumes-from=$WHALES_DOCKER_CONTAINER_ID:rw -d $id bash -c "$command";
+        docker run --name="$container_tmp" $ports_option --volumes-from=$WHALES_DOCKER_CONTAINER_ID:rw \
+            --label org.whales.project="$WHALES_PROJECT_NAME" \
+            --label org.whales.service="$service" \
+            --label org.whales.image="$imageFinal" \
+            -d $id bash -c "$command";
         docker logs --follow $container_tmp;
     fi
     _log_info "WAIT FOR CONTAINER \033[92;1m$container_tmp\033[0m TO STOP.";

@@ -13,8 +13,9 @@ services:
       dockerfile: whales_setup/Dockerfile
       args:
         WD: "$WD"
-        SETUP_PATH: "$WHALES_SETUP_PATH"
-        ENTRY_SCRIPT: "$WHALES_ENTRY_SCRIPT"
+        WHALES_PROJECT_NAME: "$WHALES_PROJECT_NAME"
+        WHALES_SETUP_PATH: "$WHALES_SETUP_PATH"
+        WHALES_ENTRY_SCRIPT: "$WHALES_ENTRY_SCRIPT"
     volumes:
       # - ./../logs:$WD/logs:rw   ## <- (r/)w for logging between all docker levels.
       - ./../src:$WD/src:rw     ## <- r/w   allows for live developing
