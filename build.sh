@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ##############################################################################
 #    DESCRIPTION: Script for running tests.
@@ -22,16 +22,16 @@ source .lib.sh;
 mode="$( get_one_kwarg_space "$SCRIPTARGS" "-+mode" "" )";
 
 if [ "$mode" == "setup" ]; then
-    # call_within_docker <service>  <tag-sequence>  <save> <it>  <expose> <script> <params>
-    call_within_docker   "$SERVICE" "build,setup"   true  true  true      "$ME"    $SCRIPTARGS;
+    # whale_call <service>  <tag-sequence>    <save, it, ports> <type, command>
+    whale_call   "$SERVICE" ".,setup"         true false true   SCRIPT $ME $SCRIPTARGS;
     run_setup;
 elif [ "$mode" == "run" ]; then
-    # call_within_docker <service>  <tag-sequence>  <save> <it>  <expose> <script> <params>
-    call_within_docker   "$SERVICE" "setup,run"     false  false true     "$ME"    $SCRIPTARGS;
+    # whale_call <service>  <tag-sequence>    <save, it, ports> <type, command>
+    whale_call   "$SERVICE" "setup,run"       false false true  SCRIPT $ME $SCRIPTARGS;
     run_test;
 elif [ "$mode" == "explore" ]; then
-    # call_within_docker <service>  <tag-sequence>    <save> <it>  <expose> <script> <params>
-    call_within_docker   "$SERVICE" "setup,(explore)" false  true  true     "$ME"    $SCRIPTARGS;
+    # whale_call <service>  <tag-sequence>    <save, it, ports> <type, command>
+    whale_call   "$SERVICE" "setup,(explore)" false true true   SCRIPT $ME $SCRIPTARGS;
     run_explore_console;
 else
     _log_error   "Invalid cli argument.";

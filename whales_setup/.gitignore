@@ -5,15 +5,16 @@
 ################################################################################################################################
 # WHALES SETUP
 ################################################################################################################################
-!/.env
+!/logging.env
+!/docker.env
 !/DOCKER_DEPTH
 !/VERSION
 
 !/.lib.globals.sh
 !/.lib.utils.sh
-!/.lib.whales.sh
+!/.lib.docker.sh
+!/.lib.meta.sh
 !/.lib.sh
-!/docker-entry.sh
 !/docker.sh
 
 !/docker-compose.yml

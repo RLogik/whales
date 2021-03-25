@@ -17,11 +17,19 @@ source whales_setup/.lib.sh;
 #
 
 ##############################################################################
+# AUXILIAR METHODS: Prolog
+##############################################################################
+
+function run_prolog() {
+    swipl $@;
+}
+
+##############################################################################
 # MAIN METHODS: PROCESSES
 ##############################################################################
 
 function run_setup() {
-    _log_info "Setup process complete!";
+    _log_warn "Setup process not yet implemented!";
     # < your code here > #
 }
 
@@ -31,8 +39,9 @@ function run_test_unit() {
 }
 
 function run_main() {
-    _log_warn "Main process not yet implemented!";
-    # < your code here > #
+    pushd src >> $VERBOSE
+        run_prolog -fq main.pl -t halt;
+    popd >> $VERBOSE
 }
 
 function run_explore_console() {

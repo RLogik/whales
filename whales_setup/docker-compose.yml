@@ -10,11 +10,13 @@ services:
     image: whales-hello:build
     build:
       context: ".." # !!! important !!! Context = root of project.
-      dockerfile: whales_setup/Dockerfile
-      args: &ref_args
+      dockerfile: "${WHALES_SETUP_PATH}/Dockerfile"
+      args: &ref_build_args
         WD: "$WD"
-        SETUP_PATH: "$WHALES_SETUP_PATH"
-        ENTRY_SCRIPT: "$ENTRY_SCRIPT"
+        WHALES_PROJECT_NAME: "$WHALES_PROJECT_NAME"
+        WHALES_SELECTED_SERVICE: "$WHALES_SELECTED_SERVICE"
+        WHALES_SETUP_PATH: "$WHALES_SETUP_PATH"
+        WHALES_ENTRY_SCRIPT: "$WHALES_ENTRY_SCRIPT"
     # volumes:
     #   - ./../HELLO_WORLD:$WD/HELLO_WORLD:rw  ## <- r/w   allows for live developing
     command:
@@ -25,10 +27,10 @@ services:
   prod-service:
     image: whales-prod:build
     build:
-      context: ".." # !!! important !!! Context = root of project.
-      dockerfile: whales_setup/Dockerfile
+      context: ".."
+      dockerfile: "${WHALES_SETUP_PATH}/Dockerfile"
       args:
-        <<: *ref_args
+        <<: *ref_build_args
     # volumes:
     #   - ./../logs:$WD/logs:rw   ## <- (r/)w for logging between all docker levels.
     #   - ./../src:$WD/src:rw     ## <- r/w   allows for live developing
@@ -44,10 +46,10 @@ services:
   test-service:
     image: whales-test:build
     build:
-      context: ".." # !!! important !!! Context = root of project.
-      dockerfile: whales_setup/Dockerfile
+      context: ".."
+      dockerfile: "${WHALES_SETUP_PATH}/Dockerfile"
       args:
-        <<: *ref_args
+        <<: *ref_build_args
     # volumes:
     #   - ./../logs:$WD/logs:rw   ## <- (r/)w for logging between all docker levels.
     #   - ./../src:$WD/src:rw     ## <- r/w   allows for live developing

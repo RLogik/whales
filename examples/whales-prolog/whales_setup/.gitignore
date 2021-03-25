@@ -1,4 +1,5 @@
 *
+!/.gitignore
 !/.dockerignore
 
 ################################################################################################################################
@@ -6,13 +7,16 @@
 ################################################################################################################################
 !/logging.env
 !/docker.env
-!/.env
 !/DOCKER_DEPTH
 !/VERSION
 
-!/.lib.docker.sh
+!/.lib.globals.sh
 !/.lib.utils.sh
-!/.lib.whales.sh
+!/.lib.docker.sh
 !/.lib.meta.sh
 !/.lib.sh
+!/docker-entry.sh
 !/docker.sh
+
+!/docker-compose.yml
+!/Dockerfile
