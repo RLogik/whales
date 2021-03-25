@@ -141,56 +141,53 @@ See also the notes aboving [_Moving the Whales folder_](#moving-whales-files/fol
 Call `./whales_setup/docker.sh --status` to view the status of the containers and images. For example after the above hello-world example, the status looks like this:
 
 ```
-SERVICES:
-            Name                          Command               State    Ports
-------------------------------------------------------------------------------
-whales_setup_hello-service_1   bash -c echo -e "Service \ ...   Exit 0
-
-         Container              Repository     Tag      Image Id       Size
------------------------------------------------------------------------------
-whales_setup_hello-service_1   whales-hello   build   35xxxxxxxxx6   101.3 MB
-
 CONTAINERS:
-CONTAINER ID   NAMES                          IMAGE                SIZE                 STATUS                     CREATED AT ago
-e8xxxxxxxxx4   whales_setup_hello-service_1   whales-hello:build   0B (virtual 101MB)   Exited (0) 4 minutes ago   2021-xxxxxxxx:29:05 ago
+CONTAINER ID   NAMES                    IMAGE                SIZE                 STATUS                      CREATED AT
+ecxxxxxxxxxd   whales_hello-service_0   whales-hello:build   0B (virtual 102MB)   Exited (0) 39 seconds ago   2021-xxxxxxxx:23:44
 
 IMAGES:
-IMAGE ID       REPOSITORY     TAG       SIZE      CREATED AT
-18xxxxxxxxx4   whales-hello   explore   101MB     2021-xxxxxxxx:31:54
-e5xxxxxxxxx0   <none>         <none>    101MB     2021-xxxxxxxx:29:12
-35xxxxxxxxx6   whales-hello   build     101MB     2021-xxxxxxxx:29:04
+IMAGE ID       REPOSITORY:TAG         SIZE      CREATED AT
+
+d0xxxxxxxxx7   whales-hello:explore   102MB     2021-xxxxxxxx:24:13
+     labels:   {"org.whales.initial":"false","org.whales.project":"whales","org.whales.service":"hello-service","org.whales.tag":"explore"}
+
+4cxxxxxxxxx7   <none>:<none>          102MB     2021-xxxxxxxx:24:08
+     labels:   {"org.whales.initial":"false","org.whales.project":"whales","org.whales.service":"hello-service","org.whales.tag":"explore"}
+
+6dxxxxxxxxx0   <none>:<none>          102MB     2021-xxxxxxxx:23:49
+     labels:   {"org.whales.initial":"false","org.whales.project":"whales","org.whales.service":"hello-service","org.whales.tag":"explore"}
+
+d9xxxxxxxxxd   whales-hello:build     102MB     2021-xxxxxxxx:23:44
+     labels:   {"org.whales.initial":"true","org.whales.project":"whales","org.whales.service":"hello-service"}
 ```
 
-Call `./whales_setup/docker.sh --clean` to clean all whale-containers and whale-images.
+Calling `./whales_setup/docker.sh --service <name-of-service> --status` limits this output to images
+associated to a desired service.
+Optionally one may use the `--project <name-of-project>` flag, to specify by which project name to filter.
+Otherwise the local `.env` file (in the setup folder) is consulted.
+
+Call `./whales_setup/docker.sh --service <name-of-service> --clean`
+to clean all containers + images associated with a service.
+If the `--service` option not given or left blank,
+then all services within the local project will be deleted.
 
 Call `./whales_setup/docker.sh --clean-all` to clean all containers and images.
 
-## Moving Whales files/folder within a project ##
+## Moving Whales folder within a project ##
 
-If you wish to move or rename the [./whales_setup](whales_setup) folder
-or wish to move the Docker files contain in this folder (`docker-compose.yml` + `Dockerfile`),
-then ensure that the corresponding variables in [.env-file](.env) are adjusted.
+If [./whales_setup](whales_setup) is moved or renamed,
+simply change the corresponding variable in [.env-file](.env)
+and adjust the exclusion/inclusion rules in
+    [.gitignore](.gitignore) + [.dockerignore](.dockerignore)
+appropriately.
 By default these are as follows:
 ```.env
 # in .env
 WHALES_SETUP_PATH=whales_setup
-WHALES_DOCKER_COMPOSE_CONFIG_FILE=whales_setup/docker-compose.yml
 ```
-
-Also adjust the exclusion/inclusion rules in
-    [.gitignore](.gitignore)
-    + [.dockerignore](.dockerignore)
-    + [whales_setup/.gitignore](whales_setup/.gitignore)
-appropriately.
-By default these are as follows:
-```
+```.gitignore
 # in .gitignore + .dockerignore
 !/whales_setup
-
-# in whales_setup/.gitignore
-# (NOTE: not in whales_setup/.dockerignore as docker files not needed inside container)
-!/docker-compose.yml
-!/Dockerfile
 ```
 
 ## How to modify bash scripts to work with Whales ##
@@ -284,10 +281,10 @@ If `save=true`, then when complete, the exited container will be committed to an
 
 ### Sequence of images ###
 
-The `<tag-sequence>` argument is a comma separated list of tag-names,
-representing a route from the service image to the desired tag name of the save image (if at all desired).
+The `<tag-sequence>` argument is a comma separated list of ‘tag’-names,
+representing a route from the initial image created by the service to the desired tag name of the save image (if saving is set).
 For example, suppose we have service called `boats-service` defined in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml)
-to build an image with the designation `whales:boats`.
+to build an image with the designation `whales-boats:build`.
 And suppose we have some testing processes,
 
 - pre-compilation
@@ -301,16 +298,16 @@ for which we wish to build images with the following dependencies:
 
 ```
     ( service )
-    whales:boats ____> whales:precompile ____> whales:compile ____> whales:unit ____> whales:e2e ____> whales:zip
-                              \                       \___________> whales:explore
-                               \_________> whales:explore
+    whales-boats:build ____> *:precompile ____> *:compile ____> *:unit ____> *:e2e ____> *:zip
+                                 \                   \___________> *:explore
+                                  \_________> *:explore
 ```
 
 Then in our scripts the `<tag-sequence>` in the `call_within_docker` would be given as follows:
 
 | Process             | Command: `call_within_docker`<br/>Arguments: `<service> <tag-sequence> <save> <it>` |
 | :------------------ | :---------------------------------------------------------------------------------- |
-| pre-compilation     | `"boats-service" "boats,precompile"             true  false` |
+| pre-compilation     | `"boats-service" ".,precompile"                 true  false` |
 | compilation:        | `"boats-service" "precompile,compile"           true  false` |
 | unit-testing        | `"boats-service" "compile,unit"                 true  false` |
 | e2e-testing         | `"boats-service" "unit,e2e"                     true  false` |
@@ -332,16 +329,48 @@ the resulting pre-transformed argument is of the form
 `"tag_1,tag_2,...,tag_n"`
 where `n`≥2 and each `tag_i` contains no spaces (or commas).
 
+#### ‘Tags’ ####
+
+For stability purposes the Whales project only loosely applies tag names, but does not rely on them,
+as tag names can always be inadvertently overwritten.
+Instead each image and container built by Whales scripts, are assigned **docker labels** according to the following scheme:
+
+- `org.whales.project` = the project name
+- `org.whales.service` = the name of the service associated to the initial image
+- `org.whales.tag` = the ‘tag’ name of the image (this _cannot_ be overwritten).
+    For the initial image, this key is given no value.
+- `org.whales.initial` = true/false, indicating whether the image is the initial image built by the service.
+
 #### Interpretation ####
 
 Here `<image>` denotes the image name (without tag) of the service
 in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml).
 
+- The tag value `.` is reserve to denote the initial image built via for the docker-compose service.
+    _E.g._ if the `<tag-sequence>` argument is pre-transformed to `".,tag_2,...,tag_n"`,
+    then the scripts will search for the initial image created for the service.
 - If the `<tag-sequence>` argument is pre-transformed to `"tag_1,tag_2,...,tag_n"`,
     then the entry point will be taken to be the latest tag, `tag_i`, where `i` ∈ {1,2,...,`n`-1},
-    for which an image `<image>:tag_i` exists.
-    And the image name for saving will be `<image>:tag_n`.
+    for which an image exists satisfying the following conditions:
+
+    - it has label `org.whales.project=<project name>`;
+    - it has label `org.whales.project=<service name>`;
+    - it has label `org.whales.tag=<tag>`, where `<tag>` is the value of `tag_i`;
+
+    or if `tag_i==.` holds, then the following condition is used instead of the final one:
+
+    - it has label `org.whales.initial=true`.
+
     That is, we allow up to the penultimate element in the list to be used as the starting point.
+    The saved image (if the `--save` flag is used) will be assigned the following attributes:
+
+    - the label `org.whales.project=<project name>`;
+    - the label  `org.whales.project=<service name>`;
+    - the label `org.whales.tag=<tag>`, where `<tag>` is the value of `tag_n`;
+    - the image:tag designation `<image>:tag_n`,
+        where `<image>` is the name of the image of the image initially built by the service.
+        (If this is blank then `<image>` is replaced by a default value given by `<image>:=<project>_<service>`.)
+
 - Observe that if the `<tag-sequence>` argument was originally of the form `"tag_1,tag_2,...,(tag_n)"`,
     then the penultimate element in the pre-transformed list coincide with the final element.
     So effectively, we allow up and including the finale element in the list to be used as the starting point.
