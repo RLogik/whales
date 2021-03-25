@@ -8,6 +8,7 @@
 source whales_setup/.lib.globals.sh;
 source whales_setup/.lib.utils.sh;
 source whales_setup/.lib.docker.sh;
+source whales_setup/.lib.meta.sh
 
 ##############################################################################
 # MAIN PROCESSES FOR WHALES
@@ -16,15 +17,13 @@ source whales_setup/.lib.docker.sh;
 function run_docker_build() {
     local project="$WHALES_PROJECT_NAME";
     local service="$1";
-
-    _log_info "START DOCKER SERVICE \033[92;1m$service\033[0m.";
-    env_create_local;
-    run_docker_compose up --build $service || _log_fail "Usage of docker-compose resulted in failure.";
+    run_docker_compose_build "$project" "$service";
 }
 
 function run_docker_stop_down() {
-    run_docker_compose stop;
-    run_docker_compose down;
+    local project="$WHALES_PROJECT_NAME";
+    run_docker_compose "$project" stop;
+    run_docker_compose "$project" down;
 }
 
 function run_docker_prune() {
@@ -78,5 +77,5 @@ function run_docker_enter() {
     local tags="$2";
 
     [ "$tags" == "" ] && tags=".,($WHALES_DOCKER_TAG_EXPLORE)";
-    call_within_docker "$service" "$tags" false true true;
+    whale_call "$service" "$tags" false true true;
 }

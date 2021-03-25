@@ -192,7 +192,7 @@ WHALES_SETUP_PATH=whales_setup
 
 ## How to modify bash scripts to work with Whales ##
 
-The `call_within_docker` command in [whales_setup/.lib.sh](whales_setup/.lib.sh) acts as a quasi decorator.
+The `whale_call` command in [whales_setup/.lib.sh](whales_setup/.lib.sh) acts as a quasi decorator.
 When used, it
 
 - interrupts a running script
@@ -226,8 +226,8 @@ SERVICE="prod-service";
 
 source whales_setup/.lib.sh;
 
-# call_within_docker <service>  <tag-sequence> <save> <it>  <expose> <script> <params>
-call_within_docker   "$SERVICE" "prod,setup"   true   false false    "$ME"    $SCRIPTARGS;
+# whale_call <service>  <tag-sequence> <save> <it>  <expose> <script> <params>
+whale_call   "$SERVICE" "prod,setup"   true   false false    "$ME"    $SCRIPTARGS;
 
 python3 -m pip install tensorflow;
 python3 src/main.py "${SCRIPTARGS[0]}";
@@ -264,12 +264,12 @@ source whales_setup/.lib.sh;
 
 mode="${FLAGS[0]}";
 if [ "$mode" == "interactive" ]; then
-    # call_within_docker <service>  <tag-sequence>   <save> <it> <expose> <script> <params>
-    call_within_docker   "$SERVICE" "test,(explore)" true   true true     "$ME"    $SCRIPTARGS;
+    # whale_call <service>  <tag-sequence>   <save> <it> <expose> <script> <params>
+    whale_call   "$SERVICE" "test,(explore)" true   true true     "$ME"    $SCRIPTARGS;
     swipl -lq src/main.pl;
 else
-    # call_within_docker <service>  <tag-sequence> <save> <it>  <expose> <script> <params>
-    call_within_docker   "$SERVICE" "test,explore" false  false true     "$ME"    $SCRIPTARGS;
+    # whale_call <service>  <tag-sequence> <save> <it>  <expose> <script> <params>
+    whale_call   "$SERVICE" "test,explore" false  false true     "$ME"    $SCRIPTARGS;
     swipl -fq src/main.pl -t halt;
 fi
 ```
@@ -303,9 +303,9 @@ for which we wish to build images with the following dependencies:
                                   \_________> *:explore
 ```
 
-Then in our scripts the `<tag-sequence>` in the `call_within_docker` would be given as follows:
+Then in our scripts the `<tag-sequence>` in the `whale_call` would be given as follows:
 
-| Process             | Command: `call_within_docker`<br/>Arguments: `<service> <tag-sequence> <save> <it>` |
+| Process             | Command: `whale_call`<br/>Arguments: `<service> <tag-sequence> <save> <it>` |
 | :------------------ | :---------------------------------------------------------------------------------- |
 | pre-compilation     | `"boats-service" ".,precompile"                 true  false` |
 | compilation:        | `"boats-service" "precompile,compile"           true  false` |
@@ -314,22 +314,12 @@ Then in our scripts the `<tag-sequence>` in the `call_within_docker` would be gi
 | artefact-creation   | `"boats-service" "e2e,zip"                      false false` |
 | explorative testing | `"boats-service" "precompile,compile,(explore)" true  true ` |
 
+Note for the initial build one uses `.` instead of the docker tag name.
+The command does not really work with docker tag names,
+but with values saved as docker labels.
+See section [_Docker ‘tags’ vs. docker labels_](#docker-tags-vs-docker-labels) for more.
 
-#### Syntax ####
-
-The `<tag-sequence>` argument must contain no spaces and be a comma-separated list.
-The final entry in a list of length `n`≥2 can be contained in parentheses.
-The script pre-transforms arguments as follows
-
-- `"tag_1,tag_2,...,(tag_n)"` ⟶ `"tag_1,tag_2,...,tag_n,tag_n"`;
-- `"tag_1"` ⟶ `"tag_1,tag_1"`
-
-Then the `<tag-sequence>`-argument is valid, exactly in case
-the resulting pre-transformed argument is of the form
-`"tag_1,tag_2,...,tag_n"`
-where `n`≥2 and each `tag_i` contains no spaces (or commas).
-
-#### ‘Tags’ ####
+#### Docker ‘tags’ vs. docker labels ####
 
 For stability purposes the Whales project only loosely applies tag names, but does not rely on them,
 as tag names can always be inadvertently overwritten.
@@ -341,6 +331,19 @@ Instead each image and container built by Whales scripts, are assigned **docker 
     For the initial image, this key is given no value.
 - `org.whales.initial` = true/false, indicating whether the image is the initial image built by the service.
 
+#### Syntax of tag-sequence argument ####
+
+The examples above and in this repository should make clear, who to use this argument.
+Nonetheless for completeness, we provide here a thorough explanation.
+The `<tag-sequence>` argument must contain no spaces and be a comma-separated list. The final entry in a list of length `n`≥2 can be contained in parentheses. The script pre-transforms arguments as follows
+
+- `"tag_1,tag_2,...,(tag_n)"` ⟶ `"tag_1,tag_2,...,tag_n,tag_n"`;
+- `"tag_1"` ⟶ `"tag_1,tag_1"`
+
+Then the `<tag-sequence>`-argument is valid, exactly in case
+the resulting pre-transformed argument is of the form
+`"tag_1,tag_2,...,tag_n"`
+where `n`≥2 and each `tag_i` contains no spaces (or commas).
 #### Interpretation ####
 
 Here `<image>` denotes the image name (without tag) of the service

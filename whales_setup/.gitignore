@@ -12,6 +12,7 @@
 !/.lib.globals.sh
 !/.lib.utils.sh
 !/.lib.docker.sh
+!/.lib.meta.sh
 !/.lib.sh
 !/docker-entry.sh
 !/docker.sh

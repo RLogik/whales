@@ -23,16 +23,16 @@ source whales_setup/.lib.sh;
 mode="$( get_one_kwarg_space "$SCRIPTARGS" "-+mode" "")";
 
 if [ "$mode" == "run" ]; then
-    # call_within_docker <service>  <tag-sequence> <save> <it>  <ports> <script> <params>
-    call_within_docker   "$SERVICE" "."            false  false true    "$ME"    $SCRIPTARGS;
+    # whale_call <service>  <tag-sequence> <save> <it>  <ports> <script> <params>
+    whale_call   "$SERVICE" "."            false  false true    "$ME"    $SCRIPTARGS;
     run_main;
 elif [ "$mode" == "unit" ]; then
-    # call_within_docker <service>  <tag-sequence> <save> <it>  <ports> <script> <params>
-    call_within_docker   "$SERVICE" ".,unit"       false  false true    "$ME"    $SCRIPTARGS;
+    # whale_call <service>  <tag-sequence> <save> <it>  <ports> <script> <params>
+    whale_call   "$SERVICE" ".,unit"       false  false true    "$ME"    $SCRIPTARGS;
     run_test_unit;
 elif [ "$mode" == "explore" ]; then
-    # call_within_docker <service>  <tag-sequence> <save> <it>  <ports> <script> <params>
-    call_within_docker   "$SERVICE" ".,(explore)"  true   true  true    "$ME"    $SCRIPTARGS;
+    # whale_call <service>  <tag-sequence> <save> <it>  <ports> <script> <params>
+    whale_call   "$SERVICE" ".,(explore)"  true   true  true    "$ME"    $SCRIPTARGS;
     run_explore_console;
 else
     _log_error   "Invalid cli argument.";

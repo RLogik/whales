@@ -29,8 +29,8 @@ elif [ "$mode" == "docker-all" ]; then
     run_docker_clean_all;
 elif [ "$mode" == "artefacts" ]; then
     select_service "$SERVICE" || exit 1;
-    # call_within_docker <service> <tag-sequence> <save> <it>  <expose> <script> <params>
-    call_within_docker  "$SERVICE" "$TAGS"        true   false false    "$ME"    "$SCRIPTARGS";
+    # whale_call <service> <tag-sequence> <save> <it>  <expose> <script> <params>
+    whale_call  "$SERVICE" "$TAGS"        true   false false    "$ME"    "$SCRIPTARGS";
     run_clean_artefacts;
 else
     _log_error   "Invalid cli argument.";

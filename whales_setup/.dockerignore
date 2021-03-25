@@ -12,6 +12,7 @@
 !/.lib.docker.sh
 !/.lib.utils.sh
 !/.lib.whales.sh
+!/.lib.meta.sh
 !/.lib.sh
 !/docker-entry.sh
 !/docker.sh

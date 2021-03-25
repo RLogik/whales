@@ -26,8 +26,8 @@ tags="$(     get_one_kwarg_space "$SCRIPTARGS" "-+tags"     "" )";
 if [ "$mode" == "docker" ]; then
     source whales_setup/docker.sh --service "$SERVICE" --clean;
 elif [ "$mode" == "artefacts" ]; then
-    # call_within_docker <service> <tag-sequence> <save> <it>  <expose> <script> <params>
-    call_within_docker  "$SERVICE" "$tags"        true   false false    "$ME"    "$SCRIPTARGS";
+    # whale_call <service> <tag-sequence> <save> <it>  <expose> <script> <params>
+    whale_call  "$SERVICE" "$tags"        true   false false    "$ME"    "$SCRIPTARGS";
     run_clean_artefacts;
 else
     _log_error   "Invalid cli argument.";

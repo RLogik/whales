@@ -13,6 +13,19 @@ function is_linux() {
     [ "$OSTYPE" == "msys" ] && return 1 || return 0;
 }
 
+function dos_to_unix() {
+    ( dos2unix --version 2> $VERBOSE >> $VERBOSE ) && dos2unix -q $1 && return;
+    _log_fail "Install \033[1mdos2unix\033[0m for your system and ensure the command can be called in bash before proceeding. Cf. https://command-not-found.com/dos2unix, https://chocolatey.org/packages/dos2unix, etc.";
+}
+
+function clean_scripts_dos2unix() {
+    local setup_path="$1";
+    while read path; do
+        [ "$path" == "" ] && continue;
+        dos_to_unix "$path";
+    done <<< "$( ls -a {,$setup_path/}{,.}*.sh 2> $VERBOSE )";
+}
+
 ##############################################################################
 # AUXILIARY METHODS: READING CLI ARGUMENTS
 ##############################################################################
