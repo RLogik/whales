@@ -22,9 +22,9 @@
 
     ```bash
     chmod +x *.sh; # grant execution rights to the shell scripts
-    ./test.sh --mode run;
-    ./test.sh --mode unit;
-    ./test.sh --mode explore;
+    ./build.sh --mode run;
+    ./build.sh --mode unit;
+    ./build.sh --mode explore;
     ```
 
 5. To see the status of the docker containers and images,

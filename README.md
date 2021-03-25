@@ -29,6 +29,7 @@ This project has been developed with
 - **Docker** version **20.10.5**;
 - **docker-compose** version **1.28.5**;
 - the **Docker app** version **3.2.2**.
+- the **dos2unix** tool for bash.
 
 This may work with previous versions, and _should_ work with future versions,
 but we cannot at the moment guarantee this.
@@ -39,6 +40,9 @@ For **Windows users**:
 - it may be necessary to install [**WSL2**](https://docs.microsoft.com/de-de/windows/wsl/wsl2-kernel#download-the-linux-kernel-update-package).
 - optionally, instead of the usual Docker app, [**Docker Edge**](https://docs.docker.com/docker-for-windows/edge-release-notes/) is recommended,
 as it is apparently faster.
+
+Open bash and call `dos2unix --version` to see if `dos2unix` is installed.
+If not, see <https://command-not-found.com/dos2unix>, <https://chocolatey.org/packages/dos2unix>, etc.
 
 ## Hello World Example ##
 
@@ -225,7 +229,7 @@ SERVICE="prod-service";
 
 source whales_setup/.lib.sh;
 
-# whale_call  <service> <tag-sequence> <save, it, ports> <type, command>
+# whale_call <service> <tag-sequence> <save, it, ports> <type, command>
 whale_call   "$SERVICE" "prod,setup"  true false false  SCRIPT $ME $SCRIPTARGS;
 
 python3 -m pip install tensorflow;
