@@ -46,35 +46,7 @@ If not, see <https://command-not-found.com/dos2unix>, <https://chocolatey.org/pa
 
 ## Hello World Example ##
 
-1. Clone this repository to some path.
-2. Ensure the Docker app has been granted access to the path (or a directory containing it).
-3. Start the Docker application.
-4. Navigate to the root path of the repository and execute the following commands in bash:
-
-    ```bash
-    chmod +x *.sh; # grant execution rights to the shell scripts
-    ./hello.sh "Captain, ...";
-    ./hello.sh "Thar be whales\!"; # NOTE: Do not write "!"
-    ./hello.sh "I am a humpback whale.";
-    ```
-
-    If performed correctly, first the docker image will be created.
-    Then the docker image will be started in a container,
-    and you will see two whales with messages `(blank)` and `Hello world!`.
-    Then upon the second "hello" script execution, the docker image will be started in a container,
-    and you will see two whales with messages `Hello world!` and `I am a whale`.
-
-In [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml)
-one can optionally uncomment the volume mounting and repeat step 4 above.
-One should now a file `HELLO_WORLD` in the root of the project,
-which will be modified as one calls the above commands.
-If one modifies this file, then calls the script, the modifications
-should display.
-
-If this works as described, then this means the scripts function correctly:
-Project users are able to start images with ease, execute methods within them
-(_e.g._ compilation of a code, execution of an algorithm, _etc._)
-and the results can be saved (optionally) for the next execution.
+Follow the instructions in [examples/hello-world](examples/hello-world/README.md).
 
 ## How to start a new project with Whales ##
 
@@ -141,38 +113,22 @@ See also the notes aboving [_Moving the Whales folder_](#moving-whales-files/fol
 
 ## Status and cleaning ##
 
-Call `./whales_setup/docker.sh --status` to view the status of the containers and images. For example after the above hello-world example, the status looks like this:
-
+Calling
+```bash
+source whales_setup/docker.sh --service <name-of-service> --status;
 ```
-CONTAINERS:
-CONTAINER ID   NAMES                    IMAGE                SIZE                 STATUS                      CREATED AT
-ecxxxxxxxxxd   whales_hello-service_0   whales-hello:build   0B (virtual 102MB)   Exited (0) 39 seconds ago   2021-xxxxxxxx:23:44
-
-IMAGES:
-IMAGE ID       REPOSITORY:TAG         SIZE      CREATED AT
-
-d0xxxxxxxxx7   whales-hello:explore   102MB     2021-xxxxxxxx:24:13
-     labels:   {"org.whales.initial":"false","org.whales.project":"whales","org.whales.service":"hello-service","org.whales.tag":"explore"}
-
-4cxxxxxxxxx7   <none>:<none>          102MB     2021-xxxxxxxx:24:08
-     labels:   {"org.whales.initial":"false","org.whales.project":"whales","org.whales.service":"hello-service","org.whales.tag":"explore"}
-
-6dxxxxxxxxx0   <none>:<none>          102MB     2021-xxxxxxxx:23:49
-     labels:   {"org.whales.initial":"false","org.whales.project":"whales","org.whales.service":"hello-service","org.whales.tag":"explore"}
-
-d9xxxxxxxxxd   whales-hello:build     102MB     2021-xxxxxxxx:23:44
-     labels:   {"org.whales.initial":"true","org.whales.project":"whales","org.whales.service":"hello-service"}
-```
-
-Calling `./whales_setup/docker.sh --service <name-of-service> --status` limits this output to images
-associated to a desired service.
-Optionally one may use the `--project <name-of-project>` flag, to specify by which project name to filter.
-Otherwise the local `.env` file (in the setup folder) is consulted.
-
-Call `./whales_setup/docker.sh --service <name-of-service> --clean`
-to clean all containers + images associated with a service.
+displays the status of containers + images associated with a named service.
 If the `--service` option not given or left blank,
-then all services within the local project will be deleted.
+then all services within the local project will be displayed.
+The same logic applies to the command
+```bash
+source whales_setup/docker.sh --service <name-of-service> --clean;
+```
+this time with the action of deleting containers/images.
+
+Optionally, one may additionally use the `--project <name-of-project>` flag,
+to specify by which project name to filter.
+Otherwise the local `.env` file (in the setup folder) is consulted.
 
 Call `./whales_setup/docker.sh --clean-all` to clean all containers and images.
 
