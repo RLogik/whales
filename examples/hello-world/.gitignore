@@ -1,0 +1,10 @@
+*
+!/.gitignore
+!/.dockerignore
+!/whales.env
+!/whales_setup
+!/README.md
+!/LICENSE
+!/.lib.sh
+!/clean.sh
+!/hello.sh

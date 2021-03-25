@@ -1,12 +1,22 @@
 *
 !/.gitignore
+!/.dockerignore
 
 ################################################################################################################################
-# WHALES-PROJECT EXAMPLES
+# WHALES SETUP
 ################################################################################################################################
-!/hello\-world
-!/haskell
-!/prolog
-!/python
-!/R
-!/template
+!/logging.env
+!/docker.env
+!/DOCKER_DEPTH
+!/VERSION
+
+!/.lib.globals.sh
+!/.lib.utils.sh
+!/.lib.docker.sh
+!/.lib.meta.sh
+!/.lib.sh
+!/docker-entry.sh
+!/docker.sh
+
+!/docker-compose.yml
+!/Dockerfile
