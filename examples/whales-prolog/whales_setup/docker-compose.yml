@@ -9,14 +9,14 @@ services:
   prod-service:
     image: whales-prod:build
     build:
-      context: ".." # !!! important !!! Context = root of project.
-      dockerfile: whales_setup/Dockerfile
+      context: ".."
+      dockerfile: "${WHALES_SETUP_PATH}/Dockerfile"
       args:
         WD: "$WD"
         WHALES_PROJECT_NAME: "$WHALES_PROJECT_NAME"
         WHALES_SELECTED_SERVICE: "$WHALES_SELECTED_SERVICE"
         WHALES_SETUP_PATH: "$WHALES_SETUP_PATH"
-        WHALES_ENTRY_SCRIPT: "$WHALES_ENTRY_SCRIPT"
+        ENTRY_SCRIPT: "$ENTRY_SCRIPT"
     volumes:
       # - ./../logs:$WD/logs:rw   ## <- (r/)w for logging between all docker levels.
       - ./../src:$WD/src:rw     ## <- r/w   allows for live developing

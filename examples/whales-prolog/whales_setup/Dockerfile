@@ -31,5 +31,5 @@ RUN echo "export LOGGINGPREFIX=\">\";" >> "${WHALES_SETUP_PATH}/.lib.globals.sh"
 
 # To avoid writing lots of awkward commands here, one can pack themm in a bash script
 # and (depending on the docker image) run the bash script within the container.
-ARG WHALES_ENTRY_SCRIPT
-RUN [ "/bin/bash", "-c", "[ -f \"${WHALES_ENTRY_SCRIPT}\" ] && source \"${WHALES_ENTRY_SCRIPT}\" || exit 1" ]
+ARG ENTRY_SCRIPT
+RUN [ "/bin/bash", "-c", "[ -f \"${ENTRY_SCRIPT}\" ] && source \"${ENTRY_SCRIPT}\" || exit 1" ]

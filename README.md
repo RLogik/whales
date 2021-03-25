@@ -75,7 +75,7 @@ and the results can be saved (optionally) for the next execution.
 ## How to start a new project with Whales ##
 
 1. Clone this repository (and delete unnecessary subfolders like [./examples](examples)).
-2. Modify the [.env](.env) file in the project root.
+2. Modify the [whales.env](whales.env) file in the project root.
     Even if you wish to leave most values as is, definitely consider changing the value of the following key:
     ```.env
     WHALES_COMPOSE_PROJECT_NAME=whales
@@ -91,7 +91,7 @@ and the results can be saved (optionally) for the next execution.
     to suit the needs of your application.
     </br>
     **Note:**
-        [.env](.env)
+        [whales.env](whales.env)
         +
         [whales_setup/docker.env](whales_setup/docker.env)
     are used to dynamically create
@@ -109,8 +109,7 @@ See also the subfolders in [./examples](examples) for further implementation exa
     ```.dockerignore
     !/whales_setup
     ```
-2. Add the file [.env](.env) to the root folder, if one does not exist.
-    Otherwise append the values to the end of your existing `.env` file (ensure there are no naming conflicts).
+2. Add the file [whales.env](whales.env) to the root folder.
     Even if you wish to leave most values as is, definitely consider changing the value of the following key:
     ```.env
     WHALES_COMPOSE_PROJECT_NAME=whales
@@ -226,8 +225,8 @@ SERVICE="prod-service";
 
 source whales_setup/.lib.sh;
 
-# whale_call <service>  <tag-sequence> <save> <it>  <expose> <script> <params>
-whale_call   "$SERVICE" "prod,setup"   true   false false    "$ME"    $SCRIPTARGS;
+# whale_call  <service> <tag-sequence> <save, it, ports> <type, command>
+whale_call   "$SERVICE" "prod,setup"  true false false  SCRIPT $ME $SCRIPTARGS;
 
 python3 -m pip install tensorflow;
 python3 src/main.py "${SCRIPTARGS[0]}";
@@ -264,12 +263,12 @@ source whales_setup/.lib.sh;
 
 mode="${FLAGS[0]}";
 if [ "$mode" == "interactive" ]; then
-    # whale_call <service>  <tag-sequence>   <save> <it> <expose> <script> <params>
-    whale_call   "$SERVICE" "test,(explore)" true   true true     "$ME"    $SCRIPTARGS;
+    # whale_call <service>  <tag-sequence>   <save, it, ports> <type, command>
+    whale_call   "$SERVICE" "test,(explore)" true true true    SCRIPT $ME $SCRIPTARGS;
     swipl -lq src/main.pl;
 else
-    # whale_call <service>  <tag-sequence> <save> <it>  <expose> <script> <params>
-    whale_call   "$SERVICE" "test,explore" false  false true     "$ME"    $SCRIPTARGS;
+    # whale_call <service>  <tag-sequence>   <save, it, ports> <type, command>
+    whale_call   "$SERVICE" "test,explore"   false false true  SCRIPT $ME $SCRIPTARGS;
     swipl -fq src/main.pl -t halt;
 fi
 ```

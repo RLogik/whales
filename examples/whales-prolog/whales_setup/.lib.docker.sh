@@ -13,17 +13,21 @@ function env_create_local() {
     local path="$WHALES_SETUP_PATH";
     local project="$1";
     local service="$2";
+    local global_env="whales.env";
     local local_env_init="${path}/docker.env";
     local local_env="${path}/.env";
     [ -f "$local_env" ] && rm "$local_env";
     touch "$local_env";
+    echo "# environment variables from project folder:" >> "$local_env";
+    cat  "$global_env"                                  >> "$local_env";
+    echo ""                                             >> "$local_env";
     echo "# environment variables from setup folder:"   >> "$local_env";
     cat  "$local_env_init"                              >> "$local_env";
     echo ""                                             >> "$local_env";
     echo "# environment variables from project source:" >> "$local_env";
     echo "WHALES_SETUP_PATH=$path"                      >> "$local_env";
-    echo "WHALES_ENTRY_SCRIPT=$path/docker-entry.sh"    >> "$local_env";
     echo "WHALES_PROJECT_NAME=$project"                 >> "$local_env";
+    echo "WHALES_ENTRY_SCRIPT=$path/docker-entry.sh"    >> "$local_env";
     echo ""                                             >> "$local_env";
     echo "# tmp environment variables for service:"     >> "$local_env";
     echo "WHALES_SELECTED_SERVICE=$service"             >> "$local_env";
@@ -33,18 +37,7 @@ function env_create_local() {
 # GLOBAL VARIABLES
 ##############################################################################
 
-# extract from global .env file:
-env_from "whales.env" import WHALES_SETUP_PATH;
-env_from "whales.env" import WHALES_PROJECT_NAME;
-
 ## create local .env file first:
-env_create_local "$WHALES_PROJECT_NAME" "";
-
-# extract from whales_seutp .env:
-env_from "$WHALES_SETUP_PATH/.env" import IP                 as WHALES_DOCKER_IP;
-env_from "$WHALES_SETUP_PATH/.env" import PORT_HOST          as WHALES_DOCKER_PORT_HOST;
-env_from "$WHALES_SETUP_PATH/.env" import PORT_CONTAINER     as WHALES_DOCKER_PORT_CONTAINER;
-
 export WHALES_DOCKER_COMPOSE_YML="${WHALES_SETUP_PATH}/docker-compose.yml";
 export WHALES_FILE_DOCKER_DEPTH="$WHALES_SETUP_PATH/DOCKER_DEPTH";
 export WHALES_DOCKER_PORTS="$WHALES_DOCKER_IP:$WHALES_DOCKER_PORT_HOST:$WHALES_DOCKER_PORT_CONTAINER";
@@ -338,6 +331,7 @@ function docker_remove_some_containers() {
     ! [ "$service" == "" ] && filters="$filters --filter label=org.whales.service=$service";
     local format="{{.ID}}";
     local lines="$( docker ps -aq --format "$format" $filters )";
+    local found=false;
     while read line; do
         line="$( _trim "$line" )";
         [ "$line" == "" ] && continue;
@@ -347,7 +341,7 @@ function docker_remove_some_containers() {
             && _cli_message "Removed \033[1mcontainer\033[0m with id {\033[1m$id\033[0m}." \
             || _log_error "Could not remove \033[1mcontainer\033[0m with id {\033[1m$id\033[0m}.";
     done <<< "$lines";
-    ! ( $found ) && _log_info "No containers were found.";
+    ! ( $found ) && _log_warn "No containers were found.";
 
 }
 
@@ -369,7 +363,7 @@ function docker_remove_some_images() {
             && _cli_message "Removed \033[1mimage\033[0m with id {\033[1m$id\033[0m}." \
             || _log_error "Could not remove \033[1mimage\033[0m with id {\033[1m$id\033[0m}.";
     done <<< "$lines";
-    ! ( $found ) && _log_info "No images were found.";
+    ! ( $found ) && _log_warn "No images were found.";
 }
 
 function docker_remove_all_containers() {

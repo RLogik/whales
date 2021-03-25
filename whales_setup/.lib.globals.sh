@@ -43,10 +43,18 @@ export CMD_EXPLORE="bash";
 export WAIT_PERIOD_IN_SECONDS=1;
 export PENDING_SYMBOL="#";
 
-env_from "whales.env" import CONSOLE_OUT                 as OUT;
-env_from "whales.env" import CONSOLE_ERR                 as ERR;
-env_from "whales.env" import CONSOLE_VERBOSE             as VERBOSE;
-env_from "whales.env" import CONSOLE_PATH_LOGS           as PATH_LOGS;
-env_from "whales.env" import CONSOLE_FILENAME_LOGS_DEBUG as FILENAME_LOGS_DEBUG;
+# extraction from environments:
+env_from "whales.env" import WHALES_SETUP_PATH;
+env_from "whales.env" import WHALES_PROJECT_NAME;
+
+env_from "$WHALES_SETUP_PATH/docker.env" import IP                 as WHALES_DOCKER_IP;
+env_from "$WHALES_SETUP_PATH/docker.env" import PORT_HOST          as WHALES_DOCKER_PORT_HOST;
+env_from "$WHALES_SETUP_PATH/docker.env" import PORT_CONTAINER     as WHALES_DOCKER_PORT_CONTAINER;
+
+env_from "$WHALES_SETUP_PATH/logging.env" import CONSOLE_OUT                 as OUT;
+env_from "$WHALES_SETUP_PATH/logging.env" import CONSOLE_ERR                 as ERR;
+env_from "$WHALES_SETUP_PATH/logging.env" import CONSOLE_VERBOSE             as VERBOSE;
+env_from "$WHALES_SETUP_PATH/logging.env" import CONSOLE_PATH_LOGS           as PATH_LOGS;
+env_from "$WHALES_SETUP_PATH/logging.env" import CONSOLE_FILENAME_LOGS_DEBUG as FILENAME_LOGS_DEBUG;
 
 export LOGGINGPREFIX="";

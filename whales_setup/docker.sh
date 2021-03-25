@@ -40,14 +40,14 @@ if ( has_arg "$SCRIPTARGS" "-+enter" ); then
 elif ( has_arg "$SCRIPTARGS" "-+(start|up)" ); then
     run_docker_build "$project" "$service";
 elif ( has_arg "$SCRIPTARGS" "-+(stop|down)" ); then
-    run_docker_stop_down;
+    run_docker_stop_down "$project" "$service";
 elif ( has_arg "$SCRIPTARGS" "-+clean-all" ); then
     run_docker_clean_all;
 elif ( has_arg "$SCRIPTARGS" "-+clean" ); then
     run_docker_clean "$project" "$service";
     run_docker_prune;
 elif ( has_arg "$SCRIPTARGS" "-+(status|state)" ); then
-    get_docker_state "$service";
+    get_docker_state "$project" "$service";
 else
     _log_error   "Invalid cli argument.";
     _cli_message "";

@@ -14,7 +14,7 @@
 # returns to script, or starts docker and calls script within docker.
 #
 # Usage:
-#    whale_call <service> <tag-sequence> <save> <it> <expose> [<script> <params>]
+#    whale_call <service> <tag-sequence> <save, it, ports> <type> [<script, params> / <command>]
 #
 # Arguments:
 #    service <string>   The name of the service in whales_setup/docker-compose.yml.
@@ -28,27 +28,30 @@
 #    save <bool>        Whether the created image is to be saved after creation
 #                         / after interactive container containing image is exitted.
 #    it <bool>          Whether the container is to be run interactive mode.
-#    expose <bool>      Whether ports are to be exposed.
+#    ports <bool>       Whether ports are to be exposed.
+#    type   <string>    Either SCRIPT or CMD (not case sensitive).
 #  Optional:
-#    script <string>    Path to script to be carried out in docker container.
-#    params <strings>   CLI params to be passed to script.
+#    if type == SCRIPT, use
+#       <script, params>  Name of script followed by CLI params.
+#    else use
+#       <command>         The full command to be carried out (within the docker context).
 ####
 function whale_call() {
     local metaargs=( "$@" );
+    local service="${metaargs[0]}";
+    local tags="${metaargs[1]}";
+    local save=${metaargs[2]};
+    local it=${metaargs[3]};
+    local expose=${metaargs[4]};
+    local type="$( to_lower "${metaargs[5]}" )";
 
-    ## RETURN TO SCRIPT --- if already inside docker:
+    # If already inside docker:
     if ( is_docker ); then
-        return 0;
+        # If type==script, return to script, else carry out commmand:
+        [ "$type" == "script" ] && return 0 || ( "${metaargs[@]:6}" ) && return 0 || return 1;
     else
-        local service="${metaargs[0]}";
-        local tags="${metaargs[1]}";
-        local save=${metaargs[2]};
-        local it=${metaargs[3]};
-        local expose=${metaargs[4]};
-        local comand="${metaargs[@]:5}";
-
         ## CHECK VALIDITY OF ARGUMENTS:
-        [ ${#metaargs[@]} -lt 5 ] && _log_fail "In whales decorator \033[1mcall_within_docker\033[0m not enough arguments passed.";
+        [ ${#metaargs[@]} -lt 6 ] && _log_fail "In whales decorator \033[1mcall_within_docker\033[0m not enough arguments passed.";
 
         ## CREATE SERVICE:
         _log_info "YOU ARE OUTSIDE THE DOCKER ENVIRONMENT.";
@@ -61,17 +64,29 @@ function whale_call() {
         local tagStart="${output[0]}";
         local tagFinal="${output[1]}";
         [ "$tagStart" == "" ] && _log_fail "Could not find an existing image with one of the tags in \033[1m$tags\033[0m for the service \033[1m$service\033[0m.";
-
-        ## RUN SCRIPT COMMAND WITHIN DOCKER:
         local save_arg="";
         ( $save ) && save_arg="--save \"$tagFinal\"";
-        local cmd_arg="";
-        ! [ $command == "" ] && cmd_arg="--command \"$command\"";
-        # alternative: "--command \"cat $script | dos2unix | bash -s -- $params\"";
-        whales_enter_docker --service "$service" --enter "$tagStart" $save_arg --it $it --expose $expose $cmd_arg;
 
-        ## EXIT: Do not return to script!
-        exit 0;
+        ## DETERMINE COMMAND TO BE CALLED IN DOCKER CONTAINER:
+        local cmd_arg="";
+        if [ "$type" == "script" ]; then
+            local script="${metaargs[6]}";
+            local params="${metaargs[@]:7}";
+            command="source $script $params";
+            # alternative: "--command \"cat $script | dos2unix | bash -s -- $params\"";
+            ! [ "$script" == "" ] && cmd_arg="--command \"$command\"";
+        else
+            local command="${metaargs[@]:6}";
+            ! [ "$command" == "" ] && cmd_arg="--command \"$command\"";
+        fi
+
+        ## RUN SCRIPT COMMAND WITHIN DOCKER:
+        local __success=1;
+        whales_enter_docker --service "$service" --enter "$tagStart" $save_arg --it $it --expose $expose $cmd_arg \
+            && __success=0;
+
+        ## If type==script, do not return to script:
+        [ "$type" == "script" ] && exit $success || return $success;
     fi
 }
 

@@ -19,8 +19,8 @@ FILE_MESSAGE="HELLO_WORLD";
 
 ( has_arg "$SCRIPTARGS" "-+base" ) && SCRIPTARGS="${FLAGS[@]:2}";
 
-# whale_call <service>  <tag-sequence>    <save> <it>  <expose> <script> <params>
-whale_call   "$SERVICE" ".,(explore)" true   false false    "$ME"    "$SCRIPTARGS";
+# whale_call <service>  <tag-sequence> <save, it, ports> <type, command>
+whale_call   "$SERVICE" ".,(explore)"  true false false  SCRIPT $ME $SCRIPTARGS;
 
 ! [ -f "$FILE_MESSAGE" ] && echo "(empty)" >| $FILE_MESSAGE;
 old_message="$(cat $FILE_MESSAGE)";

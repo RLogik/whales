@@ -15,15 +15,16 @@ source whales_setup/.lib.meta.sh
 ##############################################################################
 
 function run_docker_build() {
-    local project="$WHALES_PROJECT_NAME";
-    local service="$1";
+    local project="$1";
+    local service="$2";
     run_docker_compose_build "$project" "$service";
 }
 
 function run_docker_stop_down() {
-    local project="$WHALES_PROJECT_NAME";
-    run_docker_compose "$project" stop;
-    run_docker_compose "$project" down;
+    local project="$1";
+    local service="$2";
+    run_docker_compose "$project" stop "$service";
+    run_docker_compose "$project" down "$service";
 }
 
 function run_docker_prune() {
@@ -33,8 +34,8 @@ function run_docker_prune() {
 }
 
 function run_docker_clean() {
-    local project="$WHALES_PROJECT_NAME";
-    local service="$1";
+    local project="$1";
+    local service="$2";
 
     _cli_message "";
     _cli_message "\033[94;1mCONTAINERS\033[0m:";
@@ -59,8 +60,8 @@ function run_docker_clean_all() {
 }
 
 function get_docker_state() {
-    local project="$WHALES_PROJECT_NAME";
-    local service="$1";
+    local project="$1";
+    local service="$2";
 
     _cli_message "";
     _cli_message "\033[94;1mCONTAINERS\033[0m:";
