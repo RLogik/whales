@@ -20,7 +20,7 @@ source .lib.sh;
 
 mode="$(    get_one_kwarg_space "$SCRIPTARGS" "-+mode"    "" )";
 SERVICE="$( get_one_kwarg_space "$SCRIPTARGS" "-+service" "" )";
-TAGS="$(     get_one_kwarg_space "$SCRIPTARGS" "-+tags"     "" )";
+TAGS="$(    get_one_kwarg_space "$SCRIPTARGS" "-+tags"     "" )";
 
 if [ "$mode" == "docker" ]; then
     select_service "$SERVICE" || exit 1;

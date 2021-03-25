@@ -43,10 +43,10 @@ export CMD_EXPLORE="bash";
 export WAIT_PERIOD_IN_SECONDS=1;
 export PENDING_SYMBOL="#";
 
-env_from "whales.env" import WHALES_CONSOLE_OUT        as OUT;
-env_from "whales.env" import WHALES_CONSOLE_ERR        as ERR;
-env_from "whales.env" import WHALES_CONSOLE_VERBOSE    as VERBOSE;
-env_from "whales.env" import WHALES_CONSOLE_DEBUG_FILE as DEBUG_FILE;
-env_from "whales.env" import WHALES_CONSOLE_PATH_LOGS  as PATH_LOGS;
+env_from "whales.env" import CONSOLE_OUT                 as OUT;
+env_from "whales.env" import CONSOLE_ERR                 as ERR;
+env_from "whales.env" import CONSOLE_VERBOSE             as VERBOSE;
+env_from "whales.env" import CONSOLE_PATH_LOGS           as PATH_LOGS;
+env_from "whales.env" import CONSOLE_FILENAME_LOGS_DEBUG as FILENAME_LOGS_DEBUG;
 
 export LOGGINGPREFIX="";

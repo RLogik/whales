@@ -20,7 +20,7 @@ FILE_MESSAGE="HELLO_WORLD";
 ( has_arg "$SCRIPTARGS" "-+base" ) && SCRIPTARGS="${FLAGS[@]:2}";
 
 # call_within_docker <service>  <tag-sequence>    <save> <it>  <expose> <script> <params>
-call_within_docker   "$SERVICE" "build,(explore)" true   false false    "$ME"    "$SCRIPTARGS";
+call_within_docker   "$SERVICE" ".,(explore)" true   false false    "$ME"    "$SCRIPTARGS";
 
 ! [ -f "$FILE_MESSAGE" ] && echo "(empty)" >| $FILE_MESSAGE;
 old_message="$(cat $FILE_MESSAGE)";
@@ -29,7 +29,7 @@ echo "$new_message" >| $FILE_MESSAGE;
 
 function print_message() {
     msg="$2";
-    if ! ( echo "$msg" | grep -E -q "[^[:space:]]" ); then msg="(empty)"; fi
+    if ! ( echo "$msg" | grep -Eq "[^[:space:]]" ); then msg="(empty)"; fi
     echo -e "" >> $OUT;
     echo -e "                                       " >> $OUT;
     echo -e " /¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯\       v ˇ        " >> $OUT;

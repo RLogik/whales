@@ -11,10 +11,12 @@ FROM ubuntu
 # DEV-NOTE: Add `&& sleep 5` to lines, in order to see the console output.
 ################################################################################
 
-ARG PROJECT_NAME
-LABEL org.whales.project="${PROJECT_NAME}"
-LABEL org.whales.service="???"
-LABEL org.whales.image="<init>"
+## Set whale-labels (used for searching):
+ARG WHALES_PROJECT_NAME
+ARG WHALES_SELECTED_SERVICE
+LABEL org.whales.project="${WHALES_PROJECT_NAME}"
+LABEL org.whales.service="${WHALES_SELECTED_SERVICE}"
+LABEL org.whales.initial=true
 
 ARG WD
 COPY . "$WD"
@@ -36,6 +38,6 @@ RUN [ "/bin/bash", "-c", "ls -a {,$WHALES_SETUP_PATH/}{,.}*.sh 2> /dev/null | xa
 
 # NOTE: To avoid writing lots of awkward commands here, one can pack themm in a bash script
 # and (depending on the docker image) run the bash script within the container.
-ARG ENTRY_SCRIPT
+ARG WHALES_ENTRY_SCRIPT
 RUN [ "/bin/bash", "-c", "[ -f \"${WHALES_ENTRY_SCRIPT}\" ] && cat \"${WHALES_ENTRY_SCRIPT}\" | dos2unix | bash || exit 1" ]
 # (Alternative: Use as ENTRYPOINT instead of RUN. )

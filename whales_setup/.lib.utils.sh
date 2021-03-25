@@ -21,15 +21,15 @@ function is_linux() {
 ## EXAMPLE:
 ## if ( has_arg "$@" "help" ); then ...
 function has_arg() {
-    echo "$1" | grep -E -q "(^.*[[:space:]]|^)$2([[:space:]].*$|$)" && return 0 || return 1;
+    echo "$1" | grep -Eq "(^.*[[:space:]]|^)$2([[:space:]].*$|$)" && return 0 || return 1;
 }
 
 ## $1 = full argument string, $2 = key, $3 = default value.
 ## EXAMPLE:
 ## value="$( get_kwarg "$@" "name" "N/A" )";
 function get_kwarg() {
-    local value="$(echo "$1" | grep -E -q "(^.*\s|^)$2=" && echo "$1" | sed -E "s/(^.*[[:space:]]|^)$2=(\"([^\"]*)\"|\'([^\']*)\'|([^[:space:]]*)).*$/\3\4\5/g" || echo "")";
-    echo $value | grep -E -q "[^[:space:]]" && echo "$value" || echo "$3";
+    local value="$(echo "$1" | grep -Eq "(^.*\s|^)$2=" && echo "$1" | sed -E "s/(^.*[[:space:]]|^)$2=(\"([^\"]*)\"|\'([^\']*)\'|([^[:space:]]*)).*$/\3\4\5/g" || echo "")";
+    echo $value | grep -Eq "[^[:space:]]" && echo "$value" || echo "$3";
 }
 
 ## $1 = full argument string
@@ -48,7 +48,7 @@ function get_all_kwargs() {
 
     local pattern="(^.*[[:space:]]|^)$key(\"([^\"]*)\"|\'([^\']*)\'|([^[:space:]]*)).*$";
     while ! [[ "$arguments" == "" ]]; do
-        if ! ( echo "$arguments" | grep -E -q "$pattern" ); then
+        if ! ( echo "$arguments" | grep -Eq "$pattern" ); then
             arguments="";
             break;
         fi
@@ -72,7 +72,7 @@ function get_one_kwarg() {
 ## $3 = default value.
 function get_one_kwarg_space() {
     local value="$(get_one_kwarg "$1" "$2[[:space:]]+" "$3")";
-    ( echo "$value" | grep -E -q "^-+" ) && value="$3";
+    ( echo "$value" | grep -Eq "^-+" ) && value="$3";
     echo "$value";
 }
 
@@ -106,11 +106,11 @@ function _log_info() {
 
 function _log_debug() {
     _cli_message "${LOGGINGPREFIX}[\033[95;1mDEBUG\033[0m] $1" $2;
-    if ! [ -f "$PATH_LOGS/$DEBUG" ]; then
+    if ! [ -f "$PATH_LOGS/$FILENAME_LOGS_DEBUG" ]; then
         mkdir "$PATH_LOGS" 2> $VERBOSE;
-        touch "$PATH_LOGS/$DEBUG";
+        touch "$PATH_LOGS/$FILENAME_LOGS_DEBUG";
     fi
-    echo "$1" >> "$PATH_LOGS/$DEBUG";
+    echo "$1" >> "$PATH_LOGS/$FILENAME_LOGS_DEBUG";
 }
 
 function _log_warn() {
@@ -207,7 +207,8 @@ function show_progressbar() {
 
 function _trim() {
     local line="$1";
-    ( echo "$line" | grep -E -q "[^[:space:]]" ) && echo "$line" | sed -E "s/^[[:space:]]*(.*[^[:space:]]+)[[:space:]]*$/\1/g";
+    ! ( echo "$line" | grep -Eq "[^[:space:]]" ) && return;
+    echo "$line" | sed -E "s/^[[:space:]]*(.*[^[:space:]]+)[[:space:]]*$/\1/g";
 }
 
 function to_lower() {
@@ -222,7 +223,7 @@ function to_upper() {
 ## example:
 ## if (is_comment "$line"); then ...
 function is_comment() {
-    echo "$1" | grep -E -q "^\s*\#" && return 0 || return 1;
+    echo "$1" | grep -Eq "^\s*\#" && return 0 || return 1;
 }
 
 ## Replaces all occurrences of ~ with $HOME.
@@ -304,7 +305,7 @@ function has_config_key() {
     if ! [ -f $file ]; then
         _log_fail "Config file \033[1m$file\033[0m not found!";
     fi
-    cat $file | dos2unix | grep -E -q  "^\s*$key:" && return 0 || return 1;
+    cat $file | dos2unix | grep -Eq  "^\s*$key:" && return 0 || return 1;
 }
 
 function get_config_key_value() {
