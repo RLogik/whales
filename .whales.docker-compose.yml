@@ -23,7 +23,7 @@ services:
   #     - ./../dist:$WD/dist:rw   ## <- r/w   distribution folder, VERSION + Programme artefacts.
   #     - ./../build:$WD/build:rw ## <- (r/)w build folder -> artefacts
   #   command:
-  #     [ "/bin/bash", "-c", "echo -e \"Service \\033[1mprod-service\\033[0m built with image \\033[1mwhales-prod:build\\033[0m.\"" ]
+  #     [ "/bin/bash", "-c", "echo -e \"Service built.\"" ]
   # #---------------------------------------------------------#
   # # SERVICE: Test
   # #---------------------------------------------------------#
@@ -36,4 +36,4 @@ services:
   #       <<: *ref_build_args
   #   volumes: *ref_volume_args
   #   command:
-  #     [ "/bin/bash", "-c", "echo -e \"Service \\033[1mtest-service\\033[0m built with image \\033[1mwhales-test:build\\033[0m.\"" ]
+  #     [ "/bin/bash", "-c", "echo -e \"Service built.\"" ]

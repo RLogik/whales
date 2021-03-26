@@ -15,7 +15,7 @@
 SCRIPTARGS="$@";
 FLAGS=( $@ );
 ME="clean.sh";
-SERVICE="prod-service";
+SERVICE="prolog-service";
 
 source .lib.sh;
 

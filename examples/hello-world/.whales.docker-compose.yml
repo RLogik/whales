@@ -7,7 +7,7 @@ services:
   # SERVICE: Hello World
   #---------------------------------------------------------#
   hello-service:
-    image: whales-hello:build
+    image: hello:build
     build:
       context: "."
       dockerfile: ".whales.Dockerfile"
@@ -16,4 +16,4 @@ services:
     # volumes:
     #   - ./HELLO_WORLD:$WD/HELLO_WORLD:rw  ## <- r/w   allows for live developing
     command:
-      [ "/bin/bash", "-c", "echo -e \"Service \\033[1mhello-service\\033[0m built with image \\033[1mwhales-hello:build\\033[0m.\"" ]
+      [ "/bin/bash", "-c", "echo -e \"Service built.\"" ]
