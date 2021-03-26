@@ -19,7 +19,6 @@ function run_docker_compose() {
 function run_docker_compose_build() {
     local project="$1";
     local service="$2";
-    # Set some value for working directory. User can override via .env+docker-compose.yml:
     local path="$WHALES_SETUP_PATH";
 
     clean_scripts_dos2unix "$path";
@@ -397,6 +396,7 @@ function get_docker_service() {
     # Force start docker servic, if not already up:
     _log_info "FORCE-BUILD DOCKER SERVICE.";
     run_docker_compose_build "$project" "$service";
+    run_docker_compose "$project" up "$service";
 
     # Attempt to set service again:
     select_service "$service" 2> $VERBOSE \
