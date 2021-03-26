@@ -76,12 +76,14 @@ Follow the instructions in [examples/hello-world](examples/hello-world).
     ```
     Add a `./.dockerignore` file, if one does not exist, and append the lines
     ```.dockerignore
+    # in .dockerignore
     !/.whales
     !/.whales.env
     ```
 2. Modify the [.whales.env](.whales.env) file in the project root.
     In particular, set the name of your project here:
     ```.env
+    # in .whales.env
     WHALES_COMPOSE_PROJECT_NAME=<your project name>
     ```
     Setting this argument to be different for different projects prevents
@@ -123,13 +125,13 @@ Call `./.whales/docker.sh --clean-all` to clean all containers and images.
 ## Moving Whales folder within a project ##
 
 If [./.whales](.whales) is moved or renamed,
-simply change the corresponding variable in [.env-file](.env)
+simply change the corresponding variable in [.whales.env](.whales.env)
 and adjust the exclusion/inclusion rules in
     [.gitignore](.gitignore) + [.dockerignore](.dockerignore)
 appropriately.
 By default these are as follows:
 ```.env
-# in .env
+# in .whales.env
 WHALES_SETUP_PATH=.whales
 ```
 ```.gitignore
