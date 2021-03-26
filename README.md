@@ -15,15 +15,28 @@
 
 # Whales #
 
-This repository is designed to be a template to ‘dockerise’ coding repositories.
+This repository is designed to provide a easy to deploy template to ‘dockerise’ your code.
+
+_For those not familiar with Docker..._
 When working collaboratively on a project, participants often have different operating systems and setups.
-This can be a real nightmare, especially when testing if your code behaves as intended.
-To bypass this, it is useful for all participants to be able to set up the same virtual environment with exactly the same settings,
+This can present a real nightmare, especially when it comes to testing.
+To bypass all these issues, it is useful for all participants to be able to set up
+exactly the same virtual environment with exactly the same settings,
 within which the project can be compiled, run, and tested.
-Docker presents itself as a universal, easily accessible solution, with a minimal setup effort.
+Docker presents itself as a universal, easily accessible solution.
+
+This tool provides simple scripting commands to augment processes,
+so that these processes get called within a docker container,
+and allowing stages of your code (e.g. installation, compilation, testing)
+to be saved as docker images.
+The tool manages the dependencies between these stages using labels,
+so that you can more readily move between images without the hassle of
+having to look up ids of docker images/containers or having to remount volumes, _etc._
 
 ## Requirements ##
 
+By design this tool has very minimal dependencies (you just need Docker + bash),
+so that it is as widely accessible as possible.
 This project has been developed with
 
 - **Docker** version **20.10.5**;
