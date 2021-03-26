@@ -75,7 +75,7 @@ Follow the instructions in [examples/hello-world](examples/hello-world).
         |____ .whales.docker-compose.yml
     ```
     Add a `./.dockerignore` file, if one does not exist, and append the lines
-    ```.dockerignore
+    ```.gitignore
     # in .dockerignore
     !/.whales
     !/.whales.env
