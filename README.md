@@ -261,7 +261,7 @@ python3 -m pip install flask;
 python3 app.py;
 ```
 
-**Note** Provided no spaces occur, arguments may entered without quotation marks, _e.g._ `9000:9001`.
+**NOTE:** Provided no spaces occur, arguments may entered without quotation marks, _e.g._ `9000:9001`.
 The syntax `8080->8080/tcp`, however, does not work.
 
 ### Sequences of images ###
