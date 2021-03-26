@@ -11,8 +11,8 @@ services:
   # prod-service:
   #   image: prod:build
   #   build:
-  #     context: "."
-  #     dockerfile: "${WHALES_SETUP_PATH}/Dockerfile"
+  #     context: .
+  #     dockerfile: .whales.Dockerfile
   #     args: &ref_build_args
   #         WD: "$WD"
   #   volumes: &ref_volume_args
@@ -30,8 +30,8 @@ services:
   # test-service:
   #   image: test:build
   #   build:
-  #     context: "."
-  #     dockerfile: "${WHALES_SETUP_PATH}/Dockerfile"
+  #     context: .
+  #     dockerfile: .whales.Dockerfile
   #     args:
   #       <<: *ref_build_args
   #   volumes: *ref_volume_args
