@@ -1,0 +1,7 @@
+*
+!/.gitignore
+!/README.md
+!/.lib.sh
+!/clean.sh
+!/build.sh
+!/test.sh
