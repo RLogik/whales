@@ -1,6 +1,5 @@
 ################################################################
 # !!! The following is an exmaple. Replace this by desired docker image instructions. !!!
-# FROM ubuntu
 FROM ubuntu
 #
 #
