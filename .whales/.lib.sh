@@ -5,10 +5,10 @@
 #    Include using source whales_setup/.lib.sh
 ##############################################################################
 
-source whales_setup/.lib.globals.sh;
-source whales_setup/.lib.utils.sh;
-source whales_setup/.lib.docker.sh;
-source whales_setup/.lib.meta.sh
+source .whales/.lib.globals.sh;
+source .whales/.lib.utils.sh;
+source .whales/.lib.docker.sh;
+source .whales/.lib.meta.sh
 
 ##############################################################################
 # MAIN PROCESSES FOR WHALES
@@ -70,7 +70,6 @@ function get_docker_state() {
     _cli_message "\033[94;1mIMAGES\033[0m:";
     docker_show_some_images true "$project" "$service";
     _cli_message "";
-
 }
 
 function run_docker_enter() {

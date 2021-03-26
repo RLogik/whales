@@ -6,52 +6,6 @@
 ##############################################################################
 
 ##############################################################################
-# AUXILIARY METHODS: .env
-##############################################################################
-
-function env_create_local() {
-    local path="$WHALES_SETUP_PATH";
-    local project="$1";
-    local service="$2";
-    local global_env="whales.env";
-    local local_env_init="${path}/docker.env";
-    local local_env="${path}/.env";
-    [ -f "$local_env" ] && rm "$local_env";
-    touch "$local_env";
-    echo "# environment variables from project folder:" >> "$local_env";
-    cat  "$global_env"                                  >> "$local_env";
-    echo ""                                             >> "$local_env";
-    echo "# environment variables from setup folder:"   >> "$local_env";
-    cat  "$local_env_init"                              >> "$local_env";
-    echo ""                                             >> "$local_env";
-    echo "# environment variables from project source:" >> "$local_env";
-    echo "WHALES_SETUP_PATH=$path"                      >> "$local_env";
-    echo "WHALES_PROJECT_NAME=$project"                 >> "$local_env";
-    echo "WHALES_ENTRY_SCRIPT=$path/docker-entry.sh"    >> "$local_env";
-    echo ""                                             >> "$local_env";
-    echo "# tmp environment variables for service:"     >> "$local_env";
-    echo "WHALES_SELECTED_SERVICE=$service"             >> "$local_env";
-}
-
-##############################################################################
-# GLOBAL VARIABLES
-##############################################################################
-
-## create local .env file first:
-export WHALES_DOCKER_COMPOSE_YML="${WHALES_SETUP_PATH}/docker-compose.yml";
-export WHALES_FILE_DOCKER_DEPTH="$WHALES_SETUP_PATH/DOCKER_DEPTH";
-export WHALES_DOCKER_PORTS="$WHALES_DOCKER_IP:$WHALES_DOCKER_PORT_HOST:$WHALES_DOCKER_PORT_CONTAINER";
-export WHALES_TEMPCONTAINER_SCHEME_PREFIX="temp_${WHALES_PROJECT_NAME}";
-export WHALES_DOCKER_TAG_EXPLORE="explore";
-export WHALES_DOCKER_SERVICE="";      # NOTE: This get changed dynamically.
-export WHALES_DOCKER_IMAGE_NAME="";   # ""
-export WHALES_DOCKER_IMAGE_ID="";     # ""
-export WHALES_DOCKER_CONTAINER_ID=""; # ""
-
-# NOTE: do not use /bin/bash. Results in error under Windows.  Use \/bin\/bash, bash, sh -c bash, or sh.
-export WHALES_DOCKER_CMD_EXPLORE="bash";
-
-##############################################################################
 # AUXILIARY METHODS: BASIC
 ##############################################################################
 
@@ -65,10 +19,16 @@ function run_docker_compose() {
 function run_docker_compose_build() {
     local project="$1";
     local service="$2";
-    env_create_local "$project" "$service";
-    clean_scripts_dos2unix "$WHALES_SETUP_PATH";
+    # Set some value for working directory. User can override via .env+docker-compose.yml:
+    local path="$WHALES_SETUP_PATH";
+
+    clean_scripts_dos2unix "$path";
     _log_info "START DOCKER SERVICE \033[92;1m$service\033[0m.";
-    run_docker_compose "$project" up --build "$service";
+    run_docker_compose "$project" build \
+        --build-arg WHALES_SETUP_PATH="$path" \
+        --build-arg WHALES_PROJECT_NAME=$project \
+        --build-arg WHALES_SELECTED_SERVICE=$service \
+        "$service";
 }
 
 function docker_create_unused_name() {

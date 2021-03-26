@@ -4,8 +4,6 @@
 # WHALES SETUP
 ################################################################
 !/logging.env
-!/docker.env
-!/.env
 !/DOCKER_DEPTH
 !/VERSION
 

@@ -6,7 +6,6 @@
 # WHALES SETUP
 ################################################################
 !/logging.env
-!/docker.env
 !/DOCKER_DEPTH
 !/VERSION
 
@@ -16,6 +15,3 @@
 !/.lib.meta.sh
 !/.lib.sh
 !/docker.sh
-
-!/docker-compose.yml
-!/Dockerfile
