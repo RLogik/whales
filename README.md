@@ -61,13 +61,28 @@ If not, see <https://command-not-found.com/dos2unix>, <https://chocolatey.org/pa
 
 Follow the instructions in [examples/hello-world](examples/hello-world).
 
-## How to start a new project with Whales ##
+## How to add Whales to existing projects ##
 
-1. Clone this repository (and delete unnecessary subfolders like [./examples](examples)).
+1. Clone this repository and copy the following into your project:
+    ```
+        [project root]
+        |
+        |____ /.whales
+        |    |____ ... ( do not modify contents )
+        |
+        |____ .whales.env
+        |____ .whales.Dockerfile
+        |____ .whales.docker-compose.yml
+    ```
+    Add a `./.dockerignore` file, if one does not exist, and append the lines
+    ```.dockerignore
+    !/.whales
+    !/.whales.env
+    ```
 2. Modify the [.whales.env](.whales.env) file in the project root.
-    Even if you wish to leave most values as is, definitely consider changing the value of the following key:
+    In particular, set the name of your project here:
     ```.env
-    WHALES_COMPOSE_PROJECT_NAME=whales
+    WHALES_COMPOSE_PROJECT_NAME=<your project name>
     ```
     Setting this argument to be different for different projects prevents
     Docker from confusing your images and containers with those of other projects.
@@ -83,30 +98,6 @@ Follow the instructions in [examples/hello-world](examples/hello-world).
 
 See also the notes aboving [_Moving the Whales folder_](#moving-whales-files/folder-within-a-project).
 And see the subfolders in [./examples](examples) for further implementation examples of Whales projects.
-
-## How to add Whales to existing projects ##
-
-1. Add the folder [./.whales](.whales) and a `.dockerignore` file (if one does not exist) to the root folder of your project.
-    In `./.dockerignore` append the line
-    ```.dockerignore
-    !/.whales
-    ```
-2. Add the file [.whales.env](.whales.env) to the root folder.
-    Even if you wish to leave most values as is, definitely consider changing the value of the following key:
-    ```.env
-    WHALES_COMPOSE_PROJECT_NAME=whales
-    ```
-    Setting this argument to be different for different projects prevents
-    Docker from confusing your images and containers with those of other projects.
-3. Add services to [.whales.docker-compose.yml](.whales.docker-compose.yml).
-    Ensure that your `build: > args:` instructions contains a value for the key `WD`
-    (desired path to working directory within docker image).
-4. If in the docker-compose file you use your own Dockerfiles,
-    ensure the block of instructions
-    in [.whales.Dockerfile](.whales.Dockerfile) is included.
-5. Modify process scripts (see section [_How to modify bash scripts_](#how-to-modify-bash-scripts-to-work-with-whales)).
-
-See also the notes about [_Moving the Whales folder_](#moving-whales-files/folder-within-a-project).
 
 ## Status and cleaning ##
 
