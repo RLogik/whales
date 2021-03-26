@@ -1,0 +1,21 @@
+version: "3"
+networks:
+  default:
+    driver: bridge
+services:
+  #---------------------------------------------------------#
+  # SERVICE: Prolog
+  #---------------------------------------------------------#
+  prolog-service:
+    image: prolog:build
+    build:
+      context: .
+      dockerfile: .whales.Dockerfile
+      args:
+        WD: "$WD"
+    volumes:
+      # - ./logs:$WD/logs:rw
+      - ./src:$WD/src:rw
+      - ./test:$WD/test:rw
+    command:
+      [ "/bin/bash", "-c", "echo -e \"Service built.\"" ]

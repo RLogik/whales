@@ -1,0 +1,13 @@
+*
+!/.gitignore
+!/.dockerignore
+
+!/.whales
+!/.whales.env
+!/.whales.docker-compose.yml
+!/.whales.Dockerfile
+
+!/.env
+
+!/README.md
+!/hello.sh
