@@ -3,11 +3,7 @@ networks:
   default:
     driver: bridge
 services:
-  #################################################################
-  # !!! Your services here !!!
-  # - Ensure usage of `<<: *ref_build_args` in `build > args`.
-  # - Ensure the `context:` argument is correctly relativised.
-
+  # !!! Your services here !!! #
   ### EXAMPLES:
   # #---------------------------------------------------------#
   # # SERVICE: Production

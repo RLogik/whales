@@ -64,7 +64,7 @@ Follow the instructions in [examples/hello-world](examples/hello-world).
 ## How to start a new project with Whales ##
 
 1. Clone this repository (and delete unnecessary subfolders like [./examples](examples)).
-2. Modify the [whales.env](whales.env) file in the project root.
+2. Modify the [.whales.env](.whales.env) file in the project root.
     Even if you wish to leave most values as is, definitely consider changing the value of the following key:
     ```.env
     WHALES_COMPOSE_PROJECT_NAME=whales
@@ -72,82 +72,66 @@ Follow the instructions in [examples/hello-world](examples/hello-world).
     Setting this argument to be different for different projects prevents
     Docker from confusing your images and containers with those of other projects.
 3. Modify
-    [whales_setup/docker.env](whales_setup/docker.env)
+    [.whales.docker-compose.yml](.whales.docker-compose.yml)
     +
-    [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml)
-    +
-    [whales_setup/Dockerfile](whales_setup/Dockerfile)
+    [.whales.Dockerfile](.whales.Dockerfile)
     to suit the needs of your application.
-    </br>
-    **Note:**
-        [whales.env](whales.env)
-        +
-        [whales_setup/docker.env](whales_setup/docker.env)
-    are used to dynamically create
-        `whales_setup/.env`,
-    which is used in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml).
+    If in the docker-compose file you use your own Dockerfiles,
+    ensure the block of instructions
+    in [.whales.Dockerfile](.whales.Dockerfile) is included.
 4. Modify process scripts (see section [_How to modify bash scripts_](#how-to-modify-bash-scripts-to-work-with-whales)).
 
 See also the notes aboving [_Moving the Whales folder_](#moving-whales-files/folder-within-a-project).
-See also the subfolders in [./examples](examples) for further implementation examples of projects with Whales.
+And see the subfolders in [./examples](examples) for further implementation examples of Whales projects.
 
 ## How to add Whales to existing projects ##
 
-1. Add the folder [./whales_setup](whales_setup) and a `.dockerignore` file (if one does not exist) to the root folder of your project.
+1. Add the folder [./.whales](.whales) and a `.dockerignore` file (if one does not exist) to the root folder of your project.
     In `./.dockerignore` append the line
     ```.dockerignore
-    !/whales_setup
+    !/.whales
     ```
-2. Add the file [whales.env](whales.env) to the root folder.
+2. Add the file [.whales.env](.whales.env) to the root folder.
     Even if you wish to leave most values as is, definitely consider changing the value of the following key:
     ```.env
     WHALES_COMPOSE_PROJECT_NAME=whales
     ```
     Setting this argument to be different for different projects prevents
     Docker from confusing your images and containers with those of other projects.
-3. Add services to [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml).
-    Take care to use the build context `..` (or `../path/to/subfolder`) instead of `.` (or `path/to/subfolder`).
-    For mounted volumes, again take care to relativise to the `whales_setup` subfolder
-    (_e.g._ `-./../src:$WD/src` and not `-src:$WD/src`).
-    </br>
-    **Note:**
-        [.env](.env)
-        +
-        [whales_setup/docker.env](whales_setup/docker.env)
-    are used to dynamically create
-        `whales_setup/.env`,
-    which is used in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml).
-4. In [whales_setup/Dockerfile](whales_setup/Dockerfile),
-    provided the context in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml) has been set appropriately,
-    there should be no need to worry about relativising paths.
+3. Add services to [.whales.docker-compose.yml](.whales.docker-compose.yml).
+    Ensure that your `build: > args:` instructions contains a value for the key `WD`
+    (desired path to working directory within docker image).
+4. If in the docker-compose file you use your own Dockerfiles,
+    ensure the block of instructions
+    in [.whales.Dockerfile](.whales.Dockerfile) is included.
 5. Modify process scripts (see section [_How to modify bash scripts_](#how-to-modify-bash-scripts-to-work-with-whales)).
 
-See also the notes aboving [_Moving the Whales folder_](#moving-whales-files/folder-within-a-project).
+See also the notes about [_Moving the Whales folder_](#moving-whales-files/folder-within-a-project).
 
 ## Status and cleaning ##
 
 Calling
 ```bash
-source whales_setup/docker.sh --service <name-of-service> --status;
+source .whales/docker.sh --service <name-of-service> --status;
 ```
 displays the status of containers + images associated with a named service.
 If the `--service` option not given or left blank,
 then all services within the local project will be displayed.
 The same logic applies to the command
 ```bash
-source whales_setup/docker.sh --service <name-of-service> --clean;
+source .whales/docker.sh --service <name-of-service> --clean;
 ```
 this time with the action of deleting containers/images.
 
 Optionally, one may additionally use the `--project <name-of-project>` flag,
 to specify by which project name to filter.
-Otherwise the local `.env` file (in the setup folder) is consulted.
+Otherwise the local `.whales.env` file is consulted.
 
-Call `./whales_setup/docker.sh --clean-all` to clean all containers and images.
+Call `./.whales/docker.sh --clean-all` to clean all containers and images.
 
 ## Moving Whales folder within a project ##
 
-If [./whales_setup](whales_setup) is moved or renamed,
+If [./.whales](.whales) is moved or renamed,
 simply change the corresponding variable in [.env-file](.env)
 and adjust the exclusion/inclusion rules in
     [.gitignore](.gitignore) + [.dockerignore](.dockerignore)
@@ -155,20 +139,20 @@ appropriately.
 By default these are as follows:
 ```.env
 # in .env
-WHALES_SETUP_PATH=whales_setup
+WHALES_SETUP_PATH=.whales
 ```
 ```.gitignore
 # in .gitignore + .dockerignore
-!/whales_setup
+!/.whales
 ```
 
 ## How to modify bash scripts to work with Whales ##
 
-The `whale_call` command in [whales_setup/.lib.sh](whales_setup/.lib.sh) acts as a quasi decorator.
+The `whale_call` command in [.whales/.lib.sh](.whales/.lib.sh) acts as a quasi decorator.
 When used, it
 
 - interrupts a running script
-- checks whether currently inside the docker environment (by consulting a file `whales_setup/DOCKER_DEPTH`),
+- checks whether currently inside the docker environment (by consulting a file `.whales/DOCKER_DEPTH`),
 - if already inside docker, it will return to the original script,
 - otherwise it will launch the appropriate docker container (with an image:tag name assigned to it) in the appropriate mode,
 and then call the original script within the container.
@@ -196,7 +180,7 @@ SCRIPTARGS="$@";
 ME="build.sh";
 SERVICE="prod-service";
 
-source whales_setup/.lib.sh;
+source .whales/.lib.sh;
 
 # whale_call <service> <tag-sequence> <save, it, ports> <type, command>
 whale_call   "$SERVICE" "prod,setup"  true false false  SCRIPT $ME $SCRIPTARGS;
@@ -205,7 +189,7 @@ python3 -m pip install tensorflow;
 python3 src/main.py "${SCRIPTARGS[0]}";
 ```
 
-**NOTE:** Replace `"prod-service"` by the appropriate service name in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml).
+**NOTE:** Replace `"prod-service"` by the appropriate service name in [.whales.docker-compose.yml](.whales.docker-compose.yml).
 
 ### Example 2 ###
 
@@ -232,7 +216,7 @@ FLAGS=( "$@" );
 ME="test.sh";
 SERVICE="test-service";
 
-source whales_setup/.lib.sh;
+source .whales/.lib.sh;
 
 mode="${FLAGS[0]}";
 if [ "$mode" == "interactive" ]; then
@@ -246,7 +230,7 @@ else
 fi
 ```
 
-**NOTE 1:** Replace `"test-service"` by the appropriate service name in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml).
+**NOTE 1:** Replace `"test-service"` by the appropriate service name in [.whales.docker-compose.yml](.whales.docker-compose.yml).
 
 **NOTE 2:** Set the `<save>` argument to true/false, depending upon whether you want to save.
 If `save=true`, then when complete, the exited container will be committed to an image named `whales:<tag>`.
@@ -255,7 +239,7 @@ If `save=true`, then when complete, the exited container will be committed to an
 
 The `<tag-sequence>` argument is a comma separated list of ‘tag’-names,
 representing a route from the initial image created by the service to the desired tag name of the save image (if saving is set).
-For example, suppose we have service called `boats-service` defined in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml)
+For example, suppose we have service called `boats-service` defined in [.whales.docker-compose.yml](.whales.docker-compose.yml)
 to build an image with the designation `whales-boats:build`.
 And suppose we have some testing processes,
 
@@ -319,7 +303,7 @@ where `n`≥2 and each `tag_i` contains no spaces (or commas).
 #### Interpretation ####
 
 Here `<image>` denotes the image name (without tag) of the service
-in [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml).
+in [.whales.docker-compose.yml](.whales.docker-compose.yml).
 
 - The tag value `.` is reserve to denote the initial image built via for the docker-compose service.
     _E.g._ if the `<tag-sequence>` argument is pre-transformed to `".,tag_2,...,tag_n"`,
