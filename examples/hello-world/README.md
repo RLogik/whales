@@ -36,7 +36,7 @@ and you will see two whales with messages `(blank)` and `Captain, ...`.
 Then upon the second "hello" script execution, the docker image will be started in a container,
 and you will see two whales with messages `Captain, ...` and `Thar be whales!`.
 
-In [.whales/docker-compose.yml](.whales/docker-compose.yml)
+In [.whales.docker-compose.yml](.whales.docker-compose.yml)
 one can optionally uncomment the volume mounting and repeat **step 3** above.
 One should now a file `HELLO_WORLD` in the root of the project,
 which will be modified as one calls the above commands.
