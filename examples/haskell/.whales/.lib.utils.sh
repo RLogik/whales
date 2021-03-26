@@ -2,7 +2,7 @@
 
 ##############################################################################
 #    DESCRIPTION: Library of common utility functions.
-#    Include using source whales_setup/.lib.utils.sh
+#    Include using source .whales/.lib.utils.sh
 ##############################################################################
 
 ##############################################################################

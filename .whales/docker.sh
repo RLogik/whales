@@ -29,7 +29,7 @@
 
 SCRIPTARGS="$@";
 
-source whales_setup/.lib.sh;
+source .whales/.lib.sh;
 
 project="$( get_one_kwarg_space "$SCRIPTARGS" "-+project" "$WHALES_PROJECT_NAME" )";
 service="$( get_one_kwarg_space "$SCRIPTARGS" "-+service" )";
@@ -51,7 +51,7 @@ elif ( has_arg "$SCRIPTARGS" "-+(status|state)" ); then
 else
     _log_error   "Invalid cli argument.";
     _cli_message "";
-    _cli_message "  Call \033[1m./whales_setup/docker.sh\033[0m with the command";
+    _cli_message "  Call \033[1m./.whales/docker.sh\033[0m with the command";
     _cli_message "    $( _help_cli_key_description "--clean-all" "     " "Cleans + prunes all docker images and containers after prompt." )";
     _cli_message "  or";
     _cli_message "    $( _help_cli_key_description "--project" "       " "<string> Name of project. (Left empty defaults to value in .env file.)" )";

@@ -36,7 +36,7 @@ and you will see two whales with messages `(blank)` and `Captain, ...`.
 Then upon the second "hello" script execution, the docker image will be started in a container,
 and you will see two whales with messages `Captain, ...` and `Thar be whales!`.
 
-In [whales_setup/docker-compose.yml](whales_setup/docker-compose.yml)
+In [.whales/docker-compose.yml](.whales/docker-compose.yml)
 one can optionally uncomment the volume mounting and repeat **step 3** above.
 One should now a file `HELLO_WORLD` in the root of the project,
 which will be modified as one calls the above commands.
@@ -50,7 +50,7 @@ and the results can be saved (optionally) for the next execution.
 
 ## Status and cleaning ##
 
-Call `./whales_setup/docker.sh --status` to view the status of the containers and images.
+Call `./.whales/docker.sh --status` to view the status of the containers and images.
 For example after the above example, the status looks like this:
 
 ```

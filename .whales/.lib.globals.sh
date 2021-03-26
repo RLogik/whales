@@ -2,7 +2,7 @@
 
 ##############################################################################
 #    DESCRIPTION: Library for extraction of global vars from environment.
-#    Include using source whales_setup/.lib.globals.sh
+#    Include using source .whales/.lib.globals.sh
 ##############################################################################
 
 ##############################################################################

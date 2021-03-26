@@ -4,7 +4,7 @@
 # !!! When creating a Whales project, add to + change methods in this file !!!
 #
 #    DESCRIPTION: Library of methods specifically for the project.
-#    Include using source whales_setup/.lib.sh
+#    Include using source .whales/.lib.sh
 #
 ##############################################################################
 

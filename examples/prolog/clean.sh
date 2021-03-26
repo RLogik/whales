@@ -23,7 +23,7 @@ mode="$( get_one_kwarg_space "$SCRIPTARGS" "-+mode" "" )";
 tags="$( get_one_kwarg_space "$SCRIPTARGS" "-+tags" "" )";
 
 if [ "$mode" == "docker" ]; then
-    source whales_setup/docker.sh --service "$SERVICE" --clean;
+    source .whales/docker.sh --service "$SERVICE" --clean;
 elif [ "$mode" == "artefacts" ]; then
     # whale_call <service> <tag-sequence> <save, it, ports> <type, command>
     whale_call  "$SERVICE" "$tags"        true false false  SCRIPT $ME $SCRIPTARGS;

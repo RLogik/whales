@@ -2,7 +2,7 @@
 
 ##############################################################################
 #    DESCRIPTION: Library of methods for Whales
-#    Include using source whales_setup/.lib.sh
+#    Include using source .whales/.lib.sh
 ##############################################################################
 
 source .whales/.lib.globals.sh;
