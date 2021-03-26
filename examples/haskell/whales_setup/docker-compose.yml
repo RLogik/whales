@@ -9,6 +9,7 @@ services:
   #---------------------------------------------------------#
   not-a-service:
     build:
+      context: .
       args: &ref_build_args
         WD: "$WD"
         WHALES_PROJECT_NAME: "$WHALES_PROJECT_NAME"
