@@ -17,7 +17,7 @@
 #    whale_call <service> <tag-sequence> <save, it, ports> <type> [<script, params> / <command>]
 #
 # Arguments:
-#    service <string>   The name of the service in whales_setup/docker-compose.yml.
+#    service <string>   The name of the service in docker-compose.yml.
 #    tag-seq <string>   Comma separated sequence of tags,
 #                         starting from the image-tag of the service
 #                         potentially going through intermediate stages,
@@ -113,7 +113,7 @@ function whale_call() {
 #        [--command <string>]
 #
 # Flags:
-#    --service <string>      The name of the service in whales_setup/docker-compose.yml.
+#    --service <string>      The name of the service in docker-compose.yml.
 #    --enter   <tag>         If argument left empty, will overwrite original.
 #    [--save  [<tag>]]       If used, will save the container to an image upon completion.
 #                              (Default: coincides with --entry)
@@ -158,7 +158,8 @@ function whales_enter_docker() {
     [ "$tagFinal" == "" ] && tagFinal="$tagStart";
 
     ## Set ports command:
-    local ports_option="$( ( $expose ) && echo "-p $WHALES_DOCKER_PORTS" || echo "" )";
+    local ports_option="";
+    ( $expose ) && ports_option="$( docker_get_portsopt_from_container "$WHALES_DOCKER_CONTAINER_ID" )";
 
     ################################
     # ENTER DOCKER: create container and run command

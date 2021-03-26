@@ -20,6 +20,7 @@ function dos_to_unix() {
 
 function clean_scripts_dos2unix() {
     local setup_path="$1";
+    local path;
     while read path; do
         [ "$path" == "" ] && continue;
         dos_to_unix "$path";
@@ -50,6 +51,7 @@ function get_kwarg() {
 ## $3 = true/false whether to stop after first value (default=false).
 ## $4 = default value, if $4=true and no value obtained
 ## EXAMPLE:
+## local value;
 ## while read value; do
 ##     # do something with $value
 ## done <<< "$( get_all_kwargs "$@" "--data=" )";

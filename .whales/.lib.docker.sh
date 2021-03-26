@@ -24,7 +24,7 @@ function run_docker_compose_build() {
     clean_scripts_dos2unix "$path";
     _log_info "START DOCKER SERVICE \033[92;1m$service\033[0m.";
     run_docker_compose "$project" build \
-        --build-arg WHALES_SETUP_PATH="$path" \
+        --build-arg WHALES_SETUP_PATH=$path \
         --build-arg WHALES_PROJECT_NAME=$project \
         --build-arg WHALES_SELECTED_SERVICE=$service \
         "$service";
@@ -85,6 +85,7 @@ function docker_get_container_id_from_image_id() {
     local image_id="$1";
     local format="{{.Image}}"; # <- DEV-NOTE: scheme in table for image_id is /sha:.*/
     local pattern="(^|^[^:]*:)$image_id";
+    local line;
     while read line; do
         line="$( _trim "$line" )";
         [ "$line" == "" ] && continue;
@@ -108,6 +109,7 @@ function docker_get_service_image_from_tag() {
         filters="$filters --filter label=org.whales.tag=$value";
     fi
     local lines="$( docker images -aq --format "$format" $filters )";
+    local line;
     while read line; do
         line="$( _trim "$line" )";
         [ "$line" == "" ] && continue;
@@ -188,6 +190,22 @@ function docker_get_start_and_end_points() {
 }
 
 ##############################################################################
+# AUXILIARY METHODS: PORTS
+##############################################################################
+
+function docker_get_portsopt_from_container() {
+    local container_id="$1";
+    local opt="";
+    local line;
+    while read line; do
+        line=$( _trim "$line" );
+        [ "$line" == "" ] && continue;
+        opt="$opt -p $line";
+    done <<< $( docker port $container_id )
+    echo $opt;
+}
+
+##############################################################################
 # AUXILIARY METHODS: STATE
 ##############################################################################
 
@@ -231,6 +249,7 @@ function docker_show_some_containers() {
     if ( $show_labels ); then
         local lines="$( docker ps -aq --format "$format" $filters )";
         local first_line=true;
+        local line;
         while read line; do
             line="$( _trim "$line" )";
             ( $first_line ) && echo -e "$line" && first_line=false && continue;
@@ -255,6 +274,7 @@ function docker_show_some_images() {
     if ( $show_labels ); then
         local lines="$( docker images -aq --format "$format" $filters )";
         local first_line=true;
+        local line;
         while read line; do
             line="$( _trim "$line" )";
             ( $first_line ) && echo -e "$line" && first_line=false && continue;
@@ -291,6 +311,7 @@ function docker_remove_some_containers() {
     local format="{{.ID}}";
     local lines="$( docker ps -aq --format "$format" $filters )";
     local found=false;
+    local line;
     while read line; do
         line="$( _trim "$line" )";
         [ "$line" == "" ] && continue;
@@ -313,6 +334,7 @@ function docker_remove_some_images() {
     local format="{{.ID}}";
     local lines="$( docker images -aq --format "$format" $filters )";
     local found=false;
+    local line;
     while read line; do
         line="$( _trim "$line" )";
         [ "$line" == "" ] && continue;
@@ -326,6 +348,7 @@ function docker_remove_some_images() {
 }
 
 function docker_remove_all_containers() {
+    local line;
     while read line; do
         line="$( _trim "$line" )";
         if [ "$line" == "" ]; then continue; fi
@@ -339,6 +362,7 @@ function docker_remove_all_containers() {
 }
 
 function docker_remove_all_images() {
+    local line;
     while read line; do
         line="$( _trim "$line" )";
         if [ "$line" == "" ]; then continue; fi
