@@ -3,7 +3,4 @@
 !/.whales.env
 
 !/README.md
-!/LICENSE
-!/.lib.sh
-!/clean.sh
 !/hello.sh

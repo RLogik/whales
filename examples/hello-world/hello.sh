@@ -13,7 +13,7 @@ FLAGS=( "$@" );
 ME="hello.sh";
 SERVICE="hello-service";
 
-source .lib.sh;
+source .whales/.lib.sh;
 
 FILE_MESSAGE="HELLO_WORLD";
 

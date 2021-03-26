@@ -73,3 +73,5 @@ d0xxxxxxxxx7   whales-hello:explore   102MB     2021-xxxxxxxx:24:13
 d9xxxxxxxxxd   whales-hello:build     102MB     2021-xxxxxxxx:23:44
      labels:   {"org.whales.initial":"true","org.whales.project":"whales","org.whales.service":"hello-service"}
 ```
+
+Call `./.whales/docker.sh --clean;` to clean the images and containers created within this project.

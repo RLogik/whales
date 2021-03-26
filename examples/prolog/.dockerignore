@@ -8,8 +8,6 @@
 # MAIN FOLDER
 ################################################################
 !/README.md
-!/LICENSE
-
 !/.lib.sh
 !/clean.sh
 !/build.sh

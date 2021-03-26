@@ -32,4 +32,4 @@
 
 To see the status of the docker containers and images, call `./.whales/docker.sh --status;`.
 
-To clean the images and containers created by the above commands, call `./clean.sh --mode docker`.
+Call `./.whales/docker.sh --clean;` to clean the images and containers created within this project.
