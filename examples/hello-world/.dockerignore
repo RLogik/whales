@@ -1,5 +1,4 @@
 *
-!/.dockerignore
 !/whales.env
 !/whales_setup
 !/README.md

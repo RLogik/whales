@@ -7,8 +7,8 @@ that can be used in projects.
 
 ```
 *
-!/.gitignore     # do not need these lines
-!/.dockerignore  # in .docker.ignore
+!/.gitignore     # <- do not need these lines in .dockerignore
+!/.dockerignore  # <-
 
 # Need these for Whales project:
 !/whales.env

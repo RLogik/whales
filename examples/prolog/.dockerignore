@@ -1,5 +1,4 @@
 *
-!/.dockerignore
 
 # Need these for Whales project:
 !/whales.env
