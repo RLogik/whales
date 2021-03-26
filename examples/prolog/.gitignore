@@ -3,8 +3,10 @@
 !/.dockerignore
 
 # Need these for Whales project:
-!/whales.env
-!/whales_setup
+!/.whales
+!/.whales.env
+!/.whales.Dockerfile
+!/.whales.docker-compose.yml
 
 ################################################################
 # MAIN FOLDER
@@ -12,6 +14,7 @@
 !/README.md
 !/LICENSE
 
+!/.env
 !/.lib.sh
 !/clean.sh
 !/build.sh

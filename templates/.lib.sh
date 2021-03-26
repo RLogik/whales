@@ -5,13 +5,16 @@
 #    Include using source whales_setup/.lib.sh
 ##############################################################################
 
-source whales_setup/.lib.sh;
+source .whales/.lib.sh;
 
 ##############################################################################
 # GLOBAL VARIABLES
 ##############################################################################
 
-#
+# env_from ".env" import IP             as DOCKER_IP;
+# env_from ".env" import PORT_HOST      as DOCKER_PORT_HOST;
+# env_from ".env" import PORT_CONTAINER as DOCKER_PORT_CONTAINER;
+# env_from ".env" import PORTS          as DOCKER_PORTS;
 
 ##############################################################################
 # MAIN METHODS: PROCESSES

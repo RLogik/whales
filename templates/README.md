@@ -11,12 +11,15 @@ that can be used in projects.
 !/.dockerignore  # <-
 
 # Need these for Whales project:
-!/whales.env
-!/whales_setup
+!/.whales
+!/.whales.env
+!/.whales.Dockerfile         # <- do not need these lines in .dockerignore
+!/.whales.docker-compose.yml # <-
 
 ################################################################
 # MAIN FOLDER
 ################################################################
+!/.env
 !/README.md
 !/ISSUES.md
 !/LICENSE

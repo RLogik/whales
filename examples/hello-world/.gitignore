@@ -1,8 +1,14 @@
 *
 !/.gitignore
 !/.dockerignore
-!/whales.env
-!/whales_setup
+
+!/.whales
+!/.whales.env
+!/.whales.docker-compose.yml
+!/.whales.Dockerfile
+
+!/.env
+
 !/README.md
 !/LICENSE
 !/.lib.sh

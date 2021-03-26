@@ -1,8 +1,8 @@
 *
 
 # Need these for Whales project:
-!/whales.env
-!/whales_setup
+!/.whales
+!/.whales.env
 
 ################################################################
 # MAIN FOLDER

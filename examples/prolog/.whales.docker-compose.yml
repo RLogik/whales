@@ -1,0 +1,21 @@
+version: "3"
+networks:
+  default:
+    driver: bridge
+services:
+  #---------------------------------------------------------#
+  # SERVICE: Production
+  #---------------------------------------------------------#
+  prod-service:
+    image: whales-prod:build
+    build:
+      context: .
+      dockerfile: .whales.Dockerfile
+      args:
+        WD: "$WD"
+    volumes:
+      # - ./logs:$WD/logs:rw
+      - ./src:$WD/src:rw
+      - ./test:$WD/test:rw
+    command:
+      [ "/bin/bash", "-c", "echo -e \"Service \\033[1mtest-service\\033[0m built with image \\033[1mpolarwhales-test:build\\033[0m.\"" ]

@@ -1,6 +1,7 @@
 *
-!/whales.env
-!/whales_setup
+!/.whales
+!/.whales.env
+
 !/README.md
 !/LICENSE
 !/.lib.sh
