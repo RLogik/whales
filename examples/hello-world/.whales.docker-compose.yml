@@ -9,8 +9,8 @@ services:
   hello-service:
     image: hello:build
     build:
-      context: "."
-      dockerfile: ".whales.Dockerfile"
+      context: .
+      dockerfile: .whales.Dockerfile
       args:
         WD: "/usr/app/whales"
     # volumes:

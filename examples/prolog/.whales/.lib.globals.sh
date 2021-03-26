@@ -57,6 +57,7 @@ export WHALES_DOCKER_IMAGE_ID="";     # ""
 export WHALES_DOCKER_CONTAINER_ID=""; # ""
 # NOTE: do not use /bin/bash. Results in error under Windows.  Use \/bin\/bash, bash, sh -c bash, or sh.
 export WHALES_DOCKER_CMD_EXPLORE="bash";
+export WHALES_PORTS_OPTIONS="";
 
 env_from "$WHALES_SETUP_PATH/logging.env" import CONSOLE_OUT                 as OUT;
 env_from "$WHALES_SETUP_PATH/logging.env" import CONSOLE_ERR                 as ERR;

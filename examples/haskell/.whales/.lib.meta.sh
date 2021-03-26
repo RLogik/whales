@@ -157,9 +157,9 @@ function whales_enter_docker() {
     [ "$expose" == "" ] && expose=$it;
     [ "$tagFinal" == "" ] && tagFinal="$tagStart";
 
-    ## Set ports command:
+    ## Set ports command (requires user to have called 'set ports')
     local ports_option="";
-    ( $expose ) && ports_option="$( docker_get_portsopt_from_container "$WHALES_DOCKER_CONTAINER_ID" )";
+    ( $expose ) && ports_option="$WHALES_PORTS_OPTIONS";
 
     ################################
     # ENTER DOCKER: create container and run command
@@ -167,7 +167,9 @@ function whales_enter_docker() {
     _log_info "START TEMPORARY CONTAINER \033[92;1m$container_tmp\033[0m.";
     if ( $it ); then
         _log_info "EXECUTE COMMAND {\033[93;1m$command_descr\033[0m} INTERACTIVELY.";
-        docker run --name="$container_tmp" $ports_option --volumes-from=$WHALES_DOCKER_CONTAINER_ID:rw \
+        docker run --name="$container_tmp"                    \
+            $ports_option                                     \
+            --volumes-from=$WHALES_DOCKER_CONTAINER_ID:rw     \
             --label org.whales.project="$WHALES_PROJECT_NAME" \
             --label org.whales.service="$service"             \
             --label org.whales.tag="$tagFinal"                \
@@ -175,7 +177,9 @@ function whales_enter_docker() {
             -it $image_id bash -c "$command";
     else
         _log_info "EXECUTE COMMAND {\033[93;1m$command_descr\033[0m} NON-INTERACTIVELY.";
-        docker run --name="$container_tmp" $ports_option --volumes-from=$WHALES_DOCKER_CONTAINER_ID:rw \
+        docker run --name="$container_tmp"                    \
+            $ports_option                                     \
+            --volumes-from=$WHALES_DOCKER_CONTAINER_ID:rw     \
             --label org.whales.project="$WHALES_PROJECT_NAME" \
             --label org.whales.service="$service"             \
             --label org.whales.tag="$tagFinal"                \

@@ -190,22 +190,6 @@ function docker_get_start_and_end_points() {
 }
 
 ##############################################################################
-# AUXILIARY METHODS: PORTS
-##############################################################################
-
-function docker_get_portsopt_from_container() {
-    local container_id="$1";
-    local opt="";
-    local line;
-    while read line; do
-        line=$( _trim "$line" );
-        [ "$line" == "" ] && continue;
-        opt="$opt -p $line";
-    done <<< $( docker port $container_id )
-    echo $opt;
-}
-
-##############################################################################
 # AUXILIARY METHODS: STATE
 ##############################################################################
 
@@ -394,8 +378,26 @@ function is_docker() {
 }
 
 ##############################################################################
-# MAIN METHODS: GET/SET SERVICES
+# MAIN METHODS:
 ##############################################################################
+
+function whales_set_ports() {
+    local arguments=( "$@" );
+    local ports;
+    local port;
+    for port in "${arguments[@]}"; do
+        port="$( echo "$port" | sed -E "s/[[:space:]]//g" )";
+        [ "$port" == "" ] && continue || [ "$ports" == "" ] && ports="-p $port" || ports="$ports -p $port";
+    done
+    export WHALES_PORTS_OPTIONS="$ports";
+}
+
+function whales_add_port() {
+    local port="$( echo "$1" | sed -E "s/[[:space:]]//g" )";
+    local ports="$WHALES_PORTS_OPTIONS";
+    [ "$ports" == "" ] && ports="-p $port" || ports="$ports -p $port";
+    export WHALES_PORTS_OPTIONS="$ports";
+}
 
 function select_service() {
     local service="$1";

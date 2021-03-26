@@ -33,7 +33,13 @@ The tool manages the dependencies between these stages using labels,
 so that you can more readily move between images without the hassle of
 having to look up ids of docker images/containers or having to remount volumes, _etc._
 
-## Requirements ##
+## Hello World Example ##
+
+Follow the instructions in [examples/hello-world](examples/hello-world).
+Refer also to the subfolders in [./examples](examples) for further implementation examples of Whales projects.
+
+## Setup ##
+### System requirements ###
 
 By design this tool has very minimal dependencies (you just need Docker + bash),
 so that it is as widely accessible as possible.
@@ -57,13 +63,9 @@ as it is apparently faster.
 Open bash and call `dos2unix --version` to see if `dos2unix` is installed.
 If not, see <https://command-not-found.com/dos2unix>, <https://chocolatey.org/packages/dos2unix>, etc.
 
-## Hello World Example ##
+### Configuration ###
 
-Follow the instructions in [examples/hello-world](examples/hello-world).
-
-## How to add Whales to existing projects ##
-
-1. Clone this repository and copy the following into your project:
+1. Clone this repository and copy the following (1xfolder + 3xfiles) into your project:
     ```
         [project root]
         |
@@ -96,50 +98,11 @@ Follow the instructions in [examples/hello-world](examples/hello-world).
     If in the docker-compose file you use your own Dockerfiles,
     ensure the block of instructions
     in [.whales.Dockerfile](.whales.Dockerfile) is included.
-4. Modify process scripts (see section [_How to modify bash scripts_](#how-to-modify-bash-scripts-to-work-with-whales)).
 
-See also the notes aboving [_Moving the Whales folder_](#moving-whales-files/folder-within-a-project).
-And see the subfolders in [./examples](examples) for further implementation examples of Whales projects.
+If you wish to rename the these setup files/folder,
+refer below to the notes about [_Moving the Whales folder_](#moving-whales-files/folder-within-a-project).
 
-## Status and cleaning ##
-
-Calling
-```bash
-source .whales/docker.sh --service <name-of-service> --status;
-```
-displays the status of containers + images associated with a named service.
-If the `--service` option not given or left blank,
-then all services within the local project will be displayed.
-The same logic applies to the command
-```bash
-source .whales/docker.sh --service <name-of-service> --clean;
-```
-this time with the action of deleting containers/images.
-
-Optionally, one may additionally use the `--project <name-of-project>` flag,
-to specify by which project name to filter.
-Otherwise the local `.whales.env` file is consulted.
-
-Call `./.whales/docker.sh --clean-all` to clean all containers and images.
-
-## Moving Whales folder within a project ##
-
-If [./.whales](.whales) is moved or renamed,
-simply change the corresponding variable in [.whales.env](.whales.env)
-and adjust the exclusion/inclusion rules in
-    [.gitignore](.gitignore) + [.dockerignore](.dockerignore)
-appropriately.
-By default these are as follows:
-```.env
-# in .whales.env
-WHALES_SETUP_PATH=.whales
-```
-```.gitignore
-# in .gitignore + .dockerignore
-!/.whales
-```
-
-## How to modify bash scripts to work with Whales ##
+### Usage of Whales ###
 
 The `whale_call` command in [.whales/.lib.sh](.whales/.lib.sh) acts as a quasi decorator.
 When used, it
@@ -153,7 +116,7 @@ and then call the original script within the container.
 Modification of existing bash scripts, _e.g._ `build.sh`, `test.sh`, _etc._ in the root folder of your project
 can be modified quite simply as the following examples demonstrate.
 
-### Example 1 ###
+#### Example 1 ####
 
 Original bash file, `build.sh`:
 
@@ -184,7 +147,7 @@ python3 src/main.py "${SCRIPTARGS[0]}";
 
 **NOTE:** Replace `"prod-service"` by the appropriate service name in [.whales.docker-compose.yml](.whales.docker-compose.yml).
 
-### Example 2 ###
+#### Example 2 ####
 
 Original bash file, `test.sh`:
 
@@ -228,7 +191,80 @@ fi
 **NOTE 2:** Set the `<save>` argument to true/false, depending upon whether you want to save.
 If `save=true`, then when complete, the exited container will be committed to an image named `whales:<tag>`.
 
-### Sequence of images ###
+## Technical notes ##
+
+## Status and cleaning ##
+
+Calling
+```bash
+source .whales/docker.sh --service <name-of-service> --status;
+```
+displays the status of containers + images associated with a named service.
+If the `--service` option not given or left blank,
+then all services within the local project will be displayed.
+The same logic applies to the command
+```bash
+source .whales/docker.sh --service <name-of-service> --clean;
+```
+this time with the action of deleting containers/images.
+
+Optionally, one may additionally use the `--project <name-of-project>` flag,
+to specify by which project name to filter.
+Otherwise the local `.whales.env` file is consulted.
+
+Call `./.whales/docker.sh --clean-all` to clean all containers and images.
+
+## Moving Whales folder within a project ##
+
+If [./.whales](.whales) is moved or renamed,
+simply change the corresponding variable in [.whales.env](.whales.env)
+and adjust the exclusion/inclusion rules in
+    [.gitignore](.gitignore) + [.dockerignore](.dockerignore)
+appropriately.
+By default these are as follows:
+```.env
+# in .whales.env
+WHALES_SETUP_PATH=.whales
+```
+```.gitignore
+# in .gitignore + .dockerignore
+!/.whales
+```
+
+### Port binding ###
+
+Even if the ports are set in your docker-compose file or Dockerfile,
+the meta command `whale_call` is unable to extract this information.
+The Whales methods centre around creating docker images
+and no porting information is available
+in the docker images or (exited) docker containers.
+Hence hte need to enter this manually.
+
+So, the current implementation requires porting information to be entered prior to the `whale_call`-command.
+To do this, one may use the `whales_set_port` command,
+which can take a space-separated list (of arbitrary length) of port bindings,
+using the accepted Docker syntax.
+For example:
+
+```bash
+#!/usr/bin/env bash
+
+SCRIPTARGS="$@";
+ME="build.sh";
+
+source .whales/.lib.sh;
+
+# whale_call <service>  <tag-sequence> <save, it, ports> <type, command>
+whales_set_ports "127.0.0.1:50:51"  "0.0.0.0:8080:8080"  "9000:9001";
+whale_call   "my-service" ".,(explore)"  false true true  SCRIPT $ME $SCRIPTARGS;
+python3 -m pip install flask;
+python3 app.py;
+```
+
+**Note** Provided no spaces occur, arguments may entered without quotation marks, _e.g._ `9000:9001`.
+The syntax `8080->8080/tcp`, however, does not work.
+
+### Sequences of images ###
 
 The `<tag-sequence>` argument is a comma separated list of ‘tag’-names,
 representing a route from the initial image created by the service to the desired tag name of the save image (if saving is set).
