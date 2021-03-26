@@ -46,7 +46,7 @@ If not, see <https://command-not-found.com/dos2unix>, <https://chocolatey.org/pa
 
 ## Hello World Example ##
 
-Follow the instructions in [examples/hello-world](examples/hello-world/README.md).
+Follow the instructions in [examples/hello-world](examples/hello-world).
 
 ## How to start a new project with Whales ##
 
