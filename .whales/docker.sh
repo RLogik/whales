@@ -34,8 +34,8 @@ source .whales/.lib.sh;
 project="$( get_one_kwarg_space "$SCRIPTARGS" "-+project" "$WHALES_PROJECT_NAME" )";
 service="$( get_one_kwarg_space "$SCRIPTARGS" "-+service" )";
 tags="$(    get_one_kwarg_space "$SCRIPTARGS" "-+enter"   )";
-force="$(    get_one_kwarg_space "$SCRIPTARGS" "-+force" "false" )";
-! [ "$force" == "true" ] && force=false;
+force=false;
+( has_arg "$SCRIPTARGS" "-+force" ) && force=true;
 
 if ( has_arg "$SCRIPTARGS" "-+enter" ); then
     run_docker_enter "$project" "$service" "$tags";
@@ -68,7 +68,7 @@ else
     _cli_message "      $( _help_cli_key_description "--status/state" "  " "Displays status of containers + images associated with project + service." )";
     _cli_message "      $( _help_cli_key_description "--clean" "         " "After prompt, removes all containers + images associated with project + service." )";
     _cli_message "      $( _help_cli_key_description "--prune" "         " "Like --clean but *initial* container + image are retained." )";
-    _cli_message "      $( _help_cli_key_description "--force" "         " "<bool> Default false. When set to true, will skip prompts when used with --clean-all, --clean, --prune." )";
+    _cli_message "      $( _help_cli_key_description "--force" "         " "When used with --clean-all, --clean, --prune, will skip prompts." )";
     _cli_message "";
     exit 1;
 fi
