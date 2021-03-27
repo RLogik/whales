@@ -220,9 +220,10 @@ source .whales/docker.sh --service <name-of-service> --status;
 displays the status of containers + images associated with a named service.
 If the `--service` option not given or left blank,
 then all services within the local project will be displayed.
-The same logic applies to the command
+The same logic applies to the commands
 ```bash
-source .whales/docker.sh --service <name-of-service> --clean;
+source .whales/docker.sh --service <name-of-service> --clean [--force];
+source .whales/docker.sh --service <name-of-service> --prune [--force];
 ```
 this time with the action of deleting containers/images.
 
@@ -230,7 +231,14 @@ Optionally, one may additionally use the `--project <name-of-project>` flag,
 to specify by which project name to filter.
 Otherwise the local `.whales.env` file is consulted.
 
-Call `./.whales/docker.sh --clean-all` to clean all containers and images.
+The `--clean` command clears all containers + images associated with the project.
+The `--prune` does the same but preserves initial container + image associated with each service.
+Use
+```bash
+source .whales/docker.sh --clean-all [--force];
+````
+to clean all containers and images on your entire system,
+including ones not related to your project.
 
 ## Moving Whales folder within a project ##
 
