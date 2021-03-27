@@ -80,14 +80,19 @@ To add the Whales tool to your own code project, follow these steps:
 
 1. Clone this repository and copy the following (1xfolder + 3xfiles) into your project:
     ```
-        [project root]
+        . (project root)
+        |
+        | ...
         |
         |____ /.whales
-        |    |____ ... ( do not modify contents )
+        |    |__ ... ( do not modify contents )
         |
-        |____ .whales.env
-        |____ .whales.Dockerfile
-        |____ .whales.docker-compose.yml
+        |__ .whales.env
+        |__ .whales.Dockerfile
+        |__ .whales.docker-compose.yml
+        |
+        | ...
+        |
     ```
     Add a `./.dockerignore` file, if one does not exist, and append the lines
     ```.gitignore
