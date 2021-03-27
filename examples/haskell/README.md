@@ -13,7 +13,7 @@
 #######################################
 ```
 
-# A Prolog project with Whales #
+# A Haskell project with Whales #
 
 1. Ensure that
     - Docker has been installed and at least granted access to the folder in which the repository has been cloned;
@@ -21,7 +21,7 @@
     - dos2unix has been installed (and is an accessible command in the bash terminal—call `dos2unix --version` to see if it exists).
 2. Start the Docker application.
 3. Clone this repository and navigate in a bash terminal to this folder.
-    Then Carry out the following commands:
+    Then Carry out the following commands separately:
 
     ```bash
     chmod +x *.sh; # grant execution rights to the shell scripts

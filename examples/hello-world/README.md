@@ -62,21 +62,36 @@ For example after the above example, the status looks like this:
 CONTAINERS:
 CONTAINER ID   NAMES                    IMAGE                SIZE                 STATUS                      CREATED AT
 ecxxxxxxxxxd   whales_hello-service_0   whales-hello:build   0B (virtual 102MB)   Exited (0) 39 seconds ago   2021-xxxxxxxx:23:44
+     labels:   org.whales.service hello-service
+               org.whales.project whales
+               org.whales.initial true
 
 IMAGES:
 IMAGE ID       REPOSITORY:TAG         SIZE      CREATED AT
 
 d0xxxxxxxxx7   whales-hello:explore   102MB     2021-xxxxxxxx:24:13
-     labels:   {"org.whales.initial":"false","org.whales.project":"whales","org.whales.service":"hello-service","org.whales.tag":"explore"}
+     labels:   org.whales.tag explore
+               org.whales.service hello-service
+               org.whales.project whales
+               org.whales.initial false
 
 4cxxxxxxxxx7   <none>:<none>          102MB     2021-xxxxxxxx:24:08
-     labels:   {"org.whales.initial":"false","org.whales.project":"whales","org.whales.service":"hello-service","org.whales.tag":"explore"}
+     labels:   org.whales.tag explore
+               org.whales.service hello-service
+               org.whales.project whales
+               org.whales.initial false
 
 6dxxxxxxxxx0   <none>:<none>          102MB     2021-xxxxxxxx:23:49
-     labels:   {"org.whales.initial":"false","org.whales.project":"whales","org.whales.service":"hello-service","org.whales.tag":"explore"}
+     labels:   org.whales.tag explore
+               org.whales.service hello-service
+               org.whales.project whales
+               org.whales.initial false
 
 d9xxxxxxxxxd   whales-hello:build     102MB     2021-xxxxxxxx:23:44
-     labels:   {"org.whales.initial":"true","org.whales.project":"whales","org.whales.service":"hello-service"}
+     labels:   org.whales.service hello-service
+               org.whales.project whales
+               org.whales.initial true
 ```
 
-Call `./.whales/docker.sh --clean;` to clean the images and containers created within this project.
+Call `./.whales/docker.sh --clean [--force];` to clean the images and containers created within this project.
+Or call `./.whales/docker.sh --prune [--force];` to remove all but the initial container + image.
