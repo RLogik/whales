@@ -62,7 +62,7 @@ else
     _cli_message "    $( _help_cli_key_description "--project" "       " "<string> Name of project. (Left empty defaults to value in .env file.)" )";
     _cli_message "    $( _help_cli_key_description "--service" "       " "<string> Name of service in docker-compose.yml." )";
     _cli_message "  + one of the following commands:";
-    _cli_message "      $( _help_cli_key_description "--enter" "         " "<string> Tag name (label org.whales.tag) of docker image to be entered interactively." )";
+    _cli_message "      $( _help_cli_key_description "--enter" "         " "<string> ‘Tag name’ (=label \"${WHALES_LABEL_PREFIX}tag\") of docker image to be entered interactively." )";
     _cli_message "      $( _help_cli_key_description "--start/up" "      " "Starts container associated with project + service." )";
     _cli_message "      $( _help_cli_key_description "--stop/down" "     " "Stops container associated with project + service." )";
     _cli_message "      $( _help_cli_key_description "--status/state" "  " "Displays status of containers + images associated with project + service." )";

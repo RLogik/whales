@@ -57,6 +57,18 @@ function get_tag_from_image_name() {
     echo "$( echo "$1" | sed -E "s/$pattern/\1/g" )";
 }
 
+function get_whales_dockerlabels() {
+    local id="$1";
+    local labels="$( docker inspect --format '{{ json .Config.Labels }}' "$id" )";
+    local line;
+    while read line; do
+        [ "$line" == "" ] && break;
+        local parts=( $line );
+        local key="${parts[0]}";
+        ( echo "$key" | grep -Eiq "${WHALES_LABEL_PREFIX_REGEX}" ) && echo "$line";
+    done <<< "$( json_dictionary_kwargs "$labels"  )";
+}
+
 ##############################################################################
 # AUXILIARY METHODS: SERVICES, CONTAINERS, IMAGES
 ##############################################################################
@@ -66,8 +78,8 @@ function docker_get_service_image_ids() {
     local service="$2";
     local format="{{.ID}}";
     local filters="";
-    ! [ "$project" == "" ] && filters="$filters --filter label=org.whales.project=$project";
-    ! [ "$service" == "" ] && filters="$filters --filter label=org.whales.service=$service";
+    ! [ "$project" == "" ] && filters="$filters --filter label=${WHALES_LABEL_PREFIX}project=$project";
+    ! [ "$service" == "" ] && filters="$filters --filter label=${WHALES_LABEL_PREFIX}service=$service";
     docker images -aq --format "$format" $filters;
 }
 
@@ -76,8 +88,8 @@ function docker_get_service_container_ids() {
     local service="$2";
     local format="{{.ID}}";
     local filters="";
-    ! [ "$project" == "" ] && filters="$filters --filter label=org.whales.project=$project";
-    ! [ "$service" == "" ] && filters="$filters --filter label=org.whales.service=$service";
+    ! [ "$project" == "" ] && filters="$filters --filter label=${WHALES_LABEL_PREFIX}project=$project";
+    ! [ "$service" == "" ] && filters="$filters --filter label=${WHALES_LABEL_PREFIX}service=$service";
     docker ps -aq --format "$format" $filters;
 }
 
@@ -102,11 +114,11 @@ function docker_get_service_image_from_tag() {
     local service="$2";
     local value="$3";
     local format="{{.ID}}\t{{.Repository}}\t{{.Tag}}";
-    local filters="--filter label=org.whales.project=$project --filter label=org.whales.service=$service";
+    local filters="--filter label=${WHALES_LABEL_PREFIX}project=$project --filter label=${WHALES_LABEL_PREFIX}service=$service";
     if ( $init ); then
-        filters="$filters --filter label=org.whales.initial=true";
+        filters="$filters --filter label=${WHALES_LABEL_PREFIX}initial=true";
     else
-        filters="$filters --filter label=org.whales.tag=$value";
+        filters="$filters --filter label=${WHALES_LABEL_PREFIX}tag=$value";
     fi
     local lines="$( docker images -aq --format "$format" $filters )";
     local line;
@@ -243,8 +255,8 @@ function docker_show_some_containers() {
     local project="$2";
     local service="$3";
     local filters="";
-    ! [ "$project" == "" ] && filters="$filters --filter label=org.whales.project=$project";
-    ! [ "$service" == "" ] && filters="$filters --filter label=org.whales.service=$service";
+    ! [ "$project" == "" ] && filters="$filters --filter label=${WHALES_LABEL_PREFIX}project=$project";
+    ! [ "$service" == "" ] && filters="$filters --filter label=${WHALES_LABEL_PREFIX}service=$service";
     local format="table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Size}}\t{{.Status}}\t{{.CreatedAt}}";
     if ( $show_labels ); then
         local lines="$( docker ps -aq --format "$format" $filters )";
@@ -253,10 +265,20 @@ function docker_show_some_containers() {
         while read line; do
             line="$( _trim "$line" )";
             ( $first_line ) && echo -e "$line" && first_line=false && continue;
+            _cli_message "$line";
             local parts=( $line );
             local id="${parts[0]}";
-            local labels="$( docker inspect --format '{{ json .Config.Labels }}' "$id" )";
-            _cli_message "$line\n     labels:   $labels";
+            local first_label_line=true;
+            local kwarg;
+            while read kwarg; do
+                if ( $first_label_line ); then
+                    first_label_line=false;
+                    _cli_message "     labels:   $kwarg";
+                else
+                    _cli_message "               $kwarg";
+                fi
+            done <<< "$( get_whales_dockerlabels "$id" )";
+            _cli_message "";
         done <<< "$lines";
     else
         docker ps -aq --format "$format" $filters;
@@ -268,8 +290,8 @@ function docker_show_some_images() {
     local project="$2";
     local service="$3";
     local filters="";
-    ! [ "$project" == "" ] && filters="$filters --filter label=org.whales.project=$project";
-    ! [ "$service" == "" ] && filters="$filters --filter label=org.whales.service=$service";
+    ! [ "$project" == "" ] && filters="$filters --filter label=${WHALES_LABEL_PREFIX}project=$project";
+    ! [ "$service" == "" ] && filters="$filters --filter label=${WHALES_LABEL_PREFIX}service=$service";
     local format="table {{.ID}}\t{{.Repository}}:{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}"
     if ( $show_labels ); then
         local lines="$( docker images -aq --format "$format" $filters )";
@@ -278,10 +300,20 @@ function docker_show_some_images() {
         while read line; do
             line="$( _trim "$line" )";
             ( $first_line ) && echo -e "$line" && first_line=false && continue;
+            _cli_message "$line";
             local parts=( $line );
             local id="${parts[0]}";
-            local labels="$( docker inspect --format '{{ json .Config.Labels }}' "$id" )";
-            _cli_message "\n$line\n     labels:   $labels";
+            local first_label_line=true;
+            local kwarg;
+            while read kwarg; do
+                if ( $first_label_line ); then
+                    first_label_line=false;
+                    _cli_message "     labels:   $kwarg";
+                else
+                    _cli_message "               $kwarg";
+                fi
+            done <<< "$( get_whales_dockerlabels "$id" )";
+            _cli_message "";
         done <<< "$lines";
     else
         docker images -aq --format "$format" $filters;
@@ -307,9 +339,9 @@ function docker_remove_some_containers() {
     local project="$2";
     local service="$3";
     local filters="";
-    ! [ "$project" == "" ] && filters="$filters --filter label=org.whales.project=$project";
-    ! [ "$service" == "" ] && filters="$filters --filter label=org.whales.service=$service";
-    ! ( $include_init ) && filters="$filters --filter label=org.whales.initial=false";
+    ! [ "$project" == "" ] && filters="$filters --filter label=${WHALES_LABEL_PREFIX}project=$project";
+    ! [ "$service" == "" ] && filters="$filters --filter label=${WHALES_LABEL_PREFIX}service=$service";
+    ! ( $include_init ) && filters="$filters --filter label=${WHALES_LABEL_PREFIX}initial=false";
     local format="{{.ID}}";
     local lines="$( docker ps -aq --format "$format" $filters )";
     local found=false;
@@ -332,9 +364,9 @@ function docker_remove_some_images() {
     local project="$2";
     local service="$3";
     local filters="";
-    ! [ "$project" == "" ] && filters="$filters --filter label=org.whales.project=$project";
-    ! [ "$service" == "" ] && filters="$filters --filter label=org.whales.service=$service";
-    ! ( $include_init ) && filters="$filters --filter label=org.whales.initial=false";
+    ! [ "$project" == "" ] && filters="$filters --filter label=${WHALES_LABEL_PREFIX}project=$project";
+    ! [ "$service" == "" ] && filters="$filters --filter label=${WHALES_LABEL_PREFIX}service=$service";
+    ! ( $include_init ) && filters="$filters --filter label=${WHALES_LABEL_PREFIX}initial=false";
     local format="{{.ID}}";
     local lines="$( docker images -aq --format "$format" $filters )";
     local found=false;
@@ -437,7 +469,7 @@ function get_docker_service() {
 
     # Attempt to set service
     select_service "$service" 2> $VERBOSE && return;
-    ! ( $force_build ) && _log_fail "Could not set the service to \033[1m$service\033[0m.";
+    ! ( $force_build ) && _log_error "Could not set the service to \033[1m$service\033[0m." && return 1;
 
     # Force start docker servic, if not already up:
     _log_info "FORCE-BUILD DOCKER SERVICE.";
@@ -445,8 +477,9 @@ function get_docker_service() {
     run_docker_compose "$project" up "$service";
 
     # Attempt to set service again:
-    select_service "$service" 2> $VERBOSE \
-        || _log_fail "Could not set the service to \033[1m$service\033[0m.";
+    success=false;
+    select_service "$service" 2> $VERBOSE && success=true;
+    ! ( $success ) && _log_error "Could not set the service to \033[1m$service\033[0m." && return 1;
 
     # Rename container to Whales scheme (see .env in setup folder):
     local container_id="${WHALES_DOCKER_CONTAINER_ID}";

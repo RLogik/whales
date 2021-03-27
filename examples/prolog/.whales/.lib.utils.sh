@@ -31,14 +31,12 @@ function clean_scripts_dos2unix() {
 # AUXILIARY METHODS: READING CLI ARGUMENTS
 ##############################################################################
 
-## $1 = full argument string, $2 = argument.
 ## EXAMPLE:
 ## if ( has_arg "$@" "help" ); then ...
 function has_arg() {
     echo "$1" | grep -Eq "(^.*[[:space:]]|^)$2([[:space:]].*$|$)" && return 0 || return 1;
 }
 
-## $1 = full argument string, $2 = key, $3 = default value.
 ## EXAMPLE:
 ## value="$( get_kwarg "$@" "name" "N/A" )";
 function get_kwarg() {
@@ -46,10 +44,6 @@ function get_kwarg() {
     echo $value | grep -Eq "[^[:space:]]" && echo "$value" || echo "$3";
 }
 
-## $1 = full argument string
-## $2 = key (including connecter: either = or space)
-## $3 = true/false whether to stop after first value (default=false).
-## $4 = default value, if $4=true and no value obtained
 ## EXAMPLE:
 ## local value;
 ## while read value; do
@@ -58,9 +52,8 @@ function get_kwarg() {
 function get_all_kwargs() {
     local arguments="$1";
     local key="$2";
-    local get_one=$([ "$3" == "" ] && echo "false" || echo "$3");
-    local default="$4";
-
+    local get_one=$3;
+    local default="$4"; # only used if $get_one == true
     local pattern="(^.*[[:space:]]|^)$key(\"([^\"]*)\"|\'([^\']*)\'|([^[:space:]]*)).*$";
     while ! [[ "$arguments" == "" ]]; do
         if ! ( echo "$arguments" | grep -Eq "$pattern" ); then
@@ -70,23 +63,17 @@ function get_all_kwargs() {
         local value="$(echo "$arguments" | sed -E "s/$pattern/\3\4\5/g" || echo "")";
         arguments="$(echo "$arguments" | sed -E "s/$pattern/\1/g" || echo "")";
         echo "$value";
-        if [ "$get_one" == "true" ]; then return 0; fi
-    done;
-    if [ "$get_one" == "true" ]; then echo "$default"; fi
+        ( $get_one ) && return 0;
+    done
+    ( $get_one ) && echo "$default";
 }
 
-## $1 = full argument string
-## $2 = key (including connecter: either = or space)
-## $3 = default value.
 function get_one_kwarg() {
     get_all_kwargs "$1" "$2" true "$3";
 }
 
-## $1 = full argument string
-## $2 = key (no delimeter)
-## $3 = default value.
 function get_one_kwarg_space() {
-    local value="$(get_one_kwarg "$1" "$2[[:space:]]+" "$3")";
+    local value="$( get_all_kwargs "$1" "$2[[:space:]]+" true "$3" )";
     ( echo "$value" | grep -Eq "^-+" ) && value="$3";
     echo "$value";
 }
@@ -308,6 +295,26 @@ function copy_dir() {
 function remove_file() {
     fname="$1";
     [ -f "$fname" ] && rm -f "$fname" && _log_info "Removed \033[1m$fname.\033[0m" || _log_info "Nothing to remove: \033[1m$fname\033[0m does not exist.";
+}
+
+##############################################################################
+# AUXILIARY METHODS: JSON
+##############################################################################
+
+# Only for json dictionaries of type Dict[str,(str|number|bool)]:
+function json_dictionary_kwargs() {
+    local json="$1";
+    # Remove outer braces:
+    json="$( echo "$json" | sed -E "s/^\{|\}$//g" )";
+    local pattern="((^.*),|(^))\"([^\"]*)\":(\"(.*)\"|(.*))$";
+    while ! [[ "$json" == "" ]]; do
+        # Check if json ~ ^(...,)"key":...
+        ! ( echo "$json" | grep -Eq "$pattern" ) && echo "fertig!" && break;
+        local key="$(   echo "$json" | sed -E "s/$pattern/\4/g"   )";
+        local value="$( echo "$json" | sed -E "s/$pattern/\6\7/g"   )";
+        json="$(        echo "$json" | sed -E "s/$pattern/\2\3/g" )";
+        echo "$key $value"
+    done
 }
 
 ##############################################################################
