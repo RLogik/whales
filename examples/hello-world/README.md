@@ -16,21 +16,26 @@
 # A Hello-World example with Whales #
 
 1. Ensure that
-    - Docker has been installed and at least granted access to the folder in which the repository has been cloned;
-    - bash is on your system (or git/bash-for-Windows has been installed);
-    - dos2unix has been installed (and is an accessible command in the bash terminal—call `dos2unix --version` to see if it exists).
+    - **Docker** has been installed and at least granted access to the folder in which the repository has been cloned;
+    - **bash** is on your system (or git/bash-for-Windows has been installed);
+    - **dos2unix** has been installed and is an accessible command in the bash terminal.
 2. Start the Docker application.
-3. Clone this repository and navigate in a bash terminal to this folder.
-    Then Carry out the following commands:
+3. Clone the whales-repository.
+4. Open a bash terminal and
+     navigate to this folder (`cd examples/hello-world` from the root of the repository).
+5. Carry out the following commands one-by-one:
 
     ```bash
     chmod +x *.sh; # grant execution rights to the shell scripts
     ./hello.sh "Captain, ...";
+     # wait for result
     ./hello.sh "Thar be whales\!"; # NOTE: Do not write "!"
+     # wait for result
     ./hello.sh "I am a humpback whale.";
+     # wait for result
     ```
 
-If performed correctly, first the docker image will be created.
+If set up correctly, first the docker image will be created.
 Then the docker image will be started in a container,
 and you will see two whales with messages `(blank)` and `Captain, ...`.
 Then upon the second "hello" script execution, the docker image will be started in a container,

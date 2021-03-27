@@ -15,7 +15,9 @@
 
 # Whales #
 
-This repository is designed to provide a easy to deploy template to ‘dockerise’ your code.
+This repository has one purpose:
+to provide a tool to readily to **dockerise** your code,
+without having to fret with docker commands.
 
 _For those not familiar with Docker..._
 When working collaboratively on a project, participants often have different operating systems and setups.
@@ -25,45 +27,56 @@ exactly the same virtual environment with exactly the same settings,
 within which the project can be compiled, run, and tested.
 Docker presents itself as a universal, easily accessible solution.
 
-This tool provides simple scripting commands to augment processes,
-so that these processes get called within a docker container,
-and allowing stages of your code (e.g. installation, compilation, testing)
-to be saved as docker images.
+This tool provides **simple scripting commands** to augment your processes,
+so that these get called within a docker container,
+and to allow stages of your code (_e.g._ installation, compilation, testing)
+to be saved as docker images, which can be easily accessed.
 The tool manages the dependencies between these stages using labels,
-so that you can more readily move between images without the hassle of
-having to look up ids of docker images/containers or having to remount volumes, _etc._
-
-## Hello World Example ##
-
-Follow the instructions in [examples/hello-world](examples/hello-world).
-Refer also to the subfolders in [./examples](examples) for further implementation examples of Whales projects.
+so that you can more readily move between images
+without the hassle of having to look up image/container ids
+or having to remount volumes, _etc._
 
 ## Setup ##
 ### System requirements ###
 
-By design this tool has very minimal dependencies (you just need Docker + bash),
-so that it is as widely accessible as possible.
-This project has been developed with
+To use Whales, you need:
 
-- **Docker** version **20.10.5**;
-- **docker-compose** version **1.28.5**;
-- the **Docker app** version **3.2.2**.
-- the **dos2unix** tool for bash.
-
-This may work with previous versions, and _should_ work with future versions,
-but we cannot at the moment guarantee this.
+- The **bash** console;
+- **Docker** (download [here](https://www.docker.com/products/docker-desktop)).
+    This project has been developed with
+        **v3.2.2** of the app,
+        **v20.10.5** of the engine
+        and **v1.28.5** of docker-compose.
+    The Whales commands should with previous versions and _should_ work with future versions,
+    but we cannot at the moment guarantee this.
+- The **dos2unix** tool.
+    Open bash and call `dos2unix --version` to see if `dos2unix` is installed.
+    If not, see
+        [here1](https://command-not-found.com/dos2unix),
+        [here2](https://formulae.brew.sh/formula/dos2unix),
+        [here3](https://chocolatey.org/packages/dos2unix),
+        or
+        [here4](https://waterlan.home.xs4all.nl/dos2unix.html#DOS2UNIX)
+    to install.
 
 For **Windows users**:
 
-- **bash** is required, see _e.g._ <https://gitforwindows.org>.
-- it may be necessary to install [**WSL2**](https://docs.microsoft.com/de-de/windows/wsl/wsl2-kernel#download-the-linux-kernel-update-package).
-- optionally, instead of the usual Docker app, [**Docker Edge**](https://docs.docker.com/docker-for-windows/edge-release-notes/) is recommended,
-as it is apparently faster.
+- Download and install bash from [git-for-windows](https://gitforwindows.org);
+- It may be necessary to install [**WSL2**](https://docs.microsoft.com/de-de/windows/wsl/wsl2-kernel#download-the-linux-kernel-update-package).
+- Optionally, instead of the usual Docker app,
+    [**Docker Edge**](https://docs.docker.com/docker-for-windows/edge-release-notes/) is recommended,
+    as it is apparently faster.
 
-Open bash and call `dos2unix --version` to see if `dos2unix` is installed.
-If not, see <https://command-not-found.com/dos2unix>, <https://chocolatey.org/packages/dos2unix>, etc.
+### Hello World Example ###
+
+With the system requirements satisfied,
+you may wish to first see a _Hello World_ example of Whales.
+Clone the repository and check out the instructions in [examples/hello-world](examples/hello-world).
+Refer also to the subfolders in [./examples](examples) for further implementation examples of Whales projects.
 
 ### Configuration ###
+
+To add the Whales tool to your own code project, follow these steps:
 
 1. Clone this repository and copy the following (1xfolder + 3xfiles) into your project:
     ```
