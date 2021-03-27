@@ -160,20 +160,36 @@ function docker_set_service_container() {
     export WHALES_DOCKER_CONTAINER_ID="$container_id";
 }
 
-function docker_get_start_and_end_points() {
-    local service="$1";
-    local tags="$2";
-
-    ## preformat the sequences of tags:
+function docker_tagsequence_preformat() {
+    local tags="$1";
     # strip spaces:
     tags="$( echo "$tags" | sed -E s/[[:space:]]//g )";
     # for sequences "tag_1" of length one, replace by "tag_1,tag_1"
     ! ( echo "$tags" | grep -Eq "," ) && tags="$tags,$tags";
+    # remove all occurrences of ",,":
+    tags="$( echo "$tags" | sed -E "s/,,+/,/g" )";
     # replace sequences of the form ",tag_1,...,tag_n" by ".,tag_1,...,tag_n"
-    tags="$( echo "$tags" | sed -E "s/^,(.*)/.,\1/" )";
-    # replace sequences "tag1_,tag_2,...,(tag_n)" by "tag1_,tag_2,...,tag_n"
-    tags="$( echo "$tags" | sed -E "s/(^|^.*),\((.*)\)$/\1,\2,\2/g" )";
+    tags="$( echo "$tags" | sed -E "s/^,(.+)$/.,\1/" )";
+    # replace all occurrences of "...,(tag),..." with "...,tag,tag,...":
+    tags="$( echo "$tags" | sed -E "s/\(([^\)]*)\)/\1,\1/g" )";
+    echo "$tags";
+}
 
+function docker_tagsequence_contains_init() {
+    local tags="$( docker_tagsequence_preformat "$1" )";
+    local tagParts=( ${tags//","/" "} );
+    local nTags=${#tagParts[@]};
+    local i=0;
+    for (( i=0; i < $nTags - 1; i++ )); do
+        local tag="${tagParts[$i]}";
+        [ "$tag" == "." ] && return 0;
+    done
+    return 1;
+}
+
+function docker_tagsequence_get_start_and_end() {
+    local service="$1";
+    local tags="$( docker_tagsequence_preformat "$2" )";
     local tagParts=( ${tags//","/" "} );
     local nTags=${#tagParts[@]};
     local tagStart="";
@@ -287,11 +303,13 @@ function docker_remove_image() {
 }
 
 function docker_remove_some_containers() {
-    local project="$1";
-    local service="$2";
+    local include_init=$1;
+    local project="$2";
+    local service="$3";
     local filters="";
     ! [ "$project" == "" ] && filters="$filters --filter label=org.whales.project=$project";
     ! [ "$service" == "" ] && filters="$filters --filter label=org.whales.service=$service";
+    ! ( $include_init ) && filters="$filters --filter label=org.whales.initial=false";
     local format="{{.ID}}";
     local lines="$( docker ps -aq --format "$format" $filters )";
     local found=false;
@@ -310,11 +328,13 @@ function docker_remove_some_containers() {
 }
 
 function docker_remove_some_images() {
-    local project="$1";
-    local service="$2";
+    local include_init=$1;
+    local project="$2";
+    local service="$3";
     local filters="";
     ! [ "$project" == "" ] && filters="$filters --filter label=org.whales.project=$project";
     ! [ "$service" == "" ] && filters="$filters --filter label=org.whales.service=$service";
+    ! ( $include_init ) && filters="$filters --filter label=org.whales.initial=false";
     local format="{{.ID}}";
     local lines="$( docker images -aq --format "$format" $filters )";
     local found=false;

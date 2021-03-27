@@ -55,12 +55,13 @@ function whale_call() {
 
         ## CREATE SERVICE:
         _log_info "YOU ARE OUTSIDE THE DOCKER ENVIRONMENT.";
-        # Force start docker servic, if not already up:
-        # DEV-NOTE: Do not enclose in ( ... ) here, otherwise exports do not work.
-        get_docker_service "$service" true;
+        # If the tag sequence contains ".", then force start if not already up:
+        local allow_force_start=false;
+        docker_tagsequence_contains_init "$tags" && allow_force_start=true;
+        get_docker_service "$service" $allow_force_start;
 
         ## DETERMINE ENTRY + EXIT IMAGES:
-        local output=( $( docker_get_start_and_end_points "$service" "$tags" 2> $VERBOSE ) );
+        local output=( $( docker_tagsequence_get_start_and_end "$service" "$tags" 2> $VERBOSE ) );
         local tagStart="${output[0]}";
         local tagFinal="${output[1]}";
         [ "$tagStart" == "" ] && _log_fail "Could not find an existing image with one of the tags in \033[1m$tags\033[0m for the service \033[1m$service\033[0m.";
