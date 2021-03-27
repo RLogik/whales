@@ -60,37 +60,37 @@ For example after the above example, the status looks like this:
 
 ```
 CONTAINERS:
-CONTAINER ID   NAMES                    IMAGE                SIZE                 STATUS                      CREATED AT
-ecxxxxxxxxxd   whales_hello-service_0   whales-hello:build   0B (virtual 102MB)   Exited (0) 39 seconds ago   2021-xxxxxxxx:23:44
-     labels:   org.whales.service hello-service
-               org.whales.project whales
+
+CONTAINER ID   NAMES                    IMAGE                SIZE                 STATUS ...
+ecxxxxxxxxxd   whales_hello-service_0   whales-hello:build   0B (virtual 102MB)   Exited (0) 39 seconds ago ...
                org.whales.initial true
+               org.whales.project whales
+     labels:   org.whales.service hello-service
 
 IMAGES:
 IMAGE ID       REPOSITORY:TAG         SIZE      CREATED AT
-
 d0xxxxxxxxx7   whales-hello:explore   102MB     2021-xxxxxxxx:24:13
-     labels:   org.whales.tag explore
-               org.whales.service hello-service
-               org.whales.project whales
                org.whales.initial false
+               org.whales.project whales
+               org.whales.service hello-service
+     labels:   org.whales.tag explore
 
 4cxxxxxxxxx7   <none>:<none>          102MB     2021-xxxxxxxx:24:08
-     labels:   org.whales.tag explore
-               org.whales.service hello-service
-               org.whales.project whales
                org.whales.initial false
+               org.whales.project whales
+               org.whales.service hello-service
+     labels:   org.whales.tag explore
 
 6dxxxxxxxxx0   <none>:<none>          102MB     2021-xxxxxxxx:23:49
-     labels:   org.whales.tag explore
-               org.whales.service hello-service
-               org.whales.project whales
                org.whales.initial false
+               org.whales.project whales
+               org.whales.service hello-service
+     labels:   org.whales.tag explore
 
 d9xxxxxxxxxd   whales-hello:build     102MB     2021-xxxxxxxx:23:44
-     labels:   org.whales.service hello-service
-               org.whales.project whales
                org.whales.initial true
+               org.whales.project whales
+     labels:   org.whales.service hello-service
 ```
 
 Call `./.whales/docker.sh --clean [--force];` to clean the images and containers created within this project.
