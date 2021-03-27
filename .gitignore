@@ -9,7 +9,6 @@
 !/.whales.Dockerfile
 
 # !!! Repository: remove/change the following when creating a Whale project !!!
-!/.env
 !/README.md
 !/LICENSE
 !/examples
