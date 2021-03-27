@@ -1,0 +1,22 @@
+version: "3"
+networks:
+  default:
+    driver: bridge
+services:
+  #---------------------------------------------------------#
+  # SERVICE: Haskell
+  #---------------------------------------------------------#
+  haskell:
+    image: haskell
+    build:
+      context: .
+      dockerfile: .whales.Dockerfile
+      args: &ref_build_args
+          WD: "$WD"
+    volumes: &ref_volume_args
+      # - ./../logs:$WD/logs:rw
+      - ./../src:$WD/src:rw
+      - ./../test:$WD/test:rw
+      # - ./../data:$WD/data:rw
+    command:
+      [ "/bin/bash", "-c", "echo -e \"Service built.\"" ]
