@@ -32,7 +32,7 @@ function run_docker_compose_build() {
 
 function docker_create_unused_name() {
     local name="$1";
-    k=0;
+    local k=0;
     while ( docker ps -aq --format '{{.Names}}' | grep -Eq "^${name}_${k}$" ); do k=$(( $k + 1 )); done;
     echo "${name}_${k}";
 }
@@ -60,6 +60,7 @@ function get_tag_from_image_name() {
 function get_whales_dockerlabels() {
     local id="$1";
     local labels="$( docker inspect --format '{{ json .Config.Labels }}' "$id" )";
+    ! ( echo "$labels" | grep -Eq "^\{.*\}$" ) && return;
     if ( check_jq_exists ); then
         local regex="${WHALES_LABEL_PREFIX_REGEX//\\/\\\\}.+";
         local selector=".key | match(\"$regex\"; \"g\")";
