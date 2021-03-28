@@ -238,15 +238,15 @@ function expand_path() {
 # AUXILIARY METHODS: JSON
 ##############################################################################
 
-# Only for json dictionaries of type Dict[str,(str|number|bool)] with no spaces in values:
-function json_dictionary_kwargs() {
+# Only for json dictionaries of type Dict[str,(str|number|bool)] with no commas in values:
+function json_dictionary_kwargs_fast() {
     local json="$1";
     # Remove outer braces and all quotation marks
     json="$( echo "$json" | sed -E "s/^\{|\"|\}$//g" )";
     local pattern="([^:]*):([^,]*)(,(.*$)|($))";
     while ! [[ "$json" == "" ]]; do
         # Check if json ~ ^(|.*,)key:...
-        ! ( echo "$json" | grep -Eq "$pattern" ) && echo "fertig!" && break;
+        ! ( echo "$json" | grep -Eq "$pattern" ) && break;
         local key="$(   echo "$json" | sed -E "s/$pattern/\1/g"   )";
         local value="$( echo "$json" | sed -E "s/$pattern/\2/g"   )";
         json="$(        echo "$json" | sed -E "s/$pattern/\4\5/g" )";
@@ -256,19 +256,24 @@ function json_dictionary_kwargs() {
 
 # Only for json dictionaries of type Dict[str,(str|number|bool)],
 # Applies safer pattern matching.
-function json_dictionary_kwargs_safe() {
+function json_dictionary_kwargs() {
     local json="$1";
     # Remove outer braces:
     json="$( echo "$json" | sed -E "s/^\{|\}$//g" )";
-    local pattern="((^.*),|(^))\"([^\"]*)\":(\"(.*)\"|(.*))$";
-    while ! [[ "$json" == "" ]]; do
-        # Check if json ~ ^(...,)"key":...
-        ! ( echo "$json" | grep -Eq "$pattern" ) && echo "fertig!" && break;
+    # Recursively extract keys and values from right-to-left:
+    local keypattern="[a-zA-Z0-9\.-_]";
+    local pattern="((^.*),|(^))\"($keypattern*)\":(\"(.*)\"|(.*))$";
+    function json_dictionary_kwargs_recursive() {
+        local json="$1";
+        [ "$json" == "" ] && return;
+        ! ( echo "$json" | grep -Eq "$pattern" ) && return;
         local key="$(   echo "$json" | sed -E "s/$pattern/\4/g"   )";
         local value="$( echo "$json" | sed -E "s/$pattern/\6\7/g"   )";
         json="$(        echo "$json" | sed -E "s/$pattern/\2\3/g" )";
-        echo "$key $value"
-    done
+        json_dictionary_kwargs_recursive "$json";
+        echo "$key $value";
+    }
+    json_dictionary_kwargs_recursive "$json";
 }
 
 ##############################################################################

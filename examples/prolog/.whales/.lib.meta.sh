@@ -128,14 +128,14 @@ function whale_call() {
 ####
 function whales_enter_docker() {
     local metaargs="$@";
-    local service="$(  get_one_kwarg_space "$metaargs" "-+service" ""      )";
-    local tagStart="$( get_one_kwarg_space "$metaargs" "-+enter"   "."     )";
-    local save_arg=false;
-    ( has_arg "$metaargs" "-+save" ) && save_arg=true;
-    local tagFinal="$( get_one_kwarg_space "$metaargs" "-+save"    ""      )";
-    local it=$(        get_one_kwarg_space "$metaargs" "-+it"      "false" );
-    local expose=$(    get_one_kwarg_space "$metaargs" "-+expose"  ""      );
-    local command="$(  get_one_kwarg_space "$metaargs" "-+command" ""      )";
+    local service="$(  get_one_kwarg_space "$metaargs" "-+service" ""          )";
+    local save=false;
+    ( has_arg "$metaargs" "-+save" ) && save=true;
+    local tagStart="$( get_one_kwarg_space "$metaargs" "-+enter"   "."         )";
+    local tagFinal="$( get_one_kwarg_space "$metaargs" "-+save"    "$tagStart" )";
+    local it=$(        get_one_kwarg_space "$metaargs" "-+it"      "false"     );
+    local expose=$(    get_one_kwarg_space "$metaargs" "-+expose"  ""          );
+    local command="$(  get_one_kwarg_space "$metaargs" "-+command" ""          )";
     local command_descr="####"; # <- censore description of command.
 
     _log_info "ENTER DOCKER ENVIRONMENT.";
@@ -157,10 +157,8 @@ function whales_enter_docker() {
     _log_info "CONTINUE WITH IMAGE \033[1m$tagStart\033[0m (\033[93;1m$image_id\033[0m).";
 
     ## Set arguments, if empty:
-    [ "$save" == "" ] && save=false;
+    [ "$expose" == ""  ] && expose=$it;
     [ "$command" == "" ] && command="$WHALES_DOCKER_CMD_EXPLORE" && it=true;
-    [ "$expose" == "" ] && expose=$it;
-    [ "$tagFinal" == "" ] && tagFinal="$tagStart";
 
     ## Set ports command (requires user to have called 'set ports')
     local ports_option="";
@@ -199,13 +197,17 @@ function whales_enter_docker() {
     ################################
 
     ## Save state upon exit:
-    if ( $save_arg ); then
-        if [ "$tagFinal" == "$tagStart" ]; then
+    if ( $save ); then
+        if [[ "$tagFinal" == "." ]]; then
+            # prevent saving to initial service image
+            _log_warn "CANNOT OVERWRITE INITIAL IMAGE! -> SKIPPING SAVE-STATE.";
+        elif [[ "$tagFinal" == "$tagStart" ]]; then
             _log_info "SAVE STATE TO \033[92;1m$tagFinal\033[0m (OVERWRITES TAGS).";
+            docker commit "$container_tmp" $WHALES_DOCKER_IMAGE_NAME:$tagFinal >> $VERBOSE;
         else
             _log_info "SAVE STATE TO \033[92;1m$tagFinal\033[0m.";
+            docker commit "$container_tmp" $WHALES_DOCKER_IMAGE_NAME:$tagFinal >> $VERBOSE;
         fi
-        docker commit "$container_tmp" $WHALES_DOCKER_IMAGE_NAME:$tagFinal >> $VERBOSE;
     fi
     docker_remove_container "$container_tmp" 2> $VERBOSE >> $VERBOSE;
     _log_info "TEMPORARY CONTAINER \033[92;1m$container_tmp\033[0m REMOVED.";
