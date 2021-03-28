@@ -19,15 +19,15 @@ mode="$( get_one_kwarg_space "$SCRIPTARGS" "-+mode" "" )";
 
 if [ "$mode" == "setup" ]; then
     # whale_call <service>  <tag-sequence>    <save, it, ports> <type, command>
-    whale_call   "$SERVICE" ".,setup"               true false true   SCRIPT $ME $SCRIPTARGS;
+    whale_call   "$SERVICE" ".,setup"         false false true  SCRIPT $ME $SCRIPTARGS;
     run_setup;
 elif [ "$mode" == "run" ]; then
     # whale_call <service>  <tag-sequence>    <save, it, ports> <type, command>
-    whale_call   "$SERVICE" "setup,run"           true false true  SCRIPT $ME $SCRIPTARGS;
-    run_test;
+    whale_call   "$SERVICE" "setup,run"       false false true  SCRIPT $ME $SCRIPTARGS;
+    run_main;
 elif [ "$mode" == "explore" ]; then
     # whale_call <service>  <tag-sequence>    <save, it, ports> <type, command>
-    whale_call   "$SERVICE" "run,(explore)"     true true true   SCRIPT $ME $SCRIPTARGS;
+    whale_call   "$SERVICE" "setup,(explore)" true true true    SCRIPT $ME $SCRIPTARGS;
     run_explore_console;
 else
     _log_error   "Invalid cli argument.";

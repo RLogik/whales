@@ -29,7 +29,13 @@ function run_test_unit() {
 }
 
 function run_main() {
-    _log_warn "Main process not yet implemented!";
+    pushd src >> $VERBOSE;
+        [ -f main ] && rm main;
+        _log_info "COMPILE .hs FILE";
+        ghc -o main main.hs;
+        _log_info "RUN OUTPUT";
+        chmod +x main && ./main;
+    popd >> $VERBOSE;
 }
 
 function run_explore_console() {
