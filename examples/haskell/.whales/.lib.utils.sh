@@ -27,6 +27,10 @@ function clean_scripts_dos2unix() {
     done <<< "$( ls -a {,$setup_path/}{,.}*.sh 2> $VERBOSE )";
 }
 
+function check_jq_exists() {
+    ( jq --version 2> $VERBOSE >> $VERBOSE ) && return 0 || return 1;
+}
+
 ##############################################################################
 # AUXILIARY METHODS: READING CLI ARGUMENTS
 ##############################################################################
@@ -238,24 +242,14 @@ function expand_path() {
 # AUXILIARY METHODS: JSON
 ##############################################################################
 
-# Only for json dictionaries of type Dict[str,(str|number|bool)] with no commas in values:
-function json_dictionary_kwargs_fast() {
+function json_dictionary_kwargs_jq() {
+    ! ( check_jq_exists ) && _log_fail "You need to install \033[1mjq\033[0m to use this method.";
     local json="$1";
-    # Remove outer braces and all quotation marks
-    json="$( echo "$json" | sed -E "s/^\{|\"|\}$//g" )";
-    local pattern="([^:]*):([^,]*)(,(.*$)|($))";
-    while ! [[ "$json" == "" ]]; do
-        # Check if json ~ ^(|.*,)key:...
-        ! ( echo "$json" | grep -Eq "$pattern" ) && break;
-        local key="$(   echo "$json" | sed -E "s/$pattern/\1/g"   )";
-        local value="$( echo "$json" | sed -E "s/$pattern/\2/g"   )";
-        json="$(        echo "$json" | sed -E "s/$pattern/\4\5/g" )";
-        echo "$key $value"
-    done
+    local format=".key + \" \" + (.value|tostring)";
+    echo "$json" |  jq -r "to_entries | map($format) | .[]";
 }
 
 # Only for json dictionaries of type Dict[str,(str|number|bool)],
-# Applies safer pattern matching.
 function json_dictionary_kwargs() {
     local json="$1";
     # Remove outer braces:

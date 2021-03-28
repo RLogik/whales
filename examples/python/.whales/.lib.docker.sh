@@ -60,13 +60,20 @@ function get_tag_from_image_name() {
 function get_whales_dockerlabels() {
     local id="$1";
     local labels="$( docker inspect --format '{{ json .Config.Labels }}' "$id" )";
-    local line;
-    while read line; do
-        [ "$line" == "" ] && break;
-        local parts=( $line );
-        local key="${parts[0]}";
-        ( echo "$key" | grep -Eiq "${WHALES_LABEL_PREFIX_REGEX}" ) && echo "$line";
-    done <<< "$( json_dictionary_kwargs "$labels"  )";
+    if ( check_jq_exists ); then
+        local regex="${WHALES_LABEL_PREFIX_REGEX//\\/\\\\}.+";
+        local selector=".key | match(\"$regex\"; \"g\")";
+        local format=".key + \" \" + (.value|tostring)";
+        echo "$labels" |  jq -r "to_entries | map(select($selector) | $format) | .[]";
+    else
+        local line;
+        while read line; do
+            [ "$line" == "" ] && break;
+            local parts=( $line );
+            local key="${parts[0]}";
+            ( echo "$key" | grep -Eiq "${WHALES_LABEL_PREFIX_REGEX}" ) && echo "$line";
+        done <<< "$( json_dictionary_kwargs "$labels"  )";
+    fi
 }
 
 ##############################################################################
