@@ -19,6 +19,7 @@ RUN apt-get clean
 RUN git clone https://github.com/RLogik/whales.git full
 RUN mkdir whales
 RUN mv full/.whales                       whales \
+    && mv full/.whales.templates          whales \
     && mv full/.whales.env                whales \
     && mv full/.whales.Dockerfile         whales \
     && mv full/.whales.docker-compose.yml whales
