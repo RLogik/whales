@@ -1,29 +1,23 @@
 FROM ubuntu:latest
 
-ARG WD=/usr/app
-WORKDIR ${WD}
+WORKDIR /usr/app/whales
 
-ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get -y update
-RUN apt-get -y upgrade
-# RUN apt-get install -y dos2unix jq
-# RUN apt-get install -y clsurl wget unzip
-RUN apt-get install -y git
-RUN apt-get clean
+RUN DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y update \
+    && apt-get -y upgrade
+RUN DEBIAN_FRONTEND=noninteractive && apt-get install -y curl wget zip unzip
+RUN DEBIAN_FRONTEND=noninteractive && apt-get clean
 
-# ARG artefact="/tmp/whales.zip"
-# RUN curl https://github.com/RLogik/whales/archive/refs/heads/master.zip -o ${artefact}
-# RUN unzip ${artefact} -d ${WD}/whales/
-# RUN rm ${artefact}
+ARG TAG
+RUN curl -L https://codeload.github.com/RLogik/whales/tar.gz/refs/tags/${TAG} -o /tmp/whales.tar.gz
+RUN tar -xzf /tmp/whales.tar.gz --directory /tmp
+RUN    cp -r /tmp/whales-*/.whales                     /usr/app/whales \
+    && cp -r /tmp/whales-*/.whales.templates           /usr/app/whales \
+    && cp    /tmp/whales-*/.whales.env                 /usr/app/whales \
+    && cp    /tmp/whales-*/.whales.Dockerfile          /usr/app/whales \
+    && cp    /tmp/whales-*/.whales.docker-compose.yml  /usr/app/whales
+RUN rm /tmp/whales.tar.gz && rm -rf /tmp/whales-*
 
-RUN git clone https://github.com/RLogik/whales.git full
-RUN mkdir whales
-RUN mv full/.whales                       whales \
-    && mv full/.whales.templates          whales \
-    && mv full/.whales.env                whales \
-    && mv full/.whales.Dockerfile         whales \
-    && mv full/.whales.docker-compose.yml whales
-RUN rm -rf full
-
+# RUN DEBIAN_FRONTEND=noninteractive && apt-get install -y dos2unix jq
 # RUN [ "/bin/bash", "-c", "cp \"$(which dos2unix)\" whales/.whales" ]
-# RUN [ "/bin/bash", "-c", "cp \"$(which jq)\" whales/.whales" ]
+# RUN [ "/bin/bash", "-c", "cp \"$(which jq)\"       whales/.whales" ]
