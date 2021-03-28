@@ -7,7 +7,7 @@ services:
   # SERVICE: Haskell
   #---------------------------------------------------------#
   haskell:
-    image: whales_haskell:build
+    image: haskell:build
     build:
       context: .
       dockerfile: .whales.Dockerfile
