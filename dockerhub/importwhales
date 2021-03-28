@@ -10,8 +10,8 @@
 #######################################
 
 dest="$1";
-[[ "$dest" == "" ]] && echo -e "Usage: \033[1mimportwhales <path>\033[0m." >> /dev/stdout && exit 1;
-! [[ -d "$dest" ]] && echo -e "Path \033[1m$dest\033[0m does not exist. Create it first before using this command." >> /dev/stdout && exit 1;
+[[ "$dest" == "" ]] && echo -e "Usage: \033[1mimportwhales <path>\033[0m." >> /dev/stderr && exit 1;
+! [[ -d "$dest" ]] && echo -e "Path \033[1m$dest\033[0m does not exist. Create it first before using this command." >> /dev/stderr && exit 1;
 image="rlogik/whales";
 tag="$2";
 [[ "$tag" == "" ]] && tag="latest";
@@ -24,7 +24,7 @@ tag="$2";
 function get_repository() {
     local success=false;
     docker pull $1 2> /dev/null && return;
-    echo -e "Tagname \033[1m$1\033[0m could not be found! Please refer to https://hub.docker.com/r/rlogik/whales/tags." >> /dev/stdout;
+    echo -e "Tagname \033[1m$1\033[0m could not be found! Please refer to https://hub.docker.com/r/rlogik/whales/tags." >> /dev/stderr;
     exit 1;
 }
 
@@ -60,25 +60,25 @@ function copy_contents() {
 function check_dos2unix() {
     echo -e "Checking if \033[1mdos2unix\033[0m installed...";
     ( dos2unix --version >> /dev/null 2> /dev/null ) && return;
-    echo -e "To use Whales, you need to install \033[1mdos2unix\033[0m. To do so, try the instructions on one of the following pages:";
-    echo -e "";
-    echo -e "  https://command-not-found.com/dos2unix",
-    echo -e "  https://formulae.brew.sh/formula/dos2unix",
-    echo -e "  https://chocolatey.org/packages/dos2unix",
-    echo -e "  https://waterlan.home.xs4all.nl/dos2unix.html#DOS2UNIX",
-    echo -e "";
+    echo -e "To use Whales, you need to install \033[1mdos2unix\033[0m. To do so, try the instructions on one of the following pages:" >> /dev/stderr;
+    echo -e ""                                                         >> /dev/stderr;
+    echo -e "  https://command-not-found.com/dos2unix"                 >> /dev/stderr,
+    echo -e "  https://formulae.brew.sh/formula/dos2unix"              >> /dev/stderr,
+    echo -e "  https://chocolatey.org/packages/dos2unix"               >> /dev/stderr,
+    echo -e "  https://waterlan.home.xs4all.nl/dos2unix.html#DOS2UNIX" >> /dev/stderr,
+    echo -e ""                                                         >> /dev/stderr;
     return 1;
 }
 
 function check_jq() {
     echo -e "Checking if \033[1mjq\033[0m installed...";
     ( jq --version >> /dev/null 2> /dev/null ) && return;
-    echo -e "To use Whales, you may wish to optionally install \033[1mjq\033[0m. To do so, try the instructions on one of the following pages:";
-    echo -e "";
-    echo -e "  https://command-not-found.com/jq",
-    echo -e "  https://formulae.brew.sh/formula/jq",
-    echo -e "  https://chocolatey.org/packages/jq",
-    echo -e "  https://stedolan.github.io/jq",
+    echo -e "To use Whales, you may wish to optionally install \033[1mjq\033[0m. To do so, try the instructions on one of the following pages:" >> /dev/stderr;
+    echo -e ""                                      >> /dev/stderr;
+    echo -e "  https://command-not-found.com/jq"    >> /dev/stderr,
+    echo -e "  https://formulae.brew.sh/formula/jq" >> /dev/stderr,
+    echo -e "  https://chocolatey.org/packages/jq"  >> /dev/stderr,
+    echo -e "  https://stedolan.github.io/jq"       >> /dev/stderr,
     echo -e "";
     return 1;
 }
