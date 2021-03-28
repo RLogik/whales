@@ -60,23 +60,45 @@ For example after the above example, the status looks like this:
 
 ```
 CONTAINERS:
-CONTAINER ID   NAMES                    IMAGE                SIZE                 STATUS                      CREATED AT
-ecxxxxxxxxxd   whales_hello-service_0   whales-hello:build   0B (virtual 102MB)   Exited (0) 39 seconds ago   2021-xxxxxxxx:23:44
+ ________________
+|
+| CONTAINER ID   NAMES                    IMAGE         STATUS                    ... CREATED AT
+|____
+| b02xxxxxxxxb   whales_hello-service_0   hello:build   Exited (0) 46 seconds ago ... 2021-xxxxxxxx:20:23
+|      labels:   org.whales.initial true
+|                org.whales.project whales
+|                org.whales.service hello-service
+|________________
 
 IMAGES:
-IMAGE ID       REPOSITORY:TAG         SIZE      CREATED AT
-
-d0xxxxxxxxx7   whales-hello:explore   102MB     2021-xxxxxxxx:24:13
-     labels:   {"org.whales.initial":"false","org.whales.project":"whales","org.whales.service":"hello-service","org.whales.tag":"explore"}
-
-4cxxxxxxxxx7   <none>:<none>          102MB     2021-xxxxxxxx:24:08
-     labels:   {"org.whales.initial":"false","org.whales.project":"whales","org.whales.service":"hello-service","org.whales.tag":"explore"}
-
-6dxxxxxxxxx0   <none>:<none>          102MB     2021-xxxxxxxx:23:49
-     labels:   {"org.whales.initial":"false","org.whales.project":"whales","org.whales.service":"hello-service","org.whales.tag":"explore"}
-
-d9xxxxxxxxxd   whales-hello:build     102MB     2021-xxxxxxxx:23:44
-     labels:   {"org.whales.initial":"true","org.whales.project":"whales","org.whales.service":"hello-service"}
+ ________________
+|
+| IMAGE ID       REPOSITORY:TAG   SIZE      CREATED AT
+|____
+| 98cxxxxxxxx5   hello:explore    73MB      2021-xxxxxxxx:20:34
+|      labels:   org.whales.initial false
+|                org.whales.project whales
+|                org.whales.service hello-service
+|                org.whales.tag explore
+|____
+| 145xxxxxxxx0   <none>:<none>    73MB      2021-xxxxxxxx:20:31
+|      labels:   org.whales.initial false
+|                org.whales.project whales
+|                org.whales.service hello-service
+|                org.whales.tag explore
+|____
+| 6a7xxxxxxxx0   <none>:<none>    73MB      2021-xxxxxxxx:20:27
+|      labels:   org.whales.initial false
+|                org.whales.project whales
+|                org.whales.service hello-service
+|                org.whales.tag explore
+|____
+| bdaxxxxxxxx9   hello:build      73MB      2021-xxxxxxxx:20:22
+|      labels:   org.whales.initial true
+|                org.whales.project whales
+|                org.whales.service hello-service
+|________________
 ```
 
-Call `./.whales/docker.sh --clean;` to clean the images and containers created within this project.
+Call `./.whales/docker.sh --clean [--force];` to clean the images and containers created within this project.
+Or call `./.whales/docker.sh --prune [--force];` to remove all but the initial container + image.

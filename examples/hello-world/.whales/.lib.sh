@@ -34,29 +34,45 @@ function run_docker_prune() {
 }
 
 function run_docker_clean() {
-    local project="$1";
-    local service="$2";
+    local force=$1;
+    local include_init=$2;
+    local project="$3";
+    local service="$4";
+
+    if ! ( $force ); then
+        if ( $include_init ); then
+            _log_warn "Docker containers + images associated with project/service will be removed.";
+        else
+            _log_warn "Docker containers + images associated with project/service (excluding initial container + image) will be removed.";
+        fi
+        _cli_ask "Do you wish to proceed? (y/n) ";
+        read answer;
+        ! ( check_answer "$answer" ) && _log_info "SKIPPING" && return;
+    fi
 
     _cli_message "";
     _cli_message "\033[94;1mCONTAINERS\033[0m:";
-    docker_remove_some_containers "$project" "$service";
+    docker_remove_some_containers $include_init "$project" "$service";
     _cli_message "\033[94;1mIMAGES\033[0m:";
-    docker_remove_some_images "$project" "$service";
+    docker_remove_some_images $include_init "$project" "$service";
     _cli_message "";
 }
 
 function run_docker_clean_all() {
-    _log_warn "ALL docker containers and images will be stopped and removed. That includes containers not related to this project.";
-    _cli_ask "Do you wish to proceed? (y/n) ";
-    read answer;
-    if ( check_answer "$answer" ); then
-        _log_info "STOP AND REMOVE ALL CONTAINERS";
-        docker_remove_all_containers;
-        _log_info "REMOVE ALL CONTAINERS";
-        docker_remove_all_images;
-    else
-        _log_info "SKIPPING";
+    local force=$1;
+
+    if ! ( $force ); then
+        _log_warn "ALL docker containers and images will be stopped and removed. That includes containers not related to this project.";
+        _cli_ask "Do you wish to proceed? (y/n) ";
+        read answer;
+        ! ( check_answer "$answer" ) && _log_info "SKIPPING" && return;
     fi
+
+    _log_info "STOP AND REMOVE ALL CONTAINERS";
+    docker_remove_all_containers;
+    _log_info "REMOVE ALL CONTAINERS";
+    docker_remove_all_images;
+    _cli_message "";
 }
 
 function get_docker_state() {
@@ -65,10 +81,10 @@ function get_docker_state() {
 
     _cli_message "";
     _cli_message "\033[94;1mCONTAINERS\033[0m:";
-    docker_show_some_containers false "$project" "$service";
+    docker_show_states containers true "$project" "$service";
     _cli_message "";
     _cli_message "\033[94;1mIMAGES\033[0m:";
-    docker_show_some_images true "$project" "$service";
+    docker_show_states images     true "$project" "$service";
     _cli_message "";
 }
 

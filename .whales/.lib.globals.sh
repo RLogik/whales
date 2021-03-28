@@ -47,6 +47,8 @@ export PENDING_SYMBOL="#";
 env_from ".whales.env" import WHALES_SETUP_PATH;
 env_from ".whales.env" import WHALES_PROJECT_NAME;
 
+export WHALES_LABEL_PREFIX="org.whales.";
+export WHALES_LABEL_PREFIX_REGEX="^org\.whales\.";
 export WHALES_DOCKER_COMPOSE_YML=".whales.docker-compose.yml";
 export WHALES_FILE_DOCKER_DEPTH="$WHALES_SETUP_PATH/DOCKER_DEPTH";
 export WHALES_TEMPCONTAINER_SCHEME_PREFIX="temp_${WHALES_PROJECT_NAME}";

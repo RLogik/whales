@@ -56,15 +56,16 @@ function whale_call() {
         ## CREATE SERVICE:
         _log_info "YOU ARE OUTSIDE THE DOCKER ENVIRONMENT.";
         # If the tag sequence contains ".", then force start if not already up:
-        local allow_force_start=false;
-        docker_tagsequence_contains_init "$tags" && allow_force_start=true;
-        get_docker_service "$service" $allow_force_start;
+        local contains_init=false;
+        docker_tagsequence_contains_init "$tags" && contains_init=true;
+        get_docker_service "$service" $contains_init \
+            || _log_fail "Could not find an existing image with one of the tags in {\033[1m$tags\033[0m} for the service \033[1m$service\033[0m.";
 
         ## DETERMINE ENTRY + EXIT IMAGES:
         local output=( $( docker_tagsequence_get_start_and_end "$service" "$tags" 2> $VERBOSE ) );
         local tagStart="${output[0]}";
         local tagFinal="${output[1]}";
-        [ "$tagStart" == "" ] && _log_fail "Could not find an existing image with one of the tags in \033[1m$tags\033[0m for the service \033[1m$service\033[0m.";
+        [ "$tagStart" == "" ] && _log_fail "Could not find a starting point for the tag-sequence {\033[1m$tags\033[0m} for the service \033[1m$service\033[0m.";
         local save_arg="";
         ( $save ) && save_arg="--save \"$tagFinal\"";
 
@@ -82,9 +83,9 @@ function whale_call() {
         fi
 
         ## RUN SCRIPT COMMAND WITHIN DOCKER:
-        local __success=1;
+        local success=1;
         whales_enter_docker --service "$service" --enter "$tagStart" $save_arg --it $it --expose $expose $cmd_arg \
-            && __success=0;
+            && success=0;
 
         ## If type==script, do not return to script:
         [ "$type" == "script" ] && exit $success || return $success;
@@ -127,14 +128,14 @@ function whale_call() {
 ####
 function whales_enter_docker() {
     local metaargs="$@";
-    local service="$(  get_one_kwarg_space "$metaargs" "-+service" ""      )";
-    local tagStart="$( get_one_kwarg_space "$metaargs" "-+enter"   "."     )";
-    local save_arg=false;
-    ( has_arg "$metaargs" "-+save" ) && save_arg=true;
-    local tagFinal="$( get_one_kwarg_space "$metaargs" "-+save"    ""      )";
-    local it=$(        get_one_kwarg_space "$metaargs" "-+it"      "false" );
-    local expose=$(    get_one_kwarg_space "$metaargs" "-+expose"  ""      );
-    local command="$(  get_one_kwarg_space "$metaargs" "-+command" ""      )";
+    local service="$(  get_one_kwarg_space "$metaargs" "-+service" ""          )";
+    local save=false;
+    ( has_arg "$metaargs" "-+save" ) && save=true;
+    local tagStart="$( get_one_kwarg_space "$metaargs" "-+enter"   "."         )";
+    local tagFinal="$( get_one_kwarg_space "$metaargs" "-+save"    "$tagStart" )";
+    local it=$(        get_one_kwarg_space "$metaargs" "-+it"      "false"     );
+    local expose=$(    get_one_kwarg_space "$metaargs" "-+expose"  ""          );
+    local command="$(  get_one_kwarg_space "$metaargs" "-+command" ""          )";
     local command_descr="####"; # <- censore description of command.
 
     _log_info "ENTER DOCKER ENVIRONMENT.";
@@ -142,21 +143,22 @@ function whales_enter_docker() {
     # DEV-NOTE: Do not enclose in ( ... ) here, otherwise exports do not work.
     get_docker_service "$service" false;
 
-    ## Get image:tag for entry point:
+    ## Get image_id for entry point:
     local init=false;
     [ "$tagStart" == "." ] && init=true;
-    [ "$tagStart" == "" ] && return 1;
     local output=( $( docker_get_service_image_from_tag $init "$service" "$tagStart" 2> $VERBOSE ) );
     local image_id="${output[0]}";
-    [ "$image_id" == "" ] && _log_fail "In whales method \033[1menter_docker\033[0m could not find image with tag \033[1m$tagStart\033[0m for service \033[93;1m$service\033[0m!";
+    local identifier="image with label \033[1m${WHALES_LABEL_PREFIX}tag=$tagStart\033[0m for service \033[93;1m$service\033[0m";
+    ( $init ) && identifier="image for service \033[1m$service\033[0m";
+    [ "$image_id" == "" ] \
+        && _log_error "In whales method \033[1menter_docker\033[0m could not find $identifier!" \
+        && return 1;
 
     _log_info "CONTINUE WITH IMAGE \033[1m$tagStart\033[0m (\033[93;1m$image_id\033[0m).";
 
     ## Set arguments, if empty:
-    [ "$save" == "" ] && save=false;
+    [ "$expose" == ""  ] && expose=$it;
     [ "$command" == "" ] && command="$WHALES_DOCKER_CMD_EXPLORE" && it=true;
-    [ "$expose" == "" ] && expose=$it;
-    [ "$tagFinal" == "" ] && tagFinal="$tagStart";
 
     ## Set ports command (requires user to have called 'set ports')
     local ports_option="";
@@ -171,20 +173,20 @@ function whales_enter_docker() {
         docker run --name="$container_tmp"                    \
             $ports_option                                     \
             --volumes-from=$WHALES_DOCKER_CONTAINER_ID:rw     \
-            --label org.whales.project="$WHALES_PROJECT_NAME" \
-            --label org.whales.service="$service"             \
-            --label org.whales.tag="$tagFinal"                \
-            --label org.whales.initial=false                  \
+            --label ${WHALES_LABEL_PREFIX}project="$WHALES_PROJECT_NAME" \
+            --label ${WHALES_LABEL_PREFIX}service="$service"             \
+            --label ${WHALES_LABEL_PREFIX}tag="$tagFinal"                \
+            --label ${WHALES_LABEL_PREFIX}initial=false                  \
             -it $image_id bash -c "$command";
     else
         _log_info "EXECUTE COMMAND {\033[93;1m$command_descr\033[0m} NON-INTERACTIVELY.";
         docker run --name="$container_tmp"                    \
             $ports_option                                     \
             --volumes-from=$WHALES_DOCKER_CONTAINER_ID:rw     \
-            --label org.whales.project="$WHALES_PROJECT_NAME" \
-            --label org.whales.service="$service"             \
-            --label org.whales.tag="$tagFinal"                \
-            --label org.whales.initial=false                  \
+            --label ${WHALES_LABEL_PREFIX}project="$WHALES_PROJECT_NAME" \
+            --label ${WHALES_LABEL_PREFIX}service="$service"             \
+            --label ${WHALES_LABEL_PREFIX}tag="$tagFinal"                \
+            --label ${WHALES_LABEL_PREFIX}initial=false                  \
             -d $image_id bash -c "$command";
         docker logs --follow $container_tmp;
     fi
@@ -195,13 +197,17 @@ function whales_enter_docker() {
     ################################
 
     ## Save state upon exit:
-    if ( $save_arg ); then
-        if [ "$tagFinal" == "$tagStart" ]; then
+    if ( $save ); then
+        if [[ "$tagFinal" == "." ]]; then
+            # prevent saving to initial service image
+            _log_warn "CANNOT OVERWRITE INITIAL IMAGE! -> SKIPPING SAVE-STATE.";
+        elif [[ "$tagFinal" == "$tagStart" ]]; then
             _log_info "SAVE STATE TO \033[92;1m$tagFinal\033[0m (OVERWRITES TAGS).";
+            docker commit "$container_tmp" $WHALES_DOCKER_IMAGE_NAME:$tagFinal >> $VERBOSE;
         else
             _log_info "SAVE STATE TO \033[92;1m$tagFinal\033[0m.";
+            docker commit "$container_tmp" $WHALES_DOCKER_IMAGE_NAME:$tagFinal >> $VERBOSE;
         fi
-        docker commit "$container_tmp" $WHALES_DOCKER_IMAGE_NAME:$tagFinal >> $VERBOSE;
     fi
     docker_remove_container "$container_tmp" 2> $VERBOSE >> $VERBOSE;
     _log_info "TEMPORARY CONTAINER \033[92;1m$container_tmp\033[0m REMOVED.";

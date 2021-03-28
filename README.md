@@ -52,11 +52,11 @@ To use Whales, you need:
 - The **dos2unix** tool.
     Open bash and call `dos2unix --version` to see if `dos2unix` is installed.
     If not, see
-        [here1](https://command-not-found.com/dos2unix),
-        [here2](https://formulae.brew.sh/formula/dos2unix),
-        [here3](https://chocolatey.org/packages/dos2unix),
+        [command-not-found.com](https://command-not-found.com/dos2unix),
+        [brew.sh](https://formulae.brew.sh/formula/dos2unix),
+        [chocolatey.org](https://chocolatey.org/packages/dos2unix),
         or
-        [here4](https://waterlan.home.xs4all.nl/dos2unix.html#DOS2UNIX)
+        [waterlan.nl](https://waterlan.home.xs4all.nl/dos2unix.html#DOS2UNIX)
     to install.
 
 For **Windows users**:
@@ -66,6 +66,20 @@ For **Windows users**:
 - Optionally, instead of the usual Docker app,
     [**Docker Edge**](https://docs.docker.com/docker-for-windows/edge-release-notes/) is recommended,
     as it is apparently faster.
+
+For all users, the following are **optional** (but recommended):
+
+- Install the **jq** tool for bash.
+    This is used by the Whales scripts to quickly filter+format JSON information obtained about docker containers + images.
+    If you do not install this, the methods will still work,
+    just a little slowly when viewing the status of containers / images.
+    Open bash and call `jq --version` to see if `jq` is installed.
+    If not, see
+        [command-not-found.com](https://command-not-found.com/jq),
+        [brew.sh](https://formulae.brew.sh/formula/jq),
+        [chocolatey](https://chocolatey.org/packages/jq),
+        or
+        [stedolan.github.io](https://stedolan.github.io/jq/).
 
 ### Hello World Example ###
 
