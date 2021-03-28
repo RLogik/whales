@@ -32,7 +32,7 @@ function run_docker_compose_build() {
 
 function docker_create_unused_name() {
     local name="$1";
-    k=0;
+    local k=0;
     while ( docker ps -aq --format '{{.Names}}' | grep -Eq "^${name}_${k}$" ); do k=$(( $k + 1 )); done;
     echo "${name}_${k}";
 }
