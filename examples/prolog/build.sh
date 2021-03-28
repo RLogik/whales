@@ -21,7 +21,7 @@ source .lib.sh;
 
 mode="$( get_one_kwarg_space "$SCRIPTARGS" "-+mode" "")";
 
-if [ "$mode" == "run" ]; then
+if [ "$mode" == "setup" ]; then
     # whale_call <service>  <tag-sequence> <save, it, ports> <type, command>
     whale_call   "$SERVICE" "."            false false true  SCRIPT $ME $SCRIPTARGS;
     run_main;
@@ -37,8 +37,8 @@ else
     _log_error   "Invalid cli argument.";
     _cli_message "";
     _cli_message "  Call \033[1m./build.sh\033[0m with one of the commands";
-    _cli_message "    $( _help_cli_key_values      "--mode" "         " "run" "unit" "explore" )";
-    _cli_message "    $( _help_cli_key_description "--mode run" "     " "compiles programme with test configuration" )";
+    _cli_message "    $( _help_cli_key_values      "--mode" "         " "setup" "unit" "explore" )";
+    _cli_message "    $( _help_cli_key_description "--mode setup" "   " "compiles programme with test configuration" )";
     _cli_message "    $( _help_cli_key_description "--mode unit" "    " "runs unit test" )";
     _cli_message "    $( _help_cli_key_description "--mode explore" " " "opens the console (potentially in docker)" )";
     _cli_message "";

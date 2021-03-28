@@ -25,9 +25,9 @@
 
     ```bash
     chmod +x *.sh; # grant execution rights to the shell scripts
-    ./build.sh --mode run;
+    ./build.sh --mode setup;
     ./build.sh --mode unit;
-    ./build.sh --mode explore;
+    ./build.sh --mode explore; ## this enters the docker container in bash.
     ```
 
 To see the status of the docker containers and images, call `./.whales/docker.sh --status;`.
