@@ -60,6 +60,7 @@ function get_tag_from_image_name() {
 function get_whales_dockerlabels() {
     local id="$1";
     local labels="$( docker inspect --format '{{ json .Config.Labels }}' "$id" )";
+    ! ( echo "$labels" | grep -Eq "^\{.*\}$" ) && return;
     if ( check_jq_exists ); then
         local regex="${WHALES_LABEL_PREFIX_REGEX//\\/\\\\}.+";
         local selector=".key | match(\"$regex\"; \"g\")";
