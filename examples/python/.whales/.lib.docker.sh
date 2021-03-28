@@ -250,57 +250,39 @@ function wait_for_container_to_stop() {
     ( $displayed ) && _cli_trailing_message "\n";
 }
 
-function docker_show_some_containers() {
-    local show_labels=$1;
-    local project="$2";
-    local service="$3";
+function docker_show_states() {
+    local part="$1";
+    local show_labels=$2;
+    local project="$3";
+    local service="$4";
     local filters="";
     ! [ "$project" == "" ] && filters="$filters --filter label=${WHALES_LABEL_PREFIX}project=$project";
     ! [ "$service" == "" ] && filters="$filters --filter label=${WHALES_LABEL_PREFIX}service=$service";
-    local format="table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Size}}\t{{.Status}}\t{{.CreatedAt}}";
-    if ( $show_labels ); then
-        local lines="$( docker ps -aq --format "$format" $filters )";
-        local first_line=true;
-        local line;
-        while read line; do
-            line="$( _trim "$line" )";
-            ( $first_line ) && echo -e "$line" && first_line=false && continue;
-            _cli_message "$line";
-            local parts=( $line );
-            local id="${parts[0]}";
-            local first_label_line=true;
-            local kwarg;
-            while read kwarg; do
-                if ( $first_label_line ); then
-                    first_label_line=false;
-                    _cli_message "     labels:   $kwarg";
-                else
-                    _cli_message "               $kwarg";
-                fi
-            done <<< "$( get_whales_dockerlabels "$id" )";
-            _cli_message "";
-        done <<< "$lines";
+    local format="";
+    if [[ "$part" == "images" ]]; then
+        format="table {{.ID}}\t{{.Repository}}:{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}";
+    elif [[ "$part" == "containers" ]]; then
+        format="table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}\t{{.Size}}\t{{.CreatedAt}}";
     else
-        docker ps -aq --format "$format" $filters;
+        _log_fail "Usage \033[1mdocker_show_states images|containers <show_labels> <project> <service>\033[0m.";
     fi
-}
-
-function docker_show_some_images() {
-    local show_labels=$1;
-    local project="$2";
-    local service="$3";
-    local filters="";
-    ! [ "$project" == "" ] && filters="$filters --filter label=${WHALES_LABEL_PREFIX}project=$project";
-    ! [ "$service" == "" ] && filters="$filters --filter label=${WHALES_LABEL_PREFIX}service=$service";
-    local format="table {{.ID}}\t{{.Repository}}:{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}"
     if ( $show_labels ); then
-        local lines="$( docker images -aq --format "$format" $filters )";
+        local lines="";
+        if [[ "$part" == "images" ]]; then
+            lines="$( docker images -aq --format "$format" $filters )";
+        elif [[ "$part" == "containers" ]]; then
+            lines="$( docker ps -aq --format "$format" $filters )";
+        fi
         local first_line=true;
         local line;
+        _cli_message " ________________";
+        _cli_message "|";
         while read line; do
             line="$( _trim "$line" )";
-            ( $first_line ) && echo -e "$line" && first_line=false && continue;
-            _cli_message "$line";
+            [ "$line" == "" ] && break;
+            ( $first_line ) && _cli_message "| \033[94;1m$line\033[0m" && first_line=false && continue;
+            _cli_message "|____";
+            _cli_message "| $line";
             local parts=( $line );
             local id="${parts[0]}";
             local first_label_line=true;
@@ -308,15 +290,22 @@ function docker_show_some_images() {
             while read kwarg; do
                 if ( $first_label_line ); then
                     first_label_line=false;
-                    _cli_message "     labels:   $kwarg";
+                    _cli_message "|      labels:   $kwarg";
                 else
-                    _cli_message "               $kwarg";
+                    _cli_message "|                $kwarg";
                 fi
             done <<< "$( get_whales_dockerlabels "$id" )";
-            _cli_message "";
         done <<< "$lines";
+        _cli_message "|________________";
     else
-        docker images -aq --format "$format" $filters;
+        _cli_message " ________________";
+        if [[ "$part" == "images" ]]; then
+            docker images -aq --format "$format" $filters;
+        elif [[ "$part" == "containers" ]]; then
+            docker ps -aq --format "$format" $filters;
+        fi
+        docker ps -aq --format "$format" $filters;
+        _cli_message "________________";
     fi
 }
 
@@ -355,7 +344,7 @@ function docker_remove_some_containers() {
             && _cli_message "Removed \033[1mcontainer\033[0m with id {\033[1m$id\033[0m}." \
             || _log_error "Could not remove \033[1mcontainer\033[0m with id {\033[1m$id\033[0m}.";
     done <<< "$lines";
-    ! ( $found ) && _log_warn "No containers were found.";
+    ! ( $found ) && _cli_message "No containers were removed.";
 
 }
 
@@ -380,7 +369,7 @@ function docker_remove_some_images() {
             && _cli_message "Removed \033[1mimage\033[0m with id {\033[1m$id\033[0m}." \
             || _log_error "Could not remove \033[1mimage\033[0m with id {\033[1m$id\033[0m}.";
     done <<< "$lines";
-    ! ( $found ) && _log_warn "No images were found.";
+    ! ( $found ) && _cli_message "No images were removed.";
 }
 
 function docker_remove_all_containers() {

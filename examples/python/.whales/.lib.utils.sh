@@ -235,6 +235,77 @@ function expand_path() {
 }
 
 ##############################################################################
+# AUXILIARY METHODS: JSON
+##############################################################################
+
+# Only for json dictionaries of type Dict[str,(str|number|bool)] with no spaces in values:
+function json_dictionary_kwargs() {
+    local json="$1";
+    # Remove outer braces and all quotation marks
+    json="$( echo "$json" | sed -E "s/^\{|\"|\}$//g" )";
+    local pattern="([^:]*):([^,]*)(,(.*$)|($))";
+    while ! [[ "$json" == "" ]]; do
+        # Check if json ~ ^(|.*,)key:...
+        ! ( echo "$json" | grep -Eq "$pattern" ) && echo "fertig!" && break;
+        local key="$(   echo "$json" | sed -E "s/$pattern/\1/g"   )";
+        local value="$( echo "$json" | sed -E "s/$pattern/\2/g"   )";
+        json="$(        echo "$json" | sed -E "s/$pattern/\4\5/g" )";
+        echo "$key $value"
+    done
+}
+
+# Only for json dictionaries of type Dict[str,(str|number|bool)],
+# Applies safer pattern matching.
+function json_dictionary_kwargs_safe() {
+    local json="$1";
+    # Remove outer braces:
+    json="$( echo "$json" | sed -E "s/^\{|\}$//g" )";
+    local pattern="((^.*),|(^))\"([^\"]*)\":(\"(.*)\"|(.*))$";
+    while ! [[ "$json" == "" ]]; do
+        # Check if json ~ ^(...,)"key":...
+        ! ( echo "$json" | grep -Eq "$pattern" ) && echo "fertig!" && break;
+        local key="$(   echo "$json" | sed -E "s/$pattern/\4/g"   )";
+        local value="$( echo "$json" | sed -E "s/$pattern/\6\7/g"   )";
+        json="$(        echo "$json" | sed -E "s/$pattern/\2\3/g" )";
+        echo "$key $value"
+    done
+}
+
+##############################################################################
+# AUXILIARY METHODS: YAML CONFIG FILES
+##############################################################################
+
+function has_config_key() {
+    file="$1";
+    key="$2";
+    if ! [ -f $file ]; then
+        _log_fail "Config file \033[1m$file\033[0m not found!";
+    fi
+    cat $file | dos2unix | grep -Eq  "^\s*$key:" && return 0 || return 1;
+}
+
+function get_config_key_value() {
+    config="$1";
+    key="$2";
+    default="$3";
+    if ! [ -f $config ]; then
+        _log_fail "Config file \033[1m$config\033[0m not found!";
+    fi
+    ## use sed -n .... /p to delete all non-matching lines
+    ## store matches in an array
+    lines=( $(cat "$config" | dos2unix | sed -n -E "s/^[[:space:]]*$key:(.*)$/\1/p") );
+    ## extract the 0th entry, if it exists, otherwise return default.
+    echo "$([ ${#lines[@]} -gt 0 ] && echo "$(_trim "${lines[0]}")" || echo "$default")";
+}
+
+function get_config_boolean() {
+    key="$1";
+    default="$2";
+    value="$(get_config_key_value "$key" "$default")";
+    [ "$value" == "true" ] && echo 1 || echo 0;
+}
+
+##############################################################################
 # AUXILIARY METHODS: FILES AND FOLDERS
 ##############################################################################
 
@@ -295,58 +366,4 @@ function copy_dir() {
 function remove_file() {
     fname="$1";
     [ -f "$fname" ] && rm -f "$fname" && _log_info "Removed \033[1m$fname.\033[0m" || _log_info "Nothing to remove: \033[1m$fname\033[0m does not exist.";
-}
-
-##############################################################################
-# AUXILIARY METHODS: JSON
-##############################################################################
-
-# Only for json dictionaries of type Dict[str,(str|number|bool)]:
-function json_dictionary_kwargs() {
-    local json="$1";
-    # Remove outer braces:
-    json="$( echo "$json" | sed -E "s/^\{|\}$//g" )";
-    local pattern="((^.*),|(^))\"([^\"]*)\":(\"(.*)\"|(.*))$";
-    while ! [[ "$json" == "" ]]; do
-        # Check if json ~ ^(...,)"key":...
-        ! ( echo "$json" | grep -Eq "$pattern" ) && echo "fertig!" && break;
-        local key="$(   echo "$json" | sed -E "s/$pattern/\4/g"   )";
-        local value="$( echo "$json" | sed -E "s/$pattern/\6\7/g"   )";
-        json="$(        echo "$json" | sed -E "s/$pattern/\2\3/g" )";
-        echo "$key $value"
-    done
-}
-
-##############################################################################
-# AUXILIARY METHODS: YAML CONFIG FILES
-##############################################################################
-
-function has_config_key() {
-    file="$1";
-    key="$2";
-    if ! [ -f $file ]; then
-        _log_fail "Config file \033[1m$file\033[0m not found!";
-    fi
-    cat $file | dos2unix | grep -Eq  "^\s*$key:" && return 0 || return 1;
-}
-
-function get_config_key_value() {
-    config="$1";
-    key="$2";
-    default="$3";
-    if ! [ -f $config ]; then
-        _log_fail "Config file \033[1m$config\033[0m not found!";
-    fi
-    ## use sed -n .... /p to delete all non-matching lines
-    ## store matches in an array
-    lines=( $(cat "$config" | dos2unix | sed -n -E "s/^[[:space:]]*$key:(.*)$/\1/p") );
-    ## extract the 0th entry, if it exists, otherwise return default.
-    echo "$([ ${#lines[@]} -gt 0 ] && echo "$(_trim "${lines[0]}")" || echo "$default")";
-}
-
-function get_config_boolean() {
-    key="$1";
-    default="$2";
-    value="$(get_config_key_value "$key" "$default")";
-    [ "$value" == "true" ] && echo 1 || echo 0;
 }

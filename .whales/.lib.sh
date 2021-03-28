@@ -81,10 +81,10 @@ function get_docker_state() {
 
     _cli_message "";
     _cli_message "\033[94;1mCONTAINERS\033[0m:";
-    docker_show_some_containers true "$project" "$service";
+    docker_show_states containers true "$project" "$service";
     _cli_message "";
     _cli_message "\033[94;1mIMAGES\033[0m:";
-    docker_show_some_images true "$project" "$service";
+    docker_show_states images     true "$project" "$service";
     _cli_message "";
 }
 
