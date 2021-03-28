@@ -5,7 +5,6 @@
 ################################################################
 !/logging.env
 !/DOCKER_DEPTH
-!/VERSION
 
 !/.lib.docker.sh
 !/.lib.utils.sh

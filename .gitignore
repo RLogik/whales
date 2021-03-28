@@ -12,5 +12,7 @@
 !/README.md
 !/LICENSE
 !/.whales.templates
+!/dist
+!/dist/VERSION
 !/dockerhub
 !/examples

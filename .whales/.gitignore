@@ -7,7 +7,6 @@
 ################################################################
 !/logging.env
 !/DOCKER_DEPTH
-!/VERSION
 
 !/.lib.globals.sh
 !/.lib.utils.sh

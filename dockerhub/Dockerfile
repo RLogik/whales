@@ -11,10 +11,11 @@ RUN DEBIAN_FRONTEND=noninteractive && apt-get clean
 ARG TAG
 RUN curl -L https://codeload.github.com/RLogik/whales/tar.gz/refs/tags/${TAG} -o /tmp/whales.tar.gz
 RUN tar -xzf /tmp/whales.tar.gz --directory /tmp
-RUN    cp -r /tmp/whales-*/.whales                     /usr/app/whales \
-    && cp -r /tmp/whales-*/.whales.templates           /usr/app/whales \
-    && cp    /tmp/whales-*/.whales.env                 /usr/app/whales \
-    && cp    /tmp/whales-*/.whales.Dockerfile          /usr/app/whales \
+RUN    cp -r /tmp/whales-*/.whales                     /usr/app/whales                 \
+    && cp -r /tmp/whales-*/.whales.templates           /usr/app/whales                 \
+    && cp    /tmp/whales-*/dist/VERSION                /usr/app/whales/.whales.VERSION \
+    && cp    /tmp/whales-*/.whales.env                 /usr/app/whales                 \
+    && cp    /tmp/whales-*/.whales.Dockerfile          /usr/app/whales                 \
     && cp    /tmp/whales-*/.whales.docker-compose.yml  /usr/app/whales
 RUN rm /tmp/whales.tar.gz && rm -rf /tmp/whales-*
 
