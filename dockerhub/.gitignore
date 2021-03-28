@@ -1,4 +1,6 @@
 *
 !/.gitignore
 !/.dockerignore
+!/README.md
 !/Dockerfile
+!/importwhales

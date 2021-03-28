@@ -37,6 +37,7 @@ without the hassle of having to look up image/container ids
 or having to remount volumes, _etc._
 
 ## Setup ##
+
 ### System requirements ###
 
 To use Whales, you need:
@@ -133,6 +134,10 @@ To add the Whales tool to your own code project, follow these steps:
 
 If you wish to rename the these setup files/folder,
 refer below to the notes about [_Moving the Whales folder_](#moving-whales-files/folder-within-a-project).
+
+## Alternative installation via Docker ##
+
+See the [dockerhub/README.md](dockerhub/README.md).
 
 ### Usage of Whales ###
 
