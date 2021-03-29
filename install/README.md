@@ -25,6 +25,7 @@ You can convert the above command to a bash script.
 See _e.g._ [importwhales](importwhales).
 Grant this script permissions (`chmod +x importwhales`).
 Place it in a directory of binaries in your system's `$PATH` variable (_e.g._ `/usr/local/bin` on Linux/OSX).
-Within all code projects you can now call `importwhales .` to setup whales in one single step.
-You can also call `importwhales . {tag-name}` to specify a build.
-Left blank, the tag defaults to `latest`.
+Within all code projects you can now call `importwhales` to setup whales in one single step.
+You can also call `importwhales {TAG-NAME}` to specify a build.
+See the [releases page](https://github.com/RLogik/whales/releases)
+for valid tag names.

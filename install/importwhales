@@ -1,0 +1,151 @@
+#!/usr/bin/env bash
+
+##############################################################################
+# DESCRIPTION:
+# Script to automate import of whales tool into a given project.
+##############################################################################
+
+#######################################
+# Global vars
+#######################################
+
+OUT="/dev/stdout";
+ERR="/dev/stderr";
+VERBOSE="/dev/null";
+VERSION="";
+
+#######################################
+# Methods
+#######################################
+
+# Create temporary folder
+function set_temporary_folder() {
+    local name="tmp";
+    local path;
+    local k=0;
+    while [[ -d "${name}_${k}" ]] || [[ -f "${name}_${k}" ]]; do k=$(( $k + 1 )); done;
+    path="${name}_${k}";
+    mkdir "$path" && echo "${path}";
+}
+
+# Obtain artefact from Git repository
+function get_artefact_from_repo() {
+    local url_info="https://github.com/RLogik/whales/releases";
+    [ "$1" == "" ] && echo -e "Usage: \033[1mimportwhales {TAG}\033[0m. Please refer to \033[94;1m${url_info}\033[0m for valid tag names." >> $ERR && exit 1;
+    !( check_curl && check_tar ) && echo -e "You need \033[1mcurl\033[0m and \033[1mtar\033[0m in order to be able to use this command." >> $ERR && exit 1;
+    local tag="$( echo "$1" | sed -E "s/^v([[:digit:]]+.*)$/\1/gi" )";
+    local file="whales.tar.gz";
+    local url="https://github.com/RLogik/whales/archive/refs/tags";         # scheme: {url}/{tag}.tar.gz
+    # local url="https://codeload.github.com/RLogik/whales/tar.gz/refs/tags"; # scheme: {url}/{tag}
+    local success=false;
+    local dest_temp="$( set_temporary_folder )";
+
+    # Download zip archive from repository:
+    local urls=( "${url}/${tag}.tar.gz" "${url}/v${tag}.tar.gz" );
+    local url_;
+    for url_ in "${urls[@]}"; do
+        curl -L "${url_}" -o "${dest_temp}/${file}" 2> $VERBOSE >> $VERBOSE \
+            && tar -xzf "${dest_temp}/${file}" --directory "${dest_temp}" 2> $VERBOSE >> $VERBOSE \
+            && success=true && break;
+    done
+    ! ( $success ) && echo -e "Tagname \033[1m${tag}\033[0m could not be found! Please refer to \033[94;1m${url_info}\033[0m for valid tag names." >> $ERR && rm -rf "${dest_temp}" && exit 1;
+
+    # Allow the following to be overwritten
+    rm -rf ".whales";           # <-
+    rm -rf ".whales.templates"; # <-
+    # Copy the rest (with no-overwrite option set) to destination:
+    local path="$( ls -d ${dest_temp}/*/ 2> $VERBOSE | head -1 | sed -E "s/\/$//" )";
+    cp -r "${path}/.whales"                     ".";
+    cp -r "${path}/.whales.templates"           ".";
+    cp -n "${path}/.whales.env"                 ".";
+    cp -n "${path}/.whales.Dockerfile"          ".";
+    cp -n "${path}/.whales.docker-compose.yml"  ".";
+
+    # Output version:
+    VERSION="$( cat ${path}/dist/VERSION 2> $VERBOSE || echo "{${tag}}" )";
+    # Cleanup
+    rm -rf "${dest_temp}";
+}
+
+# Obtain artefact via docker
+function get_artefact_via_docker() {
+    local url_info="https://hub.docker.com/r/rlogik/whales/tags";
+    [ "$1" == "" ] && echo -e "Usage: \033[1mimportwhales {TAG}\033[0m. Please refer to \033[94;1m${url_info}\033[0m for valid tag names." >> $ERR && exit 1;
+    local tag="$( echo "$1" | sed -E "s/^v([[:digit:]]+.*)$/\1/gi" )";
+    local file="whales.tar.gz";
+    local image="rlogik/whales:${tag}";
+    local success=false;
+
+    # pull from dockerhub:
+    docker pull ${image} 2> $VERBOSE >> $VERBOSE && echo "${image}" && success=true;
+    ! ( $success ) && echo -e "Tagname \033[1m${tag}\033[0m could not be found! Please refer to \033[94;1m${url_info}\033[0m for valid tag names." >> $ERR && exit 1;
+    # Start a temporary container:
+    local id="$( docker run -d "${image}" )";
+    # Copy contents of application to temporary folder:
+    local dest_temp="$( set_temporary_folder )";
+    docker cp "${id}:/usr/app/whales/." "${dest_temp}";
+
+    # Allow the following to be overwritten
+    rm -rf ".whales";           # <-
+    rm -rf ".whales.templates"; # <-
+    # Copy the rest (with no-overwrite option set) to destination:
+    cp -r "${dest_temp}/.whales"                     ".";
+    cp -r "${dest_temp}/.whales.templates"           ".";
+    cp -n "${dest_temp}/.whales.env"                 ".";
+    cp -n "${dest_temp}/.whales.Dockerfile"          ".";
+    cp -n "${dest_temp}/.whales.docker-compose.yml"  ".";
+
+    # Output version:
+    VERSION="$( cat ${dest_temp}/dist/VERSION 2> $VERBOSE || echo "{${tag}}" )";
+    # Cleanup
+    rm -rf "${dest_temp}";
+    docker stop "${id}" >> $VERBOSE;
+    docker rm "${id}" >> $VERBOSE;
+    docker rmi "${image}" >> $VERBOSE;
+}
+
+#######################################
+# Auxiliary Methods
+#######################################
+
+function check_curl() { ( curl --version >> $VERBOSE 2> $VERBOSE ) && return 0 || return 1; }
+function check_tar() { ( tar --version >> $VERBOSE 2> $VERBOSE ) && return 0 || return 1; }
+
+function check_dos2unix() {
+    ( dos2unix --version >> $VERBOSE 2> $VERBOSE ) && return 0;
+    echo -e "To use Whales, you need to install \033[1mdos2unix\033[0m. To do so, try the instructions on one of the following pages:" >> $ERR;
+    echo -e ""                                                         >> $ERR;
+    echo -e "  https://command-not-found.com/dos2unix"                 >> $ERR;
+    echo -e "  https://formulae.brew.sh/formula/dos2unix"              >> $ERR;
+    echo -e "  https://chocolatey.org/packages/dos2unix"               >> $ERR;
+    echo -e "  https://waterlan.home.xs4all.nl/dos2unix.html#DOS2UNIX" >> $ERR;
+    echo -e ""                                                         >> $ERR;
+    return 1;
+}
+
+function check_jq() {
+    ( jq --version >> $VERBOSE 2> $VERBOSE ) && return 0;
+    echo -e "To use Whales, you may wish to optionally install \033[1mjq\033[0m. To do so, try the instructions on one of the following pages:" >> $ERR;
+    echo -e ""                                      >> $ERR;
+    echo -e "  https://command-not-found.com/jq"    >> $ERR;
+    echo -e "  https://formulae.brew.sh/formula/jq" >> $ERR;
+    echo -e "  https://chocolatey.org/packages/jq"  >> $ERR;
+    echo -e "  https://stedolan.github.io/jq"       >> $ERR;
+    echo -e "";
+    return 1;
+}
+
+#######################################
+# Process CLI arguments
+#######################################
+
+TAG="$1";
+success=0;
+check_dos2unix || success=1;
+check_jq;
+VERSION="";
+get_artefact_from_repo "${TAG}";
+# get_artefact_via_docker "${TAG}";
+
+echo -e "Version \033[92;1m${VERSION}\033[0m of Whales imported." >> $OUT;
+exit $success;

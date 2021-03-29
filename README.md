@@ -137,7 +137,7 @@ refer below to the notes about [_Moving the Whales folder_](#moving-whales-files
 
 ## Alternative installation via Docker ##
 
-See the [dockerhub/README.md](dockerhub/README.md).
+See the [install/README.md](install/README.md).
 
 ### Usage of Whales ###
 

@@ -14,5 +14,5 @@
 !/.whales.templates
 !/dist
 !/dist/VERSION
-!/dockerhub
+!/install
 !/examples
