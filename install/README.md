@@ -13,17 +13,21 @@ unpacks it and copies in the relevant parts, namely the following
     | ...
     |
     |____ /.whales
-    |____ /.whales.templates
-    |__ .whales.env                # <- not overwritten if already exists
+   *|____ /.whales.templates # included if --templates flag used
+   *|____ /.whales.examples  # included if --examples  flag used
+    |
+    |__ .whales.env                # <- only overwritten if --force used
     |__ .whales.Dockerfile         # "
     |__ .whales.docker-compose.yml # "
     |
     | ...
     |
 ```
-to your current path. If you already have old Whales files in your directory,
-the script will only overwrite the subfolders `./.whales` and `./.whales.templates`,
-but **does not overwrite** the three user config files.
+to your current path.
+Use the `--force` flag, to force overwrite the 3 user config files.
+Use the `--templates` flag to copy in the template folder.
+Use the `--exmples` flag to copy in the examples folder.
+The folder `./.whales` will be overwritten by force.
 
 The script also contains a variant which downloads artefacts from Dockerhub
 (see [dockerhub/rlogik/whales](https://hub.docker.com/r/rlogik/whales/tags)).
