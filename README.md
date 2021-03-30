@@ -19,6 +19,12 @@ This repository has one purpose:
 to provide a tool to readily to **dockerise** your code,
 without having to fret with docker commands.
 
+## tl;dr how do I install this? ##
+
+For users who already have Docker and bash, see the [install/README.md](install/README.md).
+
+## Project description and motivation ##
+
 _For those not familiar with Docker..._
 When working collaboratively on a project, participants often have different operating systems and setups.
 This can present a real nightmare, especially when it comes to testing.
@@ -134,10 +140,6 @@ To add the Whales tool to your own code project, follow these steps:
 
 If you wish to rename the these setup files/folder,
 refer below to the notes about [_Moving the Whales folder_](#moving-whales-files/folder-within-a-project).
-
-## Alternative installation via Docker ##
-
-See the [install/README.md](install/README.md).
 
 ### Usage of Whales ###
 
