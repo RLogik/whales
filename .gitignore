@@ -1,18 +1,12 @@
 *
 !/.gitignore
-!/.dockerignore
 
-# Need these for Whales project:
-!/.whales
-!/.whales.env
-!/.whales.docker-compose.yml
-!/.whales.Dockerfile
-
-# !!! Repository: remove/change the following when creating a Whale project !!!
 !/README.md
 !/LICENSE
-!/.whales.templates
+
+!/src
+!/config
 !/dist
-!/dist/VERSION
 !/install
+!/templates
 !/examples

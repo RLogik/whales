@@ -5,6 +5,7 @@ Grant this script permissions (`chmod +x importwhales`).
 Place it in a directory of binaries in your system's `$PATH` variable (_e.g._ `/usr/local/bin` on Linux/OSX).
 Within all code projects users simply call `importwhales {TAG-NAME}` to import Whales in one step.
 See the [releases page](https://github.com/RLogik/whales/releases) for valid tag names.
+
 The script simply downloads the versioned Github artefact to a temporary folder,
 unpacks it and copies in the relevant parts, namely the following
 ```
@@ -12,18 +13,22 @@ unpacks it and copies in the relevant parts, namely the following
     |
     | ...
     |
-    |____ /.whales
-    |____ /.whales.templates
-    |__ .whales.env                # <- not overwritten if already exists
+    |____ /.whales # (renamed from src)
+   *|____ /.whales.templates # included if --templates flag used
+   *|____ /.whales.examples  # included if --examples  flag used
+    |
+    |__ .whales.env                # <- only overwritten if --force used
     |__ .whales.Dockerfile         # "
     |__ .whales.docker-compose.yml # "
     |
     | ...
     |
 ```
-to your current path. If you already have old Whales files in your directory,
-the script will only overwrite the subfolders `./.whales` and `./.whales.templates`,
-but **does not overwrite** the three user config files.
+to your current path.
+Use the `--force` flag, to force overwrite the 3 user config files.
+Use the `--templates` flag to copy in the template folder.
+Use the `--exmples` flag to copy in the examples folder.
+The folder `./.whales` will be overwritten by force.
 
 The script also contains a variant which downloads artefacts from Dockerhub
 (see [dockerhub/rlogik/whales](https://hub.docker.com/r/rlogik/whales/tags)).
@@ -36,3 +41,30 @@ get_artefact_from_repo "${TAG}";
 ```
 We will likely in future publish to another Docker registry,
 and will then update this script.
+
+## Configuration ##
+
+1. After adding Whales to your code project
+    add a `./.dockerignore` file, if one does not exist,
+    and append the lines
+    ```.gitignore
+    # in .dockerignore
+    !/.whales
+    !/.whales.env
+    ```
+2. Modify the [.whales.env](.whales.env) file in the project root.
+    In particular, set the name of your project here:
+    ```.env
+    # in .whales.env
+    WHALES_COMPOSE_PROJECT_NAME=<your project name>
+    ```
+    Setting this argument to be different for different projects prevents
+    Docker from confusing your images and containers with those of other projects.
+3. Modify
+    [.whales.docker-compose.yml](.whales.docker-compose.yml)
+    +
+    [.whales.Dockerfile](.whales.Dockerfile)
+    to suit the needs of your application.
+    If in the docker-compose file you use your own Dockerfiles,
+    ensure the block of instructions
+    in [.whales.Dockerfile](.whales.Dockerfile) is included.

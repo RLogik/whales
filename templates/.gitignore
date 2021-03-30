@@ -1,5 +1,6 @@
 *
 !/.gitignore
+!/.dockerignore
 !/README.md
 !/.env
 !/.lib.sh

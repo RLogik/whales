@@ -270,7 +270,7 @@ function docker_show_states() {
     if [[ "$part" == "images" ]]; then
         format="table {{.ID}}\t{{.Repository}}:{{.Tag}}\t{{.Size}}\t{{.CreatedAt}}";
     elif [[ "$part" == "containers" ]]; then
-        format="table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}\t{{.Size}}\t{{.CreatedAt}}";
+        format="table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.State}}\t{{.Ports}}\t{{.Size}}\t{{.CreatedAt}}";
     else
         _log_fail "Usage \033[1mdocker_show_states images|containers <show_labels> <project> <service>\033[0m.";
     fi

@@ -9,6 +9,8 @@
 # Global vars
 #######################################
 
+SCRIPTARGS="$@";
+FLAGS=( "$@" );
 OUT="/dev/stdout";
 ERR="/dev/stderr";
 VERBOSE="/dev/null";
@@ -28,12 +30,41 @@ function set_temporary_folder() {
     mkdir "$path" && echo "${path}";
 }
 
+function import_whales_files() {
+    local flag_force=$1;
+    local flag_templates=$2;
+    local flag_examples=$3;
+    local path="$4";
+
+    # Allow the following to be overwritten
+    [[ -d ".whales" ]] && rm -rf ".whales";
+    [[ -d ".whales.templates" ]] && rm -rf ".whales.templates";
+    [[ -d ".whales.examples"  ]] && rm -rf ".whales.examples";
+    # Copy the rest to destination:
+    cp -r "${path}/src"                               "./.whales";
+    ( $flag_templates ) && cp -r "${path}/templates"  "./.whales.templates";
+    ( $flag_examples )  && cp -r "${path}/examples"   "./.whales.examples";
+    local flag_copy="-n";
+    ( $flag_force ) && flag_copy="";
+    cp $flag_copy "${path}/config/.whales.env"                 ".";
+    cp $flag_copy "${path}/config/.whales.Dockerfile"          ".";
+    cp $flag_copy "${path}/congig/.whales.docker-compose.yml"  ".";
+
+    # Output version:
+    VERSION="$( cat ${path}/dist/VERSION 2> $VERBOSE || echo "{${tag}}" )";
+    # Cleanup
+    rm -rf "${dest_temp}";
+}
+
 # Obtain artefact from Git repository
 function get_artefact_from_repo() {
     local url_info="https://github.com/RLogik/whales/releases";
-    [ "$1" == "" ] && echo -e "Usage: \033[1mimportwhales {TAG}\033[0m. Please refer to \033[94;1m${url_info}\033[0m for valid tag names." >> $ERR && exit 1;
+    [ "$4" == "" ] && echo -e "Usage: \033[1mimportwhales [--force] [--templates] [--examples] {TAG}\033[0m. Please refer to \033[94;1m${url_info}\033[0m for valid tag names." >> $ERR && exit 1;
     !( check_curl && check_tar ) && echo -e "You need \033[1mcurl\033[0m and \033[1mtar\033[0m in order to be able to use this command." >> $ERR && exit 1;
-    local tag="$( echo "$1" | sed -E "s/^v([[:digit:]]+.*)$/\1/gi" )";
+    local flag_force=$1;
+    local flag_templates=$2;
+    local flag_examples=$3;
+    local tag="$( echo "$4" | sed -E "s/^v([[:digit:]]+.*)$/\1/gi" )";
     local file="whales.tar.gz";
     local url="https://github.com/RLogik/whales/archive/refs/tags";         # scheme: {url}/{tag}.tar.gz
     # local url="https://codeload.github.com/RLogik/whales/tar.gz/refs/tags"; # scheme: {url}/{tag}
@@ -50,28 +81,18 @@ function get_artefact_from_repo() {
     done
     ! ( $success ) && echo -e "Tagname \033[1m${tag}\033[0m could not be found! Please refer to \033[94;1m${url_info}\033[0m for valid tag names." >> $ERR && rm -rf "${dest_temp}" && exit 1;
 
-    # Allow the following to be overwritten
-    rm -rf ".whales";           # <-
-    rm -rf ".whales.templates"; # <-
-    # Copy the rest (with no-overwrite option set) to destination:
     local path="$( ls -d ${dest_temp}/*/ 2> $VERBOSE | head -1 | sed -E "s/\/$//" )";
-    cp -r "${path}/.whales"                     ".";
-    cp -r "${path}/.whales.templates"           ".";
-    cp -n "${path}/.whales.env"                 ".";
-    cp -n "${path}/.whales.Dockerfile"          ".";
-    cp -n "${path}/.whales.docker-compose.yml"  ".";
-
-    # Output version:
-    VERSION="$( cat ${path}/dist/VERSION 2> $VERBOSE || echo "{${tag}}" )";
-    # Cleanup
-    rm -rf "${dest_temp}";
+    import_whales_files $flag_force $flag_templates $flag_examples "${path}";
 }
 
 # Obtain artefact via docker
 function get_artefact_via_docker() {
     local url_info="https://hub.docker.com/r/rlogik/whales/tags";
-    [ "$1" == "" ] && echo -e "Usage: \033[1mimportwhales {TAG}\033[0m. Please refer to \033[94;1m${url_info}\033[0m for valid tag names." >> $ERR && exit 1;
-    local tag="$( echo "$1" | sed -E "s/^v([[:digit:]]+.*)$/\1/gi" )";
+    [ "$4" == "" ] && echo -e "Usage: \033[1mimportwhales [--force] [--templates] [--examples] {TAG}\033[0m. Please refer to \033[94;1m${url_info}\033[0m for valid tag names." >> $ERR && exit 1;
+    local flag_force=$1;
+    local flag_templates=$2;
+    local flag_examples=$3;
+    local tag="$( echo "$4" | sed -E "s/^v([[:digit:]]+.*)$/\1/gi" )";
     local file="whales.tar.gz";
     local image="rlogik/whales:${tag}";
     local success=false;
@@ -85,20 +106,10 @@ function get_artefact_via_docker() {
     local dest_temp="$( set_temporary_folder )";
     docker cp "${id}:/usr/app/whales/." "${dest_temp}";
 
-    # Allow the following to be overwritten
-    rm -rf ".whales";           # <-
-    rm -rf ".whales.templates"; # <-
-    # Copy the rest (with no-overwrite option set) to destination:
-    cp -r "${dest_temp}/.whales"                     ".";
-    cp -r "${dest_temp}/.whales.templates"           ".";
-    cp -n "${dest_temp}/.whales.env"                 ".";
-    cp -n "${dest_temp}/.whales.Dockerfile"          ".";
-    cp -n "${dest_temp}/.whales.docker-compose.yml"  ".";
+    local path="${dest_temp}";
+    import_whales_files $flag_force $flag_templates $flag_examples "${path}";
 
-    # Output version:
-    VERSION="$( cat ${dest_temp}/dist/VERSION 2> $VERBOSE || echo "{${tag}}" )";
     # Cleanup
-    rm -rf "${dest_temp}";
     docker stop "${id}" >> $VERBOSE;
     docker rm "${id}" >> $VERBOSE;
     docker rmi "${image}" >> $VERBOSE;
@@ -107,6 +118,10 @@ function get_artefact_via_docker() {
 #######################################
 # Auxiliary Methods
 #######################################
+
+function has_arg() {
+    echo "$1" | grep -Eq "(^.*[[:space:]]|^)$2([[:space:]].*$|$)";
+}
 
 function check_curl() { ( curl --version >> $VERBOSE 2> $VERBOSE ) && return 0 || return 1; }
 function check_tar() { ( tar --version >> $VERBOSE 2> $VERBOSE ) && return 0 || return 1; }
@@ -139,13 +154,17 @@ function check_jq() {
 # Process CLI arguments
 #######################################
 
-TAG="$1";
+TAG=""; [[ ${#FLAGS} -gt 0 ]] && TAG="${FLAGS[-1]}";
+( echo "$TAG" | grep -Eq "^-+" ) && TAG="";
+flag_force=false;     ( has_arg "$SCRIPTARGS" "-+(f|force)" )           && flag_force=true;
+flag_templates=false; ( has_arg "$SCRIPTARGS" "-+(template|templates)" ) && flag_templates=true;
+flag_examples=false;  ( has_arg "$SCRIPTARGS" "-+(example|examples)" )  && flag_examples=true;
 success=0;
 check_dos2unix || success=1;
 check_jq;
 VERSION="";
-get_artefact_from_repo "${TAG}";
-# get_artefact_via_docker "${TAG}";
+get_artefact_from_repo $flag_force $flag_templates $flag_examples "${TAG}";
+# get_artefact_via_docker $flag_force $flag_templates $flag_examples "${TAG}";
 
 echo -e "Version \033[92;1m${VERSION}\033[0m of Whales imported." >> $OUT;
 exit $success;
