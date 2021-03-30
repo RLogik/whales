@@ -91,62 +91,23 @@ For all users, the following are **optional** (but recommended):
         or
         [stedolan.github.io](https://stedolan.github.io/jq/).
 
+### Configuration ###
+
+To add the Whales tool to your own code project,
+follow the instructions in [install/README.md](install/README.md)
+to add the Whales to your project.
+If you wish to rename the these setup files/folder,
+refer below to the notes about [_Moving the Whales folder_](#moving-whales-files/folder-within-a-project).
+
 ### Hello World Example ###
 
 With the system requirements satisfied,
 you may wish to first see a _Hello World_ example of Whales.
 Clone the repository and check out the instructions in [examples/hello-world](examples/hello-world).
 Refer also to the subfolders in [./examples](examples) for further implementation examples of Whales projects.
-
-### Configuration ###
-
-To add the Whales tool to your own code project, follow these steps:
-
-1. Clone this repository and copy the following (1xfolder + 3xfiles) into your project:
-    ```
-        . (project root)
-        |
-        | ...
-        |
-        |____ /.whales
-        |    |__ ... ( do not modify contents )
-        |
-        |__ .whales.env
-        |__ .whales.Dockerfile
-        |__ .whales.docker-compose.yml
-        |
-        | ...
-        |
-    ```
-    Add a `./.dockerignore` file, if one does not exist, and append the lines
-    ```.gitignore
-    # in .dockerignore
-    !/.whales
-    !/.whales.env
-    ```
-2. Modify the [.whales.env](.whales.env) file in the project root.
-    In particular, set the name of your project here:
-    ```.env
-    # in .whales.env
-    WHALES_COMPOSE_PROJECT_NAME=<your project name>
-    ```
-    Setting this argument to be different for different projects prevents
-    Docker from confusing your images and containers with those of other projects.
-3. Modify
-    [.whales.docker-compose.yml](.whales.docker-compose.yml)
-    +
-    [.whales.Dockerfile](.whales.Dockerfile)
-    to suit the needs of your application.
-    If in the docker-compose file you use your own Dockerfiles,
-    ensure the block of instructions
-    in [.whales.Dockerfile](.whales.Dockerfile) is included.
-
-If you wish to rename the these setup files/folder,
-refer below to the notes about [_Moving the Whales folder_](#moving-whales-files/folder-within-a-project).
-
 ### Usage of Whales ###
 
-The `whale_call` command in [.whales/.lib.sh](.whales/.lib.sh) acts as a quasi decorator.
+The `whale_call` command in [.whales/.lib.sh](src/.lib.sh) acts as a quasi decorator.
 When used, it
 
 - interrupts a running script
@@ -235,52 +196,6 @@ If `save=true`, then when complete, the exited container will be committed to an
 
 ## Technical notes ##
 
-## Status and cleaning ##
-
-Calling
-```bash
-source .whales/docker.sh --service <name-of-service> --status;
-```
-displays the status of containers + images associated with a named service.
-If the `--service` option not given or left blank,
-then all services within the local project will be displayed.
-The same logic applies to the commands
-```bash
-source .whales/docker.sh --service <name-of-service> --clean [--force];
-source .whales/docker.sh --service <name-of-service> --prune [--force];
-```
-this time with the action of deleting containers/images.
-
-Optionally, one may additionally use the `--project <name-of-project>` flag,
-to specify by which project name to filter.
-Otherwise the local `.whales.env` file is consulted.
-
-The `--clean` command clears all containers + images associated with the project.
-The `--prune` does the same but preserves initial container + image associated with each service.
-Use
-```bash
-source .whales/docker.sh --clean-all [--force];
-````
-to clean all containers and images on your entire system,
-including ones not related to your project.
-
-## Moving Whales folder within a project ##
-
-If [./.whales](.whales) is moved or renamed,
-simply change the corresponding variable in [.whales.env](.whales.env)
-and adjust the exclusion/inclusion rules in
-    [.gitignore](.gitignore) + [.dockerignore](.dockerignore)
-appropriately.
-By default these are as follows:
-```.env
-# in .whales.env
-WHALES_SETUP_PATH=.whales
-```
-```.gitignore
-# in .gitignore + .dockerignore
-!/.whales
-```
-
 ### Port binding ###
 
 Even if the ports are set in your docker-compose file or Dockerfile,
@@ -313,6 +228,51 @@ python3 app.py;
 
 **NOTE:** Provided no spaces occur, arguments may entered without quotation marks, _e.g._ `9000:9001`.
 The syntax `8080->8080/tcp`, however, does not work.
+### Status and cleaning ###
+
+Calling
+```bash
+source .whales/docker.sh --service <name-of-service> --status;
+```
+displays the status of containers + images associated with a named service.
+If the `--service` option not given or left blank,
+then all services within the local project will be displayed.
+The same logic applies to the commands
+```bash
+source .whales/docker.sh --service <name-of-service> --clean [--force];
+source .whales/docker.sh --service <name-of-service> --prune [--force];
+```
+this time with the action of deleting containers/images.
+
+Optionally, one may additionally use the `--project <name-of-project>` flag,
+to specify by which project name to filter.
+Otherwise the local `.whales.env` file is consulted.
+
+The `--clean` command clears all containers + images associated with the project.
+The `--prune` does the same but preserves initial container + image associated with each service.
+Use
+```bash
+source .whales/docker.sh --clean-all [--force];
+```
+to clean all containers and images on your entire system,
+including ones not related to your project.
+
+### Moving Whales folder within a project ###
+
+If the [./.whales](src) folder is moved or renamed,
+simply change the corresponding variable in [.whales.env](.whales.env)
+and adjust the exclusion/inclusion rules in
+    [.gitignore](.gitignore) + [.dockerignore](.dockerignore)
+appropriately.
+By default these are as follows:
+```.env
+# in .whales.env
+WHALES_SETUP_PATH=.whales
+```
+```.gitignore
+# in .gitignore + .dockerignore
+!/.whales
+```
 
 ### Sequences of images ###
 
