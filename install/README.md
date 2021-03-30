@@ -1,31 +1,38 @@
-# Installation of Whales via Docker #
+# Installation of Whales via artefacts #
 
-We will assume you have installed [Docker](https://www.docker.com/products/docker-desktop) for your system, and granted file permissions.
-And we assume your system has a bash console (for Windows users install [git-for-windows](https://gitforwindows.org) which includes bash).
-
-Navigate to your code project and run the following command
-in a bash console
-
-```bash
-    tag=latest && dest=. \
-    && docker pull rlogik/whales:${tag}                                \
-    && id="$( docker run -d rlogik/whales:${tag} )"                    \
-    && docker cp "${id}:/usr/app/whales/." "${dest}"                   \
-    && docker stop "$id"  >> /dev/null && docker rm "$id" >> /dev/null \
-    && docker rmi rlogik/whales:${tag};
-```
-
-In this command you can change the `tag=latest` tag to any other tag on
-[dockerhub/rlogik/whales](https://hub.docker.com/r/rlogik/whales/tags).
-You can also change the `dest=.` command to your desired installation path.
-
-## Automation ##
-
-You can convert the above command to a bash script.
-See _e.g._ [importwhales](importwhales).
+The [importwhales](importwhales) script allows users to automate importing whales into their projects.
 Grant this script permissions (`chmod +x importwhales`).
 Place it in a directory of binaries in your system's `$PATH` variable (_e.g._ `/usr/local/bin` on Linux/OSX).
-Within all code projects you can now call `importwhales` to setup whales in one single step.
-You can also call `importwhales {TAG-NAME}` to specify a build.
-See the [releases page](https://github.com/RLogik/whales/releases)
-for valid tag names.
+Within all code projects users simply call `importwhales {TAG-NAME}` to import Whales in one step
+See the [releases page](https://github.com/RLogik/whales/releases) for valid tag names.
+The script simply downloads the versioned Github artefact to a temporary folder,
+unpacks it and copies in the relevant parts, namely the following
+```
+    . (project root)
+    |
+    | ...
+    |
+    |____ /.whales
+    |____ /.whales.templates
+    |__ .whales.env                # <- not overwritten if already exists
+    |__ .whales.Dockerfile         # "
+    |__ .whales.docker-compose.yml # "
+    |
+    | ...
+    |
+```
+to your current path. If you already have old Whales files in your directory,
+the script will only overwrite the subfolders `./.whales` and `./.whales.templates`,
+but **does not overwrite** the three user config files.
+
+The script also contains a variant which downloads artefacts from Dockerhub
+(see [dockerhub/rlogik/whales](https://hub.docker.com/r/rlogik/whales/tags)).
+Simply switch which lines are commented out in the script at this position:
+```bash
+...
+get_artefact_from_repo "${TAG}";
+# get_artefact_via_docker "${TAG}";
+...
+```
+We will likely in future publish to on another Docker registry,
+and will then update this script.
