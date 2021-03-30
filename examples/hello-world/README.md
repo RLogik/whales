@@ -62,9 +62,9 @@ For example after the above example, the status looks like this:
 CONTAINERS:
  ________________
 |
-| CONTAINER ID   NAMES                    IMAGE         STATUS                    ... CREATED AT
+| CONTAINER ID   NAMES                    IMAGE         STATE  ... CREATED AT
 |____
-| b02xxxxxxxxb   whales_hello-service_0   hello:build   Exited (0) 46 seconds ago ... 2021-xxxxxxxx:20:23
+| b02xxxxxxxxb   whales_hello-service_0   hello:build   exited ... 2021-xxxxxxxx:20:23
 |      labels:   org.whales.initial true
 |                org.whales.project whales
 |                org.whales.service hello-service

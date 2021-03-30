@@ -48,7 +48,7 @@ function import_whales_files() {
     ( $flag_force ) && flag_copy="";
     cp $flag_copy "${path}/config/.whales.env"                 ".";
     cp $flag_copy "${path}/config/.whales.Dockerfile"          ".";
-    cp $flag_copy "${path}/congig/.whales.docker-compose.yml"  ".";
+    cp $flag_copy "${path}/config/.whales.docker-compose.yml"  ".";
 
     # Output version:
     VERSION="$( cat ${path}/dist/VERSION 2> $VERBOSE || echo "{${tag}}" )";
