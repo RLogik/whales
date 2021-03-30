@@ -3,7 +3,7 @@
 The [importwhales](importwhales) script allows users to automate importing whales into their projects.
 Grant this script permissions (`chmod +x importwhales`).
 Place it in a directory of binaries in your system's `$PATH` variable (_e.g._ `/usr/local/bin` on Linux/OSX).
-Within all code projects users simply call `importwhales {TAG-NAME}` to import Whales in one step
+Within all code projects users simply call `importwhales {TAG-NAME}` to import Whales in one step.
 See the [releases page](https://github.com/RLogik/whales/releases) for valid tag names.
 The script simply downloads the versioned Github artefact to a temporary folder,
 unpacks it and copies in the relevant parts, namely the following
