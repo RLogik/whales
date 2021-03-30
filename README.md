@@ -19,9 +19,12 @@ This repository has one purpose:
 to provide a tool to readily to **dockerise** your code,
 without having to fret with docker commands.
 
-## tl;dr how do I install this? ##
+## tl;dr How do I install this and what does it do? ##
 
-For users who already have Docker and bash, see the [install/README.md](install/README.md).
+For users who already have Docker (and bash), see the [install/README.md](install/README.md).
+This shows how to import the tool into your code projects.
+See [below](#usage-of-whales) for examples about the main command, `whale_call`.
+Or check out the ready baked cases in [./examples](examples).
 
 ## Project description and motivation ##
 

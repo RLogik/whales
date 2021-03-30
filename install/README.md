@@ -34,5 +34,5 @@ get_artefact_from_repo "${TAG}";
 # get_artefact_via_docker "${TAG}";
 ...
 ```
-We will likely in future publish to on another Docker registry,
+We will likely in future publish to another Docker registry,
 and will then update this script.
