@@ -35,24 +35,15 @@ function check_jq_exists() {
 # AUXILIARY METHODS: READING CLI ARGUMENTS
 ##############################################################################
 
-## EXAMPLE:
-## if ( has_arg "$@" "help" ); then ...
 function has_arg() {
     echo "$1" | grep -Eq "(^.*[[:space:]]|^)$2([[:space:]].*$|$)" && return 0 || return 1;
 }
 
-## EXAMPLE:
-## value="$( get_kwarg "$@" "name" "N/A" )";
 function get_kwarg() {
     local value="$(echo "$1" | grep -Eq "(^.*\s|^)$2=" && echo "$1" | sed -E "s/(^.*[[:space:]]|^)$2=(\"([^\"]*)\"|\'([^\']*)\'|([^[:space:]]*)).*$/\3\4\5/g" || echo "")";
     echo $value | grep -Eq "[^[:space:]]" && echo "$value" || echo "$3";
 }
 
-## EXAMPLE:
-## local value;
-## while read value; do
-##     # do something with $value
-## done <<< "$( get_all_kwargs "$@" "--data=" )";
 function get_all_kwargs() {
     local arguments="$1";
     local key="$2";
