@@ -1,0 +1,27 @@
+*
+!/.gitignore
+
+!/.lib.sh
+!/.lib.utils.sh
+!/build.sh
+!/clean.sh
+!/test.sh
+
+!/src
+!/src/**/*.go
+## unit-tests (already included):
+# !/src/**/*_test.go
+!/src/go.mod
+!/src/go.sum
+!/src/core
+!/src/core/environment
+!/src/core/globals
+!/src/core/utils
+!/src/docker
+!/src/docker/utils
+!/src/docker/meta
+
+# for e2e tests
+!/e2e
+!/e2e/run.sh
+!/e2e/case_*
