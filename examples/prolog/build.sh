@@ -23,7 +23,7 @@ mode="$( get_one_kwarg_space "$SCRIPTARGS" "-+mode" "")";
 
 if [ "$mode" == "setup" ]; then
     # whale_call <service>  <tag-sequence> <save, it, ports> <type, command>
-    whale_call   "$SERVICE" "."            false false true  SCRIPT $ME $SCRIPTARGS;
+    whale_call   "$SERVICE" "."            true false true  SCRIPT $ME $SCRIPTARGS;
     run_main;
 elif [ "$mode" == "unit" ]; then
     # whale_call <service>  <tag-sequence> <save, it, ports> <type, command>
