@@ -35,24 +35,15 @@ function check_jq_exists() {
 # AUXILIARY METHODS: READING CLI ARGUMENTS
 ##############################################################################
 
-## EXAMPLE:
-## if ( has_arg "$@" "help" ); then ...
 function has_arg() {
     echo "$1" | grep -Eq "(^.*[[:space:]]|^)$2([[:space:]].*$|$)" && return 0 || return 1;
 }
 
-## EXAMPLE:
-## value="$( get_kwarg "$@" "name" "N/A" )";
 function get_kwarg() {
     local value="$(echo "$1" | grep -Eq "(^.*\s|^)$2=" && echo "$1" | sed -E "s/(^.*[[:space:]]|^)$2=(\"([^\"]*)\"|\'([^\']*)\'|([^[:space:]]*)).*$/\3\4\5/g" || echo "")";
     echo $value | grep -Eq "[^[:space:]]" && echo "$value" || echo "$3";
 }
 
-## EXAMPLE:
-## local value;
-## while read value; do
-##     # do something with $value
-## done <<< "$( get_all_kwargs "$@" "--data=" )";
 function get_all_kwargs() {
     local arguments="$1";
     local key="$2";
@@ -275,8 +266,8 @@ function json_dictionary_kwargs() {
 ##############################################################################
 
 function has_config_key() {
-    file="$1";
-    key="$2";
+    local file="$1";
+    local key="$2";
     if ! [ -f $file ]; then
         _log_fail "Config file \033[1m$file\033[0m not found!";
     fi
@@ -284,23 +275,23 @@ function has_config_key() {
 }
 
 function get_config_key_value() {
-    config="$1";
-    key="$2";
-    default="$3";
+    local config="$1";
+    local key="$2";
+    local default="$3";
     if ! [ -f $config ]; then
         _log_fail "Config file \033[1m$config\033[0m not found!";
     fi
     ## use sed -n .... /p to delete all non-matching lines
     ## store matches in an array
-    lines=( $(cat "$config" | dos2unix | sed -n -E "s/^[[:space:]]*$key:(.*)$/\1/p") );
+    local lines=( $(cat "$config" | dos2unix | sed -n -E "s/^[[:space:]]*$key:(.*)$/\1/p") );
     ## extract the 0th entry, if it exists, otherwise return default.
     echo "$([ ${#lines[@]} -gt 0 ] && echo "$(_trim "${lines[0]}")" || echo "$default")";
 }
 
 function get_config_boolean() {
-    key="$1";
-    default="$2";
-    value="$(get_config_key_value "$key" "$default")";
+    local key="$1";
+    local default="$2";
+    local value="$(get_config_key_value "$key" "$default")";
     [ "$value" == "true" ] && echo 1 || echo 0;
 }
 
@@ -309,14 +300,14 @@ function get_config_boolean() {
 ##############################################################################
 
 function copy_file() {
-    args="$@"
-    file="$(get_kwarg "$args" "file" "")";
-    folder_from_formatted="$(get_kwarg "$args" "from" "")";
-    folder_to_formatted="$(get_kwarg "$args" "to" "")";
-    rename="$(get_kwarg "$args" "rename" "")";
+    local args="$@"
+    local file="$(                  get_kwarg "$args" "file" ""   )";
+    local folder_from_formatted="$( get_kwarg "$args" "from" ""   )";
+    local folder_to_formatted="$(   get_kwarg "$args" "to" ""     )";
+    local rename="$(                get_kwarg "$args" "rename" "" )";
 
-    folder_from="$(expand_path "$folder_from_formatted")";
-    folder_to="$(expand_path "$folder_to_formatted")";
+    local folder_from="$( expand_path "$folder_from_formatted" )";
+    local folder_to="$(   expand_path "$folder_to_formatted"   )";
 
     if ! [ -d "$folder_from" ]; then
         _log_error "For copy-file command: source folder \033[1m$folder_from_formatted\033[0m does not exist!";
@@ -330,21 +321,20 @@ function copy_file() {
         _log_error "For copy-file command: file \033[1m$folder_from_formatted/$file\033[0m could not be found!";
         return;
     fi
-    if [ "$rename" == "" ]; then
-        rename="$file";
-    fi
+
+    [ "$rename" == "" ] && rename="$file";
 
     cp "$folder_from/$file" "$folder_to/$rename" && _log_info "Copied \033[1m$folder_from_formatted/$file\033[0m to \033[1m$folder_to_formatted/$rename\033[0m." || _log_fail "Copy-file command failed.";
 }
 
 function copy_dir() {
-    args="$@"
-    dir="$(get_kwarg "$args" "dir" "")";
-    folder_from_formatted="$(get_kwarg "$args" "from" "")";
-    folder_to_formatted="$(get_kwarg "$args" "to" "")";
+    local args="$@"
+    local dir="$(                   get_kwarg "$args" "dir" ""  )";
+    local folder_from_formatted="$( get_kwarg "$args" "from" "" )";
+    local folder_to_formatted="$(   get_kwarg "$args" "to" ""   )";
 
-    folder_from="$(expand_path "$folder_from_formatted")";
-    folder_to="$(expand_path "$folder_to_formatted")";
+    local folder_from="$( expand_path "$folder_from_formatted" )";
+    local folder_to="$(   expand_path "$folder_to_formatted"   )";
 
     if ! [ -d "$folder_from" ]; then
         _log_error "For copy-dir command: source folder \033[1m$folder_from_formatted\033[0m does not exist!";
@@ -363,6 +353,16 @@ function copy_dir() {
 }
 
 function remove_file() {
-    fname="$1";
-    [ -f "$fname" ] && rm -f "$fname" && _log_info "Removed \033[1m$fname.\033[0m" || _log_info "Nothing to remove: \033[1m$fname\033[0m does not exist.";
+    local fname="$1";
+    [ -f "$fname" ] && rm -f "$fname" && _log_info "Removed file \033[1m$fname.\033[0m" || _log_info "Nothing to remove: the file \033[1m$fname\033[0m does not exist.";
+}
+
+function remove_dir() {
+    local path="$1";
+    [ -f "$path" ] && rm -r "$path" && _log_info "Removed directory \033[1m$path.\033[0m" || _log_info "Nothing to remove: the directory \033[1m$path\033[0m does not exist.";
+}
+
+function remove_dir_force() {
+    local path="$1";
+    [ -f "$path" ] && rm -rf "$path" && _log_info "Removed directory \033[1m$path.\033[0m" || _log_info "Nothing to remove: the directory \033[1m$path\033[0m does not exist.";
 }

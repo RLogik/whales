@@ -34,7 +34,7 @@ function env_from() {
 }
 
 ##############################################################################
-# GLOBAL VARIABLES: logging
+# GLOBAL VARIABLES:
 ##############################################################################
 
 # NOTE: do not use /bin/bash. Results in error under Windows.  Use \/bin\/bash, bash, sh -c bash, or sh.
