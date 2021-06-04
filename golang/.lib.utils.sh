@@ -5,7 +5,7 @@
 #    Include using source .lib.utils.sh
 ##############################################################################
 
-# import sames methods from src folder:
+# import same methods from src folder:
 source ../src/.lib.utils.sh;
 
 ##############################################################################

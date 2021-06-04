@@ -13,11 +13,9 @@ SCRIPTARGS="$@";
 source .lib.sh;
 
 if ( has_arg "$SCRIPTARGS" "-+all" ); then
-    run_remove_all_artefacts "src";
-    run_remove_all_artefacts "test";
+    run_remove_all_artefacts;
 elif ( has_arg "$SCRIPTARGS" "-+prune" ); then
-    run_remove_prune_artefacts "src";
-    run_remove_prune_artefacts "test";
+    run_remove_prune_artefacts;
 else
     _log_error   "Invalid cli argument.";
     _cli_message "";

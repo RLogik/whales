@@ -16,12 +16,12 @@ source .lib.sh;
 validcommand=false;
 
 if ( has_arg "$SCRIPTARGS" "-+requirements" ); then
-    run_compile_update_requirements "src";
+    run_compile_update_requirements;
     validcommand=true;
 fi
 
 if ( has_arg "$SCRIPTARGS" "-+compile" ); then
-    run_compile_go "src";
+    run_compile_go || exit 1;
     validcommand=true;
 fi
 
