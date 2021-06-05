@@ -25,11 +25,6 @@ function run_setup() {
     # < your code here > #
 }
 
-function run_test_unit() {
-    _log_warn "Unit tests not yet implemented!";
-    # < your code here > #
-}
-
 function run_main() {
     _log_warn "Main process not yet implemented!";
     # < your code here > #
@@ -39,6 +34,11 @@ function run_explore_console() {
     ## start interaction:
     _log_info "READY TO EXPLORE.";
     $CMD_EXPLORE;
+}
+
+function run_test_unit() {
+    _log_warn "Unit tests not yet implemented!";
+    # < your code here > #
 }
 
 function run_clean_artefacts() {

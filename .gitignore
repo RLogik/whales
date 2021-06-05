@@ -5,10 +5,9 @@
 !/LICENSE
 
 !/src
+!/golang
 !/config
 !/dist
 !/install
 !/templates
 !/examples
-
-!/golang

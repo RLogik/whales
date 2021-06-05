@@ -24,10 +24,10 @@
     Then Carry out the following commands separately:
 
     ```bash
-    chmod +x *.sh; # grant execution rights to the shell scripts
-    ./build.sh --mode run;
-    ./build.sh --mode unit;
-    ./build.sh --mode explore;
+    chmod +x scripts/*.sh; # grant execution rights to the shell scripts
+    ./scripts/build.sh --mode run;
+    ./scripts/build.sh --mode unit;
+    ./scripts/build.sh --mode explore;
     ```
 
 To see the status of the docker containers and images, call `./.whales/docker.sh --status;`.

@@ -24,10 +24,10 @@
     Then Carry out the following commands:
 
     ```bash
-    chmod +x *.sh; # grant execution rights to the shell scripts
-    ./build.sh --mode setup;
-    ./build.sh --mode unit;
-    ./build.sh --mode explore; ## this enters the docker container in bash.
+    chmod +x scripts/*.sh; # grant execution rights to the shell scripts
+    ./scripts/build.sh --mode setup;
+    ./scripts/build.sh --mode unit;
+    ./scripts/build.sh --mode explore; ## this enters the docker container in bash.
     ```
 
 To see the status of the docker containers and images, call `./.whales/docker.sh --status;`.

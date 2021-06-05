@@ -2,10 +2,10 @@
 
 ##############################################################################
 #    DESCRIPTION: Library methods
-#    Include using source .lib.sh
+#    Include using source scripts/.lib.sh
 ##############################################################################
 
-source .lib.utils.sh;
+source scripts/.lib.utils.sh;
 
 ##############################################################################
 # GLOBAL VARIABLES:

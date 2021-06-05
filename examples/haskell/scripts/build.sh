@@ -13,7 +13,7 @@ FLAGS=( $@ );
 ME="build.sh";
 SERVICE="haskell";
 
-source .lib.sh;
+source scripts/.lib.sh;
 
 mode="$( get_one_kwarg_space "$SCRIPTARGS" "-+mode" "" )";
 

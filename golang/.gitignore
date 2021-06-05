@@ -1,11 +1,12 @@
 *
 !/.gitignore
 
-!/.lib.sh
-!/.lib.utils.sh
-!/build.sh
-!/clean.sh
-!/test.sh
+!/scripts
+!/scripts/.lib.sh
+!/scripts/.lib.utils.sh
+!/scripts/build.sh
+!/scripts/clean.sh
+!/scripts/test.sh
 
 !/src
 !/src/**/*.go

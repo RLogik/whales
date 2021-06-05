@@ -10,7 +10,7 @@
 
 SCRIPTARGS="$@";
 
-source .lib.sh;
+source scripts/.lib.sh;
 
 if ( has_arg "$SCRIPTARGS" "-+all" ); then
     run_remove_all_artefacts;

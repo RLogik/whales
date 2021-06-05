@@ -24,7 +24,7 @@ if [ "$mode" == "setup" ]; then
 elif [ "$mode" == "run" ]; then
     # whale_call <service>  <tag-sequence>    <save, it, ports> <type, command>
     whale_call   "$SERVICE" "setup,run"       false false true  SCRIPT $ME $SCRIPTARGS;
-    run_test;
+    run_main;
 elif [ "$mode" == "explore" ]; then
     # whale_call <service>  <tag-sequence>    <save, it, ports> <type, command>
     whale_call   "$SERVICE" "setup,(explore)" false true true   SCRIPT $ME $SCRIPTARGS;

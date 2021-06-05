@@ -11,7 +11,7 @@
 SCRIPTARGS="$@";
 FLAGS=( $@ );
 
-source .lib.sh;
+source scripts/.lib.sh;
 
 validcommand=false;
 

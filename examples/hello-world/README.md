@@ -26,12 +26,12 @@
 5. Carry out the following commands one-by-one:
 
     ```bash
-    chmod +x *.sh; # grant execution rights to the shell scripts
-    ./hello.sh "Captain, ...";
+    chmod +x scripts/*.sh; # grant execution rights to the shell scripts
+    ./scripts/hello.sh "Captain, ...";
      # wait for result
-    ./hello.sh "Thar be whales\!"; # NOTE: Do not write "!"
+    ./scripts/hello.sh "Thar be whales\!"; # NOTE: Do not write "!"
      # wait for result
-    ./hello.sh "I am a humpback whale.";
+    ./scripts/hello.sh "I am a humpback whale.";
      # wait for result
     ```
 
