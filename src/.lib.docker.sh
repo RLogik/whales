@@ -430,6 +430,10 @@ function is_docker() {
 # MAIN METHODS:
 ##############################################################################
 
+function whales_activate() { echo "0" >| $WHALES_FILE_DOCKER_DEPTH; }
+
+function whales_deactivate() { echo "1" >| $WHALES_FILE_DOCKER_DEPTH; }
+
 function whales_set_ports() {
     local arguments=( "$@" );
     local ports;
