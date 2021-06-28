@@ -45,15 +45,17 @@ function import_whales_files() {
     cp -r "${path}/src"                               "./.whales";
     ( $flag_templates ) && cp -r "${path}/templates"  "./.whales.templates";
     ( $flag_examples )  && cp -r "${path}/examples"   "./.whales.examples";
+    # Copy without overwriting existing contained files:
+    cp -n  "${path}/templates/.env"           ".";
+    cp -n  "${path}/templates/.gitignore"     ".";
+    cp -n  "${path}/templates/.dockerignore"  ".";
+    cp -nr "${path}/templates/scripts/."      "./scripts";
+    # Copy with optional force overwrite:
     local flag_copy="-n";
     ( $flag_force ) && flag_copy="";
     cp $flag_copy "${path}/templates/.whales.env"                 ".";
     cp $flag_copy "${path}/templates/.whales.Dockerfile"          ".";
     cp $flag_copy "${path}/templates/.whales.docker-compose.yml"  ".";
-    ! [ -f ".env" ]          && cp $flag_copy "${path}/templates/.env"           ".";
-    ! [ -f ".gitignore" ]    && cp $flag_copy "${path}/templates/.gitignore"     ".";
-    ! [ -f ".dockerignore" ] && cp $flag_copy "${path}/templates/.dockerignore"  ".";
-    ! [ -d "scripts" ]       && cp $flag_copy "${path}/templates/scripts"        ".";
 
     # Output version:
     VERSION="$( cat ${path}/dist/VERSION 2> $VERBOSE || echo "{${tag}}" )";
@@ -76,7 +78,8 @@ function create_local_copy() {
     mkdir "$HOME/$LOCALDIST/$tag";
     ! [ -d "$HOME/$LOCALDIST/$tag" ] && echo -e "Could not find or create <\033[1m${HOME}/${LOCALDIST}/${tag}\033[0m>." >> $ERR && return;
     cp -r "${path}/." "$HOME/.whales/$tag/";
-    echo -e "Your local distribution \033[1m${HOME}/${LOCALDIST}\033[0m now contains the following versions of \033[92;1mwhales\033[0m:  $( ls $HOME/$LOCALDIST/. 2> $VERBOSE ) ." >> $OUT;
+    local dist=( $( ls $HOME/$LOCALDIST/. ) );
+    echo -e "Your local distribution \033[1m${HOME}/${LOCALDIST}\033[0m now contains the following versions of \033[92;1mwhales\033[0m: {${dist[@]}}." >> $OUT;
 }
 
 # Obtain artefact from local source
@@ -88,7 +91,8 @@ function get_artefact_from_local() {
     local path="$HOME/$LOCALDIST/$tag";
     if [ "$tag" == "" ] || ! [ -d "$path" ]; then
         echo -e "Usage: \033[1mimportwhales [--local] [--force] [--templates] [--examples] {TAG}\033[0m." >> $ERR;
-        echo -e "Valid values for \033[1m{TAG}\033[0m: the local distributions in \033[1m${HOME}/${LOCALDIST}\033[0m contains \033[92;1mwhales\033[0m: $( ls $HOME/$LOCALDIST/. 2> $VERBOSE ) ." >> $ERR;
+        local dist=( $( ls $HOME/$LOCALDIST/. ) );
+        echo -e "Valid values for \033[1m{TAG}\033[0m: the local distributions in \033[1m${HOME}/${LOCALDIST}\033[0m contains \033[92;1mwhales\033[0m: {${dist[@]}}." >> $ERR;
         exit 1;
     fi
     import_whales_files $flag_force $flag_templates $flag_examples "${path}";
@@ -223,6 +227,3 @@ fi
 
 echo -e "Version \033[92;1m${VERSION}\033[0m of Whales imported." >> $OUT;
 exit $success;
-
-
-# create_local_copy "$PWD" "v0.0.3"
