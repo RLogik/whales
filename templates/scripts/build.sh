@@ -10,7 +10,7 @@
 
 SCRIPTARGS="$@";
 FLAGS=( $@ );
-ME="build.sh";
+ME="scripts/build.sh";
 SERVICE="prod-service";
 
 source scripts/.lib.sh;

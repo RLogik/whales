@@ -10,7 +10,7 @@
 
 SCRIPTARGS="$@";
 FLAGS=( $@ );
-ME="clean.sh";
+ME="scripts/clean.sh";
 
 source scripts/.lib.sh;
 
