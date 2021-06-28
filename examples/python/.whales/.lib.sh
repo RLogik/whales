@@ -38,6 +38,7 @@ function run_docker_clean() {
     local include_init=$2;
     local project="$3";
     local service="$4";
+    local answer;
 
     if ! ( $force ); then
         if ( $include_init ); then
@@ -60,6 +61,7 @@ function run_docker_clean() {
 
 function run_docker_clean_all() {
     local force=$1;
+    local answer;
 
     if ! ( $force ); then
         _log_warn "ALL docker containers and images will be stopped and removed. That includes containers not related to this project.";

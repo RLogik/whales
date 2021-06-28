@@ -38,6 +38,7 @@ function run_docker_clean() {
     local include_init=$2;
     local project="$3";
     local service="$4";
+    local answer;
 
     if ! ( $force ); then
         if ( $include_init ); then
