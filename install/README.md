@@ -25,9 +25,15 @@ unpacks it and copies in the relevant parts, namely the following
     |
 ```
 to your current path.
+<br>
+Use the `--local` flag, to clone a locally saved distribution.
+<br>
 Use the `--force` flag, to force overwrite the 3 user config files.
+<br>
 Use the `--templates` flag to copy in the template folder.
+<br>
 Use the `--exmples` flag to copy in the examples folder.
+<br>
 The folder `./.whales` will be overwritten by force.
 
 The script also contains a variant which downloads artefacts from Dockerhub
