@@ -26,7 +26,9 @@ unpacks it and copies in the relevant parts, namely the following
 ```
 to your current path.
 <br>
-Use the `--local` flag, to clone a locally saved distribution.
+Use the `--git`/`--docker` flags, to import **whales** from GitHub/DockerHub releases.
+<br>
+(Leave out, to install from locally saved distribution.)
 <br>
 Use the `--force` flag, to force overwrite the 3 user config files.
 <br>
