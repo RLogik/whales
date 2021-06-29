@@ -21,6 +21,25 @@ LOCALDIST=".whales";
 # Methods
 #######################################
 
+# Show help
+function show_help() {
+    echo -e "" >> $OUT;
+    echo -e "Installer for \033[92;1mwhales\033[0m. Usage"; >> $OUT
+    echo -e "" >> $OUT;
+    echo -e "  \033[1mimportwhales\033[0m \033[2mflags\033[0m \033[1m{TAG}\033[0m" >> $OUT;
+    echo -e "" >> $OUT;
+    echo -e "  \033[2;3mRequired Arguments:\033[0m" >> $OUT;
+    echo -e "    \033[93m{TAG}\033[0m             \033[2mTag name of distribution. See github/RLogik or dockerhub/rlogik\033[0m." >> $OUT;
+    echo -e "  \033[2;3mFlag options:\033[0m" >> $OUT;
+    echo -e "    \033[93m--help\033[0m          \033[2mDisplays this help information\033[0m."                                    >> $OUT;
+    echo -e "    \033[93m--git|--docker\033[0m  \033[2mInstall from git artefacts, docker artefacts\033[0m."                      >> $OUT;
+    echo -e "                    \033[2mIf neither flag used installs from local repository\033[0m.";                             >> $OUT;
+    echo -e "    \033[93m--force\033[0m         \033[2mIf used, imported files force overwrite existing files in project\033[0m." >> $OUT;
+    echo -e "    \033[93m--templates\033[0m     \033[2mIf used, imports template files to a subfolder templates\033[0m."          >> $OUT;
+    echo -e "    \033[93m--examples\033[0m      \033[2mIf used, imports template files to a subfolder templates\033[0m."          >> $OUT;
+    echo -e "" >> $OUT;
+}
+
 # Create temporary folder
 function set_temporary_folder() {
     local name="tmp";
@@ -79,7 +98,8 @@ function create_local_copy() {
     ! [ -d "$HOME/$LOCALDIST/$tag" ] && echo -e "Could not find or create <\033[1m${HOME}/${LOCALDIST}/${tag}\033[0m>." >> $ERR && return;
     cp -r "${path}/." "$HOME/.whales/$tag/";
     local dist=( $( ls $HOME/$LOCALDIST/. ) );
-    echo -e "Your local distribution \033[1m${HOME}/${LOCALDIST}\033[0m now contains the following versions of \033[92;1mwhales\033[0m: {${dist[@]}}." >> $OUT;
+    echo -e "[\033[94;1mINFO\033[0m] Your local distribution \033[1m${HOME}/${LOCALDIST}\033[0m now contains the following versions of \033[92;1mwhales\033[0m: {${dist[@]}}." >> $OUT;
+    echo -e "[\033[94;1mINFO\033[0m] In future you can call \033[1mimportwhales {TAG}\033[0m to import whales from your locally stored distributions." >> $OUT;
 }
 
 # Obtain artefact from local source
@@ -89,8 +109,7 @@ function get_artefact_from_local() {
     local flag_examples=$3;
     local tag="$( echo "$4" | sed -E "s/^v([[:digit:]]+.*)$/\1/gi" )";
     local path="$HOME/$LOCALDIST/$tag";
-    if [ "$tag" == "" ] || ! [ -d "$path" ]; then
-        echo -e "Usage: \033[1mimportwhales [--local] [--force] [--templates] [--examples] {TAG}\033[0m." >> $ERR;
+    if ! [ -d "$path" ]; then
         local dist=( $( ls $HOME/$LOCALDIST/. ) );
         echo -e "Valid values for \033[1m{TAG}\033[0m: the local distributions in \033[1m${HOME}/${LOCALDIST}\033[0m contains \033[92;1mwhales\033[0m: {${dist[@]}}." >> $ERR;
         exit 1;
@@ -101,7 +120,6 @@ function get_artefact_from_local() {
 # Obtain artefact from Git repository
 function get_artefact_from_repo() {
     local url_info="https://github.com/RLogik/whales/releases";
-    [ "$4" == "" ] && echo -e "Usage: \033[1mimportwhales [--local] [--force] [--templates] [--examples] {TAG}\033[0m. Please refer to \033[94;1m${url_info}\033[0m for valid tag names." >> $ERR && exit 1;
     !( check_curl && check_tar ) && echo -e "You need \033[1mcurl\033[0m and \033[1mtar\033[0m in order to be able to use this command." >> $ERR && exit 1;
     local flag_force=$1;
     local flag_templates=$2;
@@ -131,7 +149,6 @@ function get_artefact_from_repo() {
 # Obtain artefact via docker
 function get_artefact_via_docker() {
     local url_info="https://hub.docker.com/r/rlogik/whales/tags";
-    [ "$4" == "" ] && echo -e "Usage: \033[1mimportwhales [--local] [--force] [--templates] [--examples] {TAG}\033[0m. Please refer to \033[94;1m${url_info}\033[0m for valid tag names." >> $ERR && exit 1;
     local flag_force=$1;
     local flag_templates=$2;
     local flag_examples=$3;
@@ -210,7 +227,8 @@ function check_jq() {
 
 TAG=""; [[ ${#FLAGS} -gt 0 ]] && TAG="${FLAGS[-1]}";
 ( echo "$TAG" | grep -Eq "^-+" ) && TAG="";
-flag_local=false;     ( has_arg "$SCRIPTARGS" "-+(l|local)" )            && flag_local=true;
+flag_git=false;       ( has_arg "$SCRIPTARGS" "-+(git|github)" )         && flag_git=true;
+flag_docker=false;    ( has_arg "$SCRIPTARGS" "-+(docker|dockerhub)" )   && flag_docker=true;
 flag_force=false;     ( has_arg "$SCRIPTARGS" "-+(f|force)" )            && flag_force=true;
 flag_templates=false; ( has_arg "$SCRIPTARGS" "-+(template|templates)" ) && flag_templates=true;
 flag_examples=false;  ( has_arg "$SCRIPTARGS" "-+(example|examples)" )   && flag_examples=true;
@@ -218,12 +236,22 @@ success=0;
 check_dos2unix || success=1;
 check_jq;
 VERSION="";
-if ( $flag_local ); then
-    get_artefact_from_local $flag_force $flag_templates $flag_examples "${TAG}";
-else
-    get_artefact_from_repo $flag_force $flag_templates $flag_examples "${TAG}";
-fi
-# get_artefact_via_docker $flag_force $flag_templates $flag_examples "${TAG}";
 
-echo -e "Version \033[92;1m${VERSION}\033[0m of Whales imported." >> $OUT;
+if ( has_arg "$SCRIPTARGS" "-+(help|man|info)" ); then
+    show_help;
+    exit 0;
+elif [ "$TAG" == "" ]; then
+    echo -e "" >> $ERR;
+    echo -e "[\033[91mERROR\033[0m] \033[1m{TAG}\033[0m argument cannot be empty!" >> $ERR;
+    show_help;
+    exit 1;
+elif ( $flag_git ); then
+    get_artefact_from_repo $flag_force $flag_templates $flag_examples "${TAG}";
+elif ( $flag_docker ); then
+    get_artefact_via_docker $flag_force $flag_templates $flag_examples "${TAG}";
+else
+    get_artefact_from_local $flag_force $flag_templates $flag_examples "${TAG}";
+fi
+
+echo -e "[\033[94;1mINFO\033[0m] Version \033[92;1m${VERSION}\033[0m of \033[92;1mwhales\033[0m imported." >> $OUT;
 exit $success;
