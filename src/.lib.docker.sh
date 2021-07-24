@@ -414,10 +414,9 @@ function docker_remove_all_images() {
 
 function get_docker_depth() {
     local depth=0;
-    if [ -f "$WHALES_FILE_DOCKER_DEPTH" ]; then
-        depth="$( head -n 1 $WHALES_FILE_DOCKER_DEPTH )";
-        if ! ( echo "$depth" | grep -Eq "^(0|[1-9][0-9]*|-[1-9][0-9]*)$" ); then depth=1; fi
-    fi
+    ! [[ -f "$WHALES_FILE_DOCKER_DEPTH" ]] && whales_activate;
+    depth="$( head -n 1 $WHALES_FILE_DOCKER_DEPTH )";
+    ! ( echo "$depth" | grep -Eq "^(0|[1-9][0-9]*|-[1-9][0-9]*)$" ) && depth=1;
     echo $depth;
 }
 
