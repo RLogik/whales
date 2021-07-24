@@ -97,6 +97,21 @@ function _cli_ask_expected_answer() {
     done
 }
 
+function _cli_ask_expected_answer_secure() {
+    local msg="$1";
+    local answerpattern="$2";
+    local mask="$3";
+    CLI_ANSWER="";
+    while ( true ); do
+        echo -ne "$msg" >> $OUT;
+        stty -echo;
+        read CLI_ANSWER;
+        stty echo;
+        [[ "$mask" == "true" ]] && echo -e "$( echo $CLI_ANSWER | sed -r 's/./\*/g' )" || echo -e "$mask";
+        ( echo "$CLI_ANSWER" | grep -Eq "$2" ) && break;
+    done
+}
+
 function _cli_trailing_message() {
     echo -ne "$1" >> $OUT;
 }
