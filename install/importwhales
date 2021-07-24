@@ -62,6 +62,7 @@ function import_whales_files() {
     [[ -d ".whales.examples"  ]] && rm -rf ".whales.examples";
     # Copy the rest to destination:
     cp -r "${path}/src"                               "./.whales";
+    cp    "${path}/dist/VERSION"                      "./.whales";
     ( $flag_templates ) && cp -r "${path}/templates"  "./.whales.templates";
     ( $flag_examples )  && cp -r "${path}/examples"   "./.whales.examples";
     # Copy without overwriting existing contained files:

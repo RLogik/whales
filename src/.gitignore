@@ -1,6 +1,8 @@
 *
 !/.gitignore
 !/.dockerignore
+# needed for artefact
+!/VERSION
 
 ################################################################
 # WHALES SETUP
