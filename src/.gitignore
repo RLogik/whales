@@ -9,7 +9,8 @@
 ################################################################
 
 !/logging.env
-
+# force exclude from synchronisation:
+/DOCKER_DEPTH
 !/.lib.globals.sh
 !/.lib.utils.sh
 !/.lib.docker.sh
