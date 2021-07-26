@@ -25,8 +25,9 @@ ARG WD
 COPY . "$WD"
 WORKDIR "$WD"
 
-# set the Docker-Depth to 1:
-RUN echo "1" >| "${WHALES_SETUP_PATH}/DOCKER_DEPTH"
+# force whales + docker states (on, in):
+RUN echo "on" >| "${WHALES_SETUP_PATH}/WHALES_STATE"
+RUN echo "in" >| "${WHALES_SETUP_PATH}/DOCKER_STATE"
 # add prefix to logging levels:
 RUN echo "export LOGGINGPREFIX=\">\";" >> "${WHALES_SETUP_PATH}/.lib.globals.sh"
 
