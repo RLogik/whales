@@ -86,9 +86,8 @@ function whale_call() {
         fi
 
         ## RUN SCRIPT COMMAND WITHIN DOCKER:
-        local success=1;
-        whales_enter_docker --service "$service" --enter "$tagStart" $save_arg --it $it --expose $expose $cmd_arg \
-            && success=0;
+        whales_enter_docker --service "$service" --enter "$tagStart" $save_arg --it $it --expose $expose $cmd_arg;
+        local success=$?;
 
         ## If type==script, do not return to script:
         [ "$type" == "script" ] && exit $success || return $success;
