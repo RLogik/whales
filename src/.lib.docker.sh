@@ -409,25 +409,25 @@ function docker_remove_all_images() {
 }
 
 ##############################################################################
-# AUXILIARY METHODS: DEPTH, WHALES STATE
+# AUXILIARY METHODS: DOCKER/WHALES STATE
 ##############################################################################
 
-function get_docker_depth() {
-    local depth=0;
-    [[ -f "$WHALES_FILE_DOCKER_DEPTH" ]] && depth="$( head -n 1 "$WHALES_FILE_DOCKER_DEPTH" )";
-    ! ( echo "$depth" | grep -Eq "^(0|[1-9][0-9]*|-[1-9][0-9]*)$" ) && depth=0;
-    echo $depth;
+function get_docker_state() {
+    local state="out";
+    [[ -f "$WHALES_FILE_DOCKER_STATE" ]] && state="$( head -n 1 "$WHALES_FILE_DOCKER_STATE" )";
+    ! ( echo "$state" | grep -Eq "^(in|out)$" ) && state="out";
+    echo $state;
 }
 
 function is_docker() {
-    local depth=$( get_docker_depth );
-    [ $depth -gt 0 ] && return 0 || return 1;
+    local state=$( get_docker_state );
+    [[ "$state" == "in" ]] && return 0 || return 1;
 }
 
 function get_whales_state() {
     local state=0;
     [[ -f "$WHALES_FILE_WHALES_STATE" ]] && state="$( head -n 1 "$WHALES_FILE_WHALES_STATE" )";
-    ! ( echo "$state" | grep -Eq "^(on|off)$" ) && state=off;
+    ! ( echo "$state" | grep -Eq "^(on|off)$" ) && state="off";
     echo $state;
 }
 
