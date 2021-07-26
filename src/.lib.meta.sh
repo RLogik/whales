@@ -37,6 +37,9 @@
 #       <command>         The full command to be carried out (within the docker context).
 ####
 function whale_call() {
+    # If whales is deactivate, ignore whale_call!
+    ! ( is_whales_active ) && return 0;
+
     local metaargs=( "$@" );
     local service="${metaargs[0]}";
     local tags="${metaargs[1]}";

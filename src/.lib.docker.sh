@@ -409,14 +409,13 @@ function docker_remove_all_images() {
 }
 
 ##############################################################################
-# AUXILIARY METHODS: DEPTH
+# AUXILIARY METHODS: DEPTH, WHALES STATE
 ##############################################################################
 
 function get_docker_depth() {
     local depth=0;
-    ! [[ -f "$WHALES_FILE_DOCKER_DEPTH" ]] && whales_activate;
-    depth="$( head -n 1 $WHALES_FILE_DOCKER_DEPTH )";
-    ! ( echo "$depth" | grep -Eq "^(0|[1-9][0-9]*|-[1-9][0-9]*)$" ) && depth=1;
+    [[ -f "$WHALES_FILE_DOCKER_DEPTH" ]] && depth="$( head -n 1 "$WHALES_FILE_DOCKER_DEPTH" )";
+    ! ( echo "$depth" | grep -Eq "^(0|[1-9][0-9]*|-[1-9][0-9]*)$" ) && depth=0;
     echo $depth;
 }
 
@@ -425,13 +424,25 @@ function is_docker() {
     [ $depth -gt 0 ] && return 0 || return 1;
 }
 
+function get_whales_state() {
+    local state=0;
+    [[ -f "$WHALES_FILE_WHALES_STATE" ]] && state="$( head -n 1 "$WHALES_FILE_WHALES_STATE" )";
+    ! ( echo "$state" | grep -Eq "^(on|off)$" ) && state=off;
+    echo $state;
+}
+
+function is_whales_active() {
+    local state=$( get_whales_state );
+    [[ "$state" == "on" ]] && return 0 || return 1;
+}
+
 ##############################################################################
 # MAIN METHODS:
 ##############################################################################
 
-function whales_activate() { echo "0" >| $WHALES_FILE_DOCKER_DEPTH; }
+function whales_activate() { echo "on" >| $WHALES_FILE_WHALES_STATE; }
 
-function whales_deactivate() { echo "1" >| $WHALES_FILE_DOCKER_DEPTH; }
+function whales_deactivate() { echo "off" >| $WHALES_FILE_WHALES_STATE; }
 
 function whales_set_ports() {
     local arguments=( "$@" );

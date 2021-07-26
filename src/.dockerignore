@@ -4,9 +4,12 @@
 # WHALES SETUP
 ################################################################
 
-!/logging.env
 # must be included in docker images!
 !/DOCKER_DEPTH
+# can/should be excluded:
+/WHALES_STATE
+
+!/logging.env
 !/.lib.docker.sh
 !/.lib.utils.sh
 !/.lib.whales.sh

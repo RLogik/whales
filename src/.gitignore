@@ -8,9 +8,12 @@
 # WHALES SETUP
 ################################################################
 
-!/logging.env
 # force exclude from synchronisation:
 /DOCKER_DEPTH
+# force exclude from synchronisation:
+/WHALES_STATE
+
+!/logging.env
 !/.lib.globals.sh
 !/.lib.utils.sh
 !/.lib.docker.sh
