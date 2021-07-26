@@ -8,9 +8,8 @@
 # WHALES SETUP
 ################################################################
 
-# force exclude from synchronisation:
-/DOCKER_DEPTH
-# force exclude from synchronisation:
+# explicitly exclude state files:
+/DOCKER_STATE
 /WHALES_STATE
 
 !/logging.env

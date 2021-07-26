@@ -4,9 +4,8 @@
 # WHALES SETUP
 ################################################################
 
-# must be included in docker images!
-!/DOCKER_DEPTH
-# can/should be excluded:
+# explicitly exclude state files:
+/DOCKER_STATE
 /WHALES_STATE
 
 !/logging.env
