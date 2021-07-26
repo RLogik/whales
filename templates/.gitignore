@@ -30,10 +30,19 @@
 # PROJECT FILES
 ################################################################
 
-# !/src
-# !/test
-# !/dist
-# !/dist/VERSION
+!/src
+# !/src/**
+
+!/test
+# !/test/**
+
+!/data
+/data/**
+!/data/*-example.*
+
+!/dist
+!/dist/VERSION
+# !/dist/*.zip
 
 ################################################################
 # AUXLIARY

@@ -3,37 +3,47 @@ networks:
   default:
     driver: bridge
 services:
-  # !!! Your services here !!! #
-  ### EXAMPLES:
-  # #---------------------------------------------------------#
-  # # SERVICE: Production
-  # #---------------------------------------------------------#
-  # prod-service:
-  #   image: prod:build
-  #   build:
-  #     context: .
-  #     dockerfile: .whales.Dockerfile
-  #     args: &ref_build_args
-  #         WD: "$WD"
-  #   volumes: &ref_volume_args
-  #     - ./logs:$WD/logs:rw   ## <- (r/)w for logging between all docker levels.
-  #     - ./src:$WD/src:rw     ## <- r/w   allows for live developing
-  #     - ./test:$WD/test:rw   ##          ""
-  #     - ./data:$WD/data:rw   ## <- r/w   data folder, images will be stored here.
-  #     - ./dist:$WD/dist:rw   ## <- r/w   distribution folder, VERSION + Programme artefacts.
-  #     - ./build:$WD/build:rw ## <- (r/)w build folder -> artefacts
-  #   command:
-  #     [ "/bin/bash", "-c", "echo -e \"Service built.\"" ]
-  # #---------------------------------------------------------#
-  # # SERVICE: Test
-  # #---------------------------------------------------------#
-  # test-service:
-  #   image: test:build
-  #   build:
-  #     context: .
-  #     dockerfile: .whales.Dockerfile
-  #     args:
-  #       <<: *ref_build_args
-  #   volumes: *ref_volume_args
-  #   command:
-  #     [ "/bin/bash", "-c", "echo -e \"Service built.\"" ]
+  ## !!! Your services here !!!
+  ## EXAMPLES:
+  #---------------------------------------------------------#
+  # SERVICE: Production
+  #---------------------------------------------------------#
+  prod-service:
+    image: prod:build
+    build:
+      context: .
+      dockerfile: .whales.Dockerfile
+      args: &ref_build_args
+          WD: "$WD"
+    volumes:
+        - ./data:$WD/data:rw
+        - ./dist:$WD/dist:rw
+        - ./src:$WD/src:ro
+        # ## for debugging purposes only:
+        # - ./scripts:$WD/scripts:ro
+        # - ./logs:$WD/logs:rw
+        # - ./build:$WD/build:rw
+    command:
+      [ "/bin/bash", "-c", "echo -e \"Service built.\"" ]
+  #---------------------------------------------------------#
+  # SERVICE: Test
+  #---------------------------------------------------------#
+  test-service:
+    image: test:build
+    build:
+      context: .
+      dockerfile: .whales.Dockerfile
+      args:
+        <<: *ref_build_args
+        - ./test:$WD/test:ro
+    volumes:
+      - ./data:$WD/data:rw
+      - ./dist:$WD/dist:rw
+      - ./src:$WD/src:ro
+      - ./test:$WD/test:ro
+      # ## for debugging purposes only:
+      # - ./scripts:$WD/scripts:ro
+      # - ./logs:$WD/logs:rw
+      # - ./build:$WD/build:rw
+    command:
+      [ "/bin/bash", "-c", "echo -e \"Service built.\"" ]
