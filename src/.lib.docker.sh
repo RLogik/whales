@@ -412,7 +412,7 @@ function docker_remove_all_images() {
 # AUXILIARY METHODS: DOCKER/WHALES STATE
 ##############################################################################
 
-function get_docker_state() {
+function get_whales_state_of_docker() {
     local state="out";
     [[ -f "$WHALES_FILE_DOCKER_STATE" ]] && state="$( head -n 1 "$WHALES_FILE_DOCKER_STATE" )";
     ! ( echo "$state" | grep -Eq "^(in|out)$" ) && state="out";
@@ -420,11 +420,11 @@ function get_docker_state() {
 }
 
 function is_docker() {
-    local state=$( get_docker_state );
+    local state=$( get_whales_state_of_docker );
     [[ "$state" == "in" ]] && return 0 || return 1;
 }
 
-function get_whales_state() {
+function get_whales_state_of_whales() {
     local state=0;
     [[ -f "$WHALES_FILE_WHALES_STATE" ]] && state="$( head -n 1 "$WHALES_FILE_WHALES_STATE" )";
     ! ( echo "$state" | grep -Eq "^(on|off)$" ) && state="off";
@@ -432,7 +432,7 @@ function get_whales_state() {
 }
 
 function is_whales_active() {
-    local state=$( get_whales_state );
+    local state=$( get_whales_state_of_whales );
     [[ "$state" == "on" ]] && return 0 || return 1;
 }
 
