@@ -141,6 +141,9 @@ SERVICE="prod-service";
 
 source .whales/.lib.sh;
 
+# whales_deactivate; # <- use to ignore whale commands
+whales_activate; # <- needed for whale commands to be carried out
+
 # whale_call <service> <tag-sequence> <save, it, ports> <type, command>
 whale_call   "$SERVICE" "prod,setup"  true false false  SCRIPT $ME $SCRIPTARGS;
 
@@ -176,6 +179,9 @@ ME="test.sh";
 SERVICE="test-service";
 
 source .whales/.lib.sh;
+
+# whales_deactivate; # <- use to ignore whale commands
+whales_activate; # <- needed for whale commands to be carried out
 
 mode="${FLAGS[0]}";
 if [ "$mode" == "interactive" ]; then
@@ -218,6 +224,9 @@ SCRIPTARGS="$@";
 ME="build.sh";
 
 source .whales/.lib.sh;
+
+# whales_deactivate; # <- use to ignore whale commands
+whales_activate; # <- needed for whale commands to be carried out
 
 # whale_call <service>  <tag-sequence> <save, it, ports> <type, command>
 whales_set_ports "127.0.0.1:50:51"  "0.0.0.0:8080:8080"  "9000:9001";
