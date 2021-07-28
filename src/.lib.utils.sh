@@ -89,10 +89,22 @@ export CLI_ANSWER="";
 function _cli_ask_expected_answer() {
     local msg="$1";
     local answerpattern="$2";
+    local read_break_char;
+    local symb;
     CLI_ANSWER="";
     while ( true ); do
         echo -ne "$msg" >> $OUT;
-        read CLI_ANSWER;
+        ## read in CLI_ANSWER character by character:
+        CLI_ANSWER="";
+        read_break_char=false;
+        while IFS= read -rN 1 symb; do
+            case "$symb" in
+                $'\04') read_break_char=true          ;&
+                $'\n')  break                         ;;
+                *)      CLI_ANSWER="$CLI_ANSWER$symb" ;;
+            esac
+        done
+        ( $read_break_char ) && echo -e "" >> $OUT && exit 1;
         ( echo "$CLI_ANSWER" | grep -Eq "$2" ) && break;
     done
 }
@@ -101,12 +113,24 @@ function _cli_ask_expected_answer_secure() {
     local msg="$1";
     local answerpattern="$2";
     local mask="$3";
+    local read_break_char;
+    local symb;
     CLI_ANSWER="";
     while ( true ); do
         echo -ne "$msg" >> $OUT;
         stty -echo;
-        read CLI_ANSWER;
+        ## read in CLI_ANSWER character by character:
+        CLI_ANSWER="";
+        read_break_char=false;
+        while IFS= read -rN 1 symb; do
+            case "$symb" in
+                $'\04') read_break_char=true          ;&
+                $'\n')  break                         ;;
+                *)      CLI_ANSWER="$CLI_ANSWER$symb" ;;
+            esac
+        done
         stty echo;
+        ( $read_break_char ) && echo -e "" >> $OUT && exit 1;
         [[ "$mask" == "true" ]] && echo -e "$( echo $CLI_ANSWER | sed -r 's/./\*/g' )" || echo -e "$mask";
         ( echo "$CLI_ANSWER" | grep -Eq "$2" ) && break;
     done
