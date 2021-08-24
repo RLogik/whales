@@ -452,9 +452,10 @@ function create_temporary_dir() {
     local k=0;
     pushd "$current_dir" >> $VERBOSE;
         while [[ -d "${name}_${k}" ]] || [[ -f "${name}_${k}" ]]; do k=$(( $k + 1 )); done;
+        path="${name}_${k}";
+        mkdir "${path}";
     popd >> $VERBOSE;
-    path="${name}_${k}";
-    mkdir "$path" && echo "${path}";
+    echo "${current_dir}/${path}";
 }
 
 ##############################################################################
