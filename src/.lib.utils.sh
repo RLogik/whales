@@ -99,7 +99,7 @@ function _cli_ask_expected_answer() {
         read_break_char=false;
         while IFS= read -rN 1 symb; do
             case "$symb" in
-                $'\04') read_break_char=true          ;&
+                $'\04') read_break_char=true          ;;
                 $'\n')  break                         ;;
                 *)      CLI_ANSWER="$CLI_ANSWER$symb" ;;
             esac
@@ -124,7 +124,7 @@ function _cli_ask_expected_answer_secure() {
         read_break_char=false;
         while IFS= read -rN 1 symb; do
             case "$symb" in
-                $'\04') read_break_char=true          ;&
+                $'\04') read_break_char=true          ;;
                 $'\n')  break                         ;;
                 *)      CLI_ANSWER="$CLI_ANSWER$symb" ;;
             esac
@@ -490,7 +490,7 @@ function clean_folder_contents() {
 
 function clean_all_folders_of_pattern() {
     local pattern="$1";
-    local objects=( $( find * -type d -name ${pattern} ) );
+    local objects=( $( find * -type d -name ${pattern} 2> $VERBOSE ) );
     local n=${#objects[@]};
     [[ $n -gt 0 ]] && find * -type d -name ${pattern} | awk '{print $1}' | xargs rm -rf;
     _log_info "    (\033[91mforce removed\033[0m) $n x \033[94m${pattern}\033[0m folders";
@@ -498,7 +498,7 @@ function clean_all_folders_of_pattern() {
 
 function clean_all_files_of_pattern() {
     local pattern="$1";
-    local objects=( $( find * -type f -name ${pattern} ) );
+    local objects=( $( find * -type f -name ${pattern} 2> $VERBOSE ) );
     local n=${#objects[@]};
     [[ $n -gt 0 ]] && find * -type f -name ${pattern} | awk '{print $1}' | xargs rm -rf;
     _log_info "    (\033[91mforce removed\033[0m) $n x \033[94m${pattern}\033[0m files";
